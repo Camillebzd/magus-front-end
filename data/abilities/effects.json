@@ -1,0 +1,738 @@
+[
+  {
+    "id": 1,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 12
+  },
+  {
+    "id": 2,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 22
+  },
+  {
+    "id": 3,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 8
+  },
+  {
+    "id": 4,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 39
+  },
+  {
+    "id": 5,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 33
+  },
+  {
+    "id": 6,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 25,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 34
+  },
+  {
+    "id": 7,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 25,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 35
+  },
+  {
+    "id": 8,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 25,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 36
+  },
+  {
+    "id": 9,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 25,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 32
+  },
+  {
+    "id": 10,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 37
+  },
+  {
+    "id": 11,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 1
+  },
+  {
+    "id": 12,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 9
+  },
+  {
+    "id": 13,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 8
+  },
+  {
+    "id": 14,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 10
+  },
+  {
+    "id": 15,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 11
+  },
+  {
+    "id": 16,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 2
+  },
+  {
+    "id": 17,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 5
+  },
+  {
+    "id": 18,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 3
+  },
+  {
+    "id": 19,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 6
+  },
+  {
+    "id": 20,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 4
+  },
+  {
+    "id": 21,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 7
+  },
+  {
+    "id": 22,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 27
+  },
+  {
+    "id": 23,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 23
+  },
+  {
+    "id": 24,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 24
+  },
+  {
+    "id": 25,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 25
+  },
+  {
+    "id": 26,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 26
+  },
+  {
+    "id": 27,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 30
+  },
+  {
+    "id": 28,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 31
+  },
+  {
+    "id": 29,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 28
+  },
+  {
+    "id": 30,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 38
+  },
+  {
+    "id": 31,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 40
+  },
+  {
+    "id": 32,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "RULE",
+    "aftermathId": 1
+  },
+  {
+    "id": 33,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "RULE",
+    "aftermathId": 2
+  },
+  {
+    "id": 34,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "RULE",
+    "aftermathId": 3
+  },
+  {
+    "id": 35,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "RULE",
+    "aftermathId": 4
+  },
+  {
+    "id": 36,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "RULE",
+    "aftermathId": 5
+  },
+  {
+    "id": 37,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "RULE",
+    "aftermathId": 6
+  },
+  {
+    "id": 38,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "RULE",
+    "aftermathId": 7
+  },
+  {
+    "id": 39,
+    "conditionId": 1,
+    "targetId": 13,
+    "applyChance": 100,
+    "aftermathType": "RULE",
+    "aftermathId": 8
+  },
+  {
+    "id": 40,
+    "conditionId": 1,
+    "targetId": 13,
+    "applyChance": 100,
+    "aftermathType": "RULE",
+    "aftermathId": 9
+  },
+  {
+    "id": 41,
+    "conditionId": 3,
+    "targetId": 7,
+    "applyChance": 100,
+    "aftermathType": "RULE",
+    "aftermathId": 10
+  },
+  {
+    "id": 42,
+    "conditionId": 2,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 30
+  },
+  {
+    "id": 43,
+    "conditionId": 2,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 41
+  },
+  {
+    "id": 44,
+    "conditionId": 4,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "RULE",
+    "aftermathId": 7
+  },
+  {
+    "id": 45,
+    "conditionId": 4,
+    "targetId": 13,
+    "applyChance": 100,
+    "aftermathType": "RULE",
+    "aftermathId": 11
+  },
+  {
+    "id": 46,
+    "conditionId": 5,
+    "targetId": 13,
+    "applyChance": 100,
+    "aftermathType": "RULE",
+    "aftermathId": 11
+  },
+  {
+    "id": 47,
+    "conditionId": 6,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 41
+  },
+  {
+    "id": 48,
+    "conditionId": 5,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 42
+  },
+  {
+    "id": 49,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "RULE",
+    "aftermathId": 12
+  },
+  {
+    "id": 50,
+    "conditionId": 1,
+    "targetId": 6,
+    "applyChance": 100,
+    "aftermathType": "RULE",
+    "aftermathId": 13
+  },
+  {
+    "id": 51,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "RULE",
+    "aftermathId": 14
+  },
+  {
+    "id": 52,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "RULE",
+    "aftermathId": 15
+  },
+  {
+    "id": 53,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 16
+  },
+  {
+    "id": 54,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 17
+  },
+  {
+    "id": 55,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 18
+  },
+  {
+    "id": 56,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "RULE",
+    "aftermathId": 1
+  },
+  {
+    "id": 57,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "RULE",
+    "aftermathId": 16
+  },
+  {
+    "id": 58,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "RULE",
+    "aftermathId": 17
+  },
+  {
+    "id": 59,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "RULE",
+    "aftermathId": 18
+  },
+  {
+    "id": 60,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 12
+  },
+  {
+    "id": 61,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 20
+  },
+  {
+    "id": 62,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 22
+  },
+  {
+    "id": 63,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 32
+  },
+  {
+    "id": 64,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "RULE",
+    "aftermathId": 19
+  },
+  {
+    "id": 65,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "RULE",
+    "aftermathId": 20
+  },
+  {
+    "id": 66,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 50,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 34
+  },
+  {
+    "id": 67,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 50,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 39
+  },
+  {
+    "id": 68,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 50,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 32
+  },
+  {
+    "id": 69,
+    "conditionId": 1,
+    "targetId": 13,
+    "applyChance": 100,
+    "aftermathType": "RULE",
+    "aftermathId": 11
+  },
+  {
+    "id": 70,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 36
+  },
+  {
+    "id": 71,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 15
+  },
+  {
+    "id": 72,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 25,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 16
+  },
+  {
+    "id": 73,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 25,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 17
+  },
+  {
+    "id": 74,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 18
+  },
+  {
+    "id": 75,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 34
+  },
+  {
+    "id": 76,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 35
+  },
+  {
+    "id": 77,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 21
+  },
+  {
+    "id": 78,
+    "conditionId": 17,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "RULE",
+    "aftermathId": 11
+  },
+  {
+    "id": 79,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 42
+  },
+  {
+    "id": 80,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 2
+  },
+  {
+    "id": 81,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 3
+  },
+  {
+    "id": 82,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 4
+  },
+  {
+    "id": 83,
+    "conditionId": 2,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "RULE",
+    "aftermathId": 12
+  },
+  {
+    "id": 84,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 43
+  },
+  {
+    "id": 85,
+    "conditionId": 2,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 41
+  },
+  {
+    "id": 86,
+    "conditionId": 18,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "RULE",
+    "aftermathId": 22
+  },
+  {
+    "id": 87,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 41
+  },
+  {
+    "id": 88,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "RULE",
+    "aftermathId": 12
+  },
+  {
+    "id": 89,
+    "conditionId": 1,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "RULE",
+    "aftermathId": 13
+  },
+  {
+    "id": 90,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 12
+  },
+  {
+    "id": 91,
+    "conditionId": 5,
+    "targetId": 1,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 16
+  },
+  {
+    "id": 92,
+    "conditionId": 1,
+    "targetId": 2,
+    "applyChance": 100,
+    "aftermathType": "MODIFIER",
+    "aftermathId": 39
+  }
+]

@@ -1,0 +1,9 @@
+.chatContainer{
+  flex: 1;
+  overflow-y: scroll;
+  overscroll-behavior-y: contain;
+  scroll-snap-type: y proximity;
+  border-style: solid;
+  border-width: 2px;
+  max-height: 100%;
+}

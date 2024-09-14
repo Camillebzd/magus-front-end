@@ -1,0 +1,76 @@
+[
+  {
+    "id": 1,
+    "name": "Sword",
+    "image": "https://gateway.pinata.cloud/ipfs/QmZCvC7CymLx5AZoHCNfH1HBAUULe9bZdWxEGZjT5riY95"
+  },
+  {
+    "id": 2,
+    "name": "Warhammer",
+    "image": "https://gateway.pinata.cloud/ipfs/QmTHgqc43QdnxEmYZBFw47ACaie8un9tXKMMPboL3PKDi2"
+  },
+  {
+    "id": 3,
+    "name": "Spear",
+    "image": "https://gateway.pinata.cloud/ipfs/QmVRGW4f3j8uJRbyBURdL5ddahESqxhQeMFtew48o5b2VH"
+  },
+  {
+    "id": 4,
+    "name": "Waraxe",
+    "image": "https://gateway.pinata.cloud/ipfs/Qmb1ARaneLV636PkyVaMkZhTvguWvbbzX1xr21KqebXxfh"
+  },
+  {
+    "id": 5,
+    "name": "Aegis",
+    "image": ""
+  },
+  {
+    "id": 6,
+    "name": "Flail",
+    "image": ""
+  },
+  {
+    "id": 7,
+    "name": "Katana",
+    "image": ""
+  },
+  {
+    "id": 8,
+    "name": "Rapier",
+    "image": ""
+  },
+  {
+    "id": 9,
+    "name": "Halberd",
+    "image": ""
+  },
+  {
+    "id": 10,
+    "name": "Staff",
+    "image": ""
+  },
+  {
+    "id": 11,
+    "name": "Excalibur",
+    "image": "https://gateway.pinata.cloud/ipfs/QmZCvC7CymLx5AZoHCNfH1HBAUULe9bZdWxEGZjT5riY95"
+  },
+  {
+    "id": 12,
+    "name": "Dreadful Feast",
+    "image": ""
+  },
+  {
+    "id": 13,
+    "name": "Northern Lights",
+    "image": ""
+  },
+  {
+    "id": 14,
+    "name": "Curtana",
+    "image": ""
+  },
+  {
+    "id": 15,
+    "name": "Hand of Justice"
+  }
+]

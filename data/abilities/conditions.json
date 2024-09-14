@@ -1,0 +1,74 @@
+[
+  {
+    "id": 1,
+    "description": "No condition"
+  },
+  {
+    "id": 2,
+    "description": "If the ability is a critical strike"
+  },
+  {
+    "id": 3,
+    "description": "If the ability triggers a combo"
+  },
+  {
+    "id": 4,
+    "description": "If the ability is blocked by the target"
+  },
+  {
+    "id": 5,
+    "description": "If the target has already acted this turn"
+  },
+  {
+    "id": 6,
+    "description": "If the target has not acted yet this turn"
+  },
+  {
+    "id": 7,
+    "description": "If the target has strictly less remaining HP than the caster"
+  },
+  {
+    "id": 8,
+    "description": "If the target has strictly more remaining HP than the caster"
+  },
+  {
+    "id": 9,
+    "description": "If the target bears a positive modifier"
+  },
+  {
+    "id": 10,
+    "description": "If the target bears a negative modifier"
+  },
+  {
+    "id": 11,
+    "description": "If the target doesn't bear any modifier"
+  },
+  {
+    "id": 12,
+    "description": "If the caster already used this abiltiy last turn"
+  },
+  {
+    "id": 13,
+    "description": "If the caster bears a positive modifier"
+  },
+  {
+    "id": 14,
+    "description": "If the caster bears a negative modifier"
+  },
+  {
+    "id": 15,
+    "description": "If the caster doesn't bear any modifier"
+  },
+  {
+    "id": 16,
+    "description": "If the caster took damage from the target this turn or the previous one"
+  },
+  {
+    "id": 17,
+    "description": "If the target has 50% HP or less"
+  },
+  {
+    "id": 18,
+    "description": "If the target has 20% HP or less"
+  }
+]

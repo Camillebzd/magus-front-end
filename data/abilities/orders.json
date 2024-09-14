@@ -1,0 +1,46 @@
+[
+  {
+    "id": 1,
+    "description": "At the very beginning"
+  },
+  {
+    "id": 2,
+    "description": "Before special check"
+  },
+  {
+    "id": 3,
+    "description": "Before parry check"
+  },
+  {
+    "id": 4,
+    "description": "Before damage calculation"
+  },
+  {
+    "id": 5,
+    "description": "Before crit damage calculation"
+  },
+  {
+    "id": 6,
+    "description": "Before damage application"
+  },
+  {
+    "id": 7,
+    "description": "Before modifiers applications"
+  },
+  {
+    "id": 8,
+    "description": "Before deaths check"
+  },
+  {
+    "id": 9,
+    "description": "Before combo check"
+  },
+  {
+    "id": 10,
+    "description": "At the very end"
+  },
+  {
+    "id": 11,
+    "description": "At the resolve of the action"
+  }
+]

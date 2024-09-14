@@ -1,0 +1,266 @@
+[
+  {
+    "id": 0,
+    "name": "Riposte",
+    "damage": 50,
+    "initiative": 0,
+    "type": "SHARP",
+    "isMagical": false,
+    "effects": [],
+    "effectsValue": []
+  },
+  {
+    "id": 1,
+    "name": "Powerslam",
+    "damage": 50,
+    "initiative": 5,
+    "type": "BLUNT",
+    "isMagical": false,
+    "effects": [],
+    "effectsValue": []
+  },
+  {
+    "id": 2,
+    "name": "Disarm",
+    "damage": 46,
+    "initiative": 5,
+    "type": "BLUNT",
+    "isMagical": false,
+    "effects": [],
+    "effectsValue": []
+  },
+  {
+    "id": 3,
+    "name": "Lunge",
+    "damage": 43,
+    "initiative": 10,
+    "type": "SHARP",
+    "isMagical": true,
+    "effects": [100],
+    "effectsValue": [
+      {
+        "id": 100,
+        "value": 1
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "name": "Crush",
+    "damage": 43,
+    "initiative": 10,
+    "type": "BLUNT",
+    "isMagical": false,
+    "effects": [],
+    "effectsValue": []
+  },
+  {
+    "id": 5,
+    "name": "Bash",
+    "damage": 39,
+    "initiative": 20,
+    "type": "BLUNT",
+    "isMagical": false,
+    "effects": [1, 2, 3, 4, 5],
+    "effectsValue": [
+      {
+        "id": 1,
+        "value": 1
+      },
+      {
+        "id": 2,
+        "value": 1
+      },
+      {
+        "id": 3,
+        "value": 2
+      },
+      {
+        "id": 4,
+        "value": 2
+      },
+      {
+        "id": 5,
+        "value": 100
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "name": "Sweep",
+    "damage": 35,
+    "initiative": 25,
+    "type": "SHARP",
+    "isMagical": false,
+    "effects": [],
+    "effectsValue": []
+  },
+  {
+    "id": 7,
+    "name": "Thrash",
+    "damage": 36,
+    "initiative": 25,
+    "type": "BLUNT",
+    "isMagical": false,
+    "effects": [],
+    "effectsValue": []
+  },
+  {
+    "id": 8,
+    "name": "Push",
+    "damage": 33,
+    "initiative": 25,
+    "type": "BLUNT",
+    "isMagical": false,
+    "effects": [],
+    "effectsValue": []
+  },
+  {
+    "id": 9,
+    "name": "Lash",
+    "damage": 31,
+    "initiative": 30,
+    "type": "SHARP",
+    "isMagical": false,
+    "effects": [],
+    "effectsValue": []
+  },
+  {
+    "id": 10,
+    "name": "Slash",
+    "damage": 30,
+    "initiative": 35,
+    "type": "SHARP",
+    "isMagical": false,
+    "effects": [],
+    "effectsValue": []
+  },
+  {
+    "id": 11,
+    "name": "Thrust",
+    "damage": 30,
+    "initiative": 35,
+    "type": "SHARP",
+    "isMagical": false,
+    "effects": [],
+    "effectsValue": []
+  },
+
+  {
+    "id": 12,
+    "name": "Bite",
+    "damage": 20,
+    "initiative": 38,
+    "type": "SHARP",
+    "isMagical": false,
+    "effects": []
+  },
+  {
+    "id": 13,
+    "name": "Sharp claw",
+    "damage": 30,
+    "initiative": 38,
+    "type": "SHARP",
+    "isMagical": false,
+    "effects": []
+  },
+  {
+    "id": 14,
+    "name": "Toxic sludge",
+    "damage": 22,
+    "initiative": 16,
+    "type": "BLUNT",
+    "isMagical": false,
+    "effects": []
+  },
+  {
+    "id": 15,
+    "name": "Ingest",
+    "damage": 28,
+    "initiative": 9,
+    "type": "BLUNT",
+    "isMagical": false,
+    "effects": []
+  },
+  {
+    "id": 16,
+    "name": "Putrid scent",
+    "damage": 18,
+    "initiative": 42,
+    "type": "BLUNT",
+    "isMagical": false,
+    "effects": []
+  },
+  {
+    "id": 17,
+    "name": "Imparing web",
+    "damage": 18,
+    "initiative": 15,
+    "type": "BLUNT",
+    "isMagical": false,
+    "effects": []
+  },
+  {
+    "id": 18,
+    "name": "Cheap shot",
+    "damage": 20,
+    "initiative": 50,
+    "type": "SHARP",
+    "isMagical": false,
+    "effects": []
+  },
+  {
+    "id": 19,
+    "name": "Poison fang",
+    "damage": 33,
+    "initiative": 27,
+    "type": "SHARP",
+    "isMagical": false,
+    "effects": []
+  },
+  {
+    "id": 20,
+    "name": "Thrash",
+    "damage": 36,
+    "initiative": 25,
+    "type": "BLUNT",
+    "isMagical": false,
+    "effects": []
+  },
+  {
+    "id": 21,
+    "name": "Corrosive saliva",
+    "damage": 42,
+    "initiative": 21,
+    "type": "SHARP",
+    "isMagical": false,
+    "effects": []
+  },
+  {
+    "id": 22,
+    "name": "Hellfire",
+    "damage": 50,
+    "initiative": 44,
+    "type": "SHARP",
+    "isMagical": false,
+    "effects": []
+  },
+  {
+    "id": 23,
+    "name": "Poltergeist",
+    "damage": 45,
+    "initiative": 50,
+    "type": "BLUNT",
+    "isMagical": false,
+    "effects": []
+  },
+  {
+    "id": 24,
+    "name": "Doom charge",
+    "damage": 80,
+    "initiative": 0,
+    "type": "BLUNT",
+    "isMagical": false,
+    "effects": []
+  }
+]

@@ -1,0 +1,32 @@
+{
+  "base": {
+    "health": 140,
+    "speed": 13,
+    "mind": 9,
+    "sharpDmg": 19,
+    "bluntDmg": 8,
+    "burnDmg": 15,
+    "sharpRes": 17,
+    "bluntRes": 8,
+    "burnRes": 10,
+    "pierce": 19,
+    "lethality": 21,
+    "guard": 13,
+    "handling": 3
+  },
+  "levelUp": {
+    "health": 4.675,
+    "speed": 1.3,
+    "mind": 0.9,
+    "sharpDmg": 1.9,
+    "bluntDmg": 0.75,
+    "burnDmg": 1.45,
+    "sharpRes": 1.65,
+    "bluntRes": 0.8,
+    "burnRes": 1,
+    "pierce": 1.9,
+    "lethality": 2.05,
+    "guard": 1.3,
+    "handling": 0.3
+  }
+}

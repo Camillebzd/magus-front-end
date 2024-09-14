@@ -1,0 +1,54 @@
+[
+  {
+    "id": 1,
+    "description": "Target of the ability"
+  },
+  {
+    "id": 2,
+    "description": "Caster of the ability"
+  },
+  {
+    "id": 3,
+    "description": "All enemies"
+  },
+  {
+    "id": 4,
+    "description": "All allies"
+  },
+  {
+    "id": 5,
+    "description": "All entities"
+  },
+  {
+    "id": 6,
+    "description": "The ability itself"
+  },
+  {
+    "id": 7,
+    "description": "The combo ability triggered"
+  },
+  {
+    "id": 8,
+    "description": "Ally with the lowest health"
+  },
+  {
+    "id": 9,
+    "description": "Enemy with the lowest health"
+  },
+  {
+    "id": 10,
+    "description": "Ally with the highest health"
+  },
+  {
+    "id": 11,
+    "description": "Enemy with the highest health"
+  },
+  {
+    "id": 12,
+    "description": "All allies other than the caster"
+  },
+  {
+    "id": 13,
+    "description": "None"
+  }
+]
