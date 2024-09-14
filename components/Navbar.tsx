@@ -2,19 +2,14 @@
 
 import { useEffect, useState } from 'react'
 import {
-  useColorMode,
-  Switch,
   Flex,
-  Button,
-  IconButton
+  IconButton,
+  Text
 } from '@chakra-ui/react'
 import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons'
-import NextLink from 'next/link'
 import NavItem from './NavItem'
 import styles from '../app/page.module.css'
 
-// import { ConnectButton } from '@rainbow-me/rainbowkit';
-// import { useAccount } from 'wagmi'
 import { ConnectButton, useActiveWallet } from "thirdweb/react";
 import { createWallet, inAppWallet } from "thirdweb/wallets";
 
@@ -49,8 +44,8 @@ const chain = defineChain({
     decimals: 18,
   },
   blockExplorers: [{
-    url: "https://testnet-explorer.etherlink.com/",
-    apiUrl: "https://testnet-explorer.etherlink.com/api",
+    url: "https://testnet.explorer.etherlink.com/",
+    apiUrl: "https://testnet.explorer.etherlink.com/api",
     name: "Blockscout"
   }],
   testnet: true,
@@ -84,7 +79,7 @@ const Navbar = () => {
       paddingRight="6%"
       className={styles.navbarContainer}
     >
-      <p className={styles.logo}>Magus</p>
+      <Text fontSize={"large"} fontWeight={"bold"}>Magus</Text>
       {/* Desktop */}
       <Flex
         display={['none', 'none', 'flex', 'flex']}

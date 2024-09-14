@@ -20,7 +20,7 @@ export default function Page() {
           <MonsterList monsters={monsters}/>
         </UserWeaponsContext.Provider>
       }
-      <h2 className={styles.pageSubtitle}>Dungeons</h2>
+      {/* <h2 className={styles.pageSubtitle}>Dungeons</h2> */}
     </main>
   );
 };
