@@ -5,6 +5,9 @@ import abilityReducer from "./features/abilitySlice";
 import monsterReducer from "./features/monsterSlice";
 import weaponReducer from "./features/weaponSlice";
 import weaponDeckReducer from "./features/weaponDeckSlice";
+import socketReducer from "./features/socketSlice";
+
+import socketMiddleware from "./features/socketMiddleware";
 
 export const store = configureStore({
   reducer: {
@@ -13,7 +16,11 @@ export const store = configureStore({
     monsterReducer,
     abilityReducer,
     weaponReducer,
-    weaponDeckReducer
+    weaponDeckReducer,
+    socketReducer
+  },
+  middleware(getDefaultMiddleware) {
+    return getDefaultMiddleware().concat([socketMiddleware]);
   },
   devTools: process.env.NODE_ENV !== "production",
 });
