@@ -1,6 +1,6 @@
 import { Middleware } from "redux";
 // Actions
-import { Room, RoomInfo, socketActions } from "./socketSlice";
+import { MemberInfo, Room, RoomInfo, socketActions } from "./socketSlice";
 // Socket Factory
 import SocketFactory from "@/sockets/SocketFactory";
 import type { SocketInterface } from "@/sockets/SocketFactory";
@@ -12,6 +12,7 @@ enum SocketEvent {
   Disconnect = "disconnect",
   // Emit events
   CreateMember = "createMember",
+  DeleteMember = "deleteMember",
   CreateNewRoom = "createNewRoom",
   JoinRoom = "joinRoom",
   LeaveRoom = "leaveRoom",
@@ -19,6 +20,8 @@ enum SocketEvent {
   SelectSkill = "selectSkill",
   // On events
   Error = "err",
+  MemberCreated = "memberCreated",
+  MemberDeleted = "memberDeleted",
   RoomCreated = "roomCreated",
   RoomJoined = "roomJoined",
   RoomLeaved = "roomLeaved",
@@ -54,6 +57,16 @@ const socketMiddleware: Middleware = (store) => {
         socket.socket.on(SocketEvent.Disconnect, (reason) => {
           store.dispatch(socketActions.connectionLost());
           console.log("socket disconnected.");
+        });
+
+        // Handle the creation of member
+        socket.socket.on(SocketEvent.MemberCreated, (data: MemberInfo) => {
+          console.log("Member created correctly:", data);
+        });
+
+        // Handle the deletion of member
+        socket.socket.on(SocketEvent.MemberDeleted, () => {
+          console.log("Member deleted");
         });
 
         // Handle the creation of a room
@@ -94,10 +107,24 @@ const socketMiddleware: Middleware = (store) => {
       }
     }
 
+    // DEPRECATED: the wallet will be connected first, then the socket will so handle manually
     // Listen for the user to connect using the auth Slice to create the user on the server
-    if (connect.match(action) && socket) {
+    // if (connect.match(action) && socket) {
+    //   socket.socket.emit(SocketEvent.CreateMember, action.payload);
+    // }
+
+    // handle create a member
+    if (socketActions.createMember.match(action) && socket) {
+      // Ask to create the user to the server
       socket.socket.emit(SocketEvent.CreateMember, action.payload);
     }
+
+    // handle delete a member
+    if (socketActions.deleteMember.match(action) && socket) {
+      // Ask to create the user to the server
+      socket.socket.emit(SocketEvent.DeleteMember, action.payload);
+    }
+
 
     // handle create a room action
     if (socketActions.createNewRoom.match(action) && socket) {

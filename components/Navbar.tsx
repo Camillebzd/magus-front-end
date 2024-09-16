@@ -14,8 +14,10 @@ import { ConnectButton, useActiveWallet } from "thirdweb/react";
 import { createWallet, inAppWallet } from "thirdweb/wallets";
 
 import { connect, disconnect } from "@/redux/features/authSlice";
-import { useAppDispatch } from "@/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { createThirdwebClient, defineChain } from 'thirdweb'
+import { socketActions } from '@/redux/features/socketSlice'
+import ConnectionDot from './ConnectionDot'
 
 const MENU_LIST = [
   { text: "Home", href: "/" },
@@ -56,19 +58,42 @@ const Navbar = () => {
   const [display, changeDisplay] = useState('none')
   const [activeSection, setActiveSection] = useState(window.location.pathname);
   const wallet = useActiveWallet();
+  const walletAddress = useAppSelector((state) => state.authReducer.address);
+  const isWalletConnected = useAppSelector((state) => state.authReducer.isConnected);
+  const isSocketConnected = useAppSelector((state) => state.socketReducer.isConnected);
 
   {/* Handle user connection and update redux */ }
   const dispatch = useAppDispatch();
 
+  // connect wallet user + create socket
   useEffect(() => {
     if (wallet) {
-      console.log('Connected', wallet );
+      console.log('Wallet connected', wallet );
       dispatch(connect(wallet.getAccount()?.address!));
+      dispatch(socketActions.initSocket());
     } else {
-      console.log('Disconnected');
+      if (isWalletConnected) {
+        console.log('Wallet disconnected');
+        dispatch(disconnect());
+      }
+    }
+    // clean
+    return () => {
       dispatch(disconnect());
+      // no need to delete the socket because it is a singleton
     }
   }, [wallet]);
+
+  // create user on the server when socket + wallet connected
+  useEffect(() => {
+    if (isWalletConnected && isSocketConnected) {
+      dispatch(socketActions.createMember(walletAddress));
+    }
+    // clean
+    return () => {
+      dispatch(socketActions.deleteMember(walletAddress));
+    }
+  }, [walletAddress, isWalletConnected, isSocketConnected]);
 
   return (
     <Flex
@@ -90,11 +115,14 @@ const Navbar = () => {
 
       {/* <ConnectButton showBalance={{ smallScreen: false, largeScreen: false }} /> */}
 
-      <ConnectButton
-        client={client}
-        wallets={wallets}
-        chain={chain}
-      />
+      <Flex alignItems='center' gap='10px'>
+        <ConnectionDot />
+        <ConnectButton
+          client={client}
+          wallets={wallets}
+          chain={chain}
+        />
+      </Flex>
 
       {/* Mobile */}
       <IconButton

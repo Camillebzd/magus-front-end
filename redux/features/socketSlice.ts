@@ -17,6 +17,11 @@ export type RoomInfo = {
   password: string
 };
 
+export type MemberInfo = {
+  uid: string,
+  name: string
+}
+
 export type SkillsSelected = {
   [id: Member.ID]: Skill
 };
@@ -31,12 +36,14 @@ const DefaultRoom = {
 };
 
 export interface SocketState {
-  isConnected: boolean;
+  isConnected: boolean; // represent if the socket itself is connected to the server
+  isCreated: boolean; // represent if the user is created on the server (after wallet connection)
   room: Room;
 };
 
 const initialState: SocketState = {
   isConnected: false,
+  isCreated: false, //
   room: DefaultRoom
 };
 
@@ -60,6 +67,14 @@ const socketSlice = createSlice({
       state.isConnected = false;
     },
 
+    createMember: (state, action: PayloadAction<string>) => {
+      // not store for the request of user creation
+      return;
+    },
+    deleteMember: (state, action: PayloadAction<string>) => {
+      // not store for the request of user creation
+      return;
+    },
     createNewRoom: (state, action: PayloadAction<{ password: string }>) => {
       // not store for the request, waiting for the server to confirm before joining
       return;
@@ -81,6 +96,12 @@ const socketSlice = createSlice({
       return;
     },
 
+    memberCreated: (state, action: PayloadAction<MemberInfo>) => {
+      state.isCreated = true;
+    },
+    memberDeleted: (state) => {
+      state.isCreated = false;
+    },
     roomJoined: (state, action: PayloadAction<RoomInfo>) => {
       // After the socket receive the event from the server in the middleware
       state.room.id = action.payload.id;

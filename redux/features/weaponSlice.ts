@@ -46,7 +46,7 @@ export const fillUserWeapons = createAsyncThunk<WeaponNFT[], boolean, { state: R
       const nfts = response.data.items;
       const contract = await createContract(address);
       let weapons: WeaponNFT[] = [];
-      console.log("nfts:", nfts);
+      // console.log("nfts:", nfts);
       await Promise.all(nfts.map(async (nft: any) => {
         if (nft.token.address.toLowerCase() == CONTRACT_ADDRESS) {
           let weaponURI = await contract.tokenURI(nft.id);

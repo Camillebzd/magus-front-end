@@ -3,7 +3,7 @@
 import { MutableRefObject, useEffect, useRef, useState } from 'react';
 import styles from '@/app/page.module.css';
 
-import { useAppSelector } from "@/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import Entity from '@/components/Entity';
 import Chat from '@/components/Chat';
 import AbilityCard from '@/components/AbilityCard';
@@ -18,6 +18,7 @@ import SelectFluxesModal from '@/components/SelectFluxesModal';
 import { HAND_SIZE } from '@/scripts/systemValues';
 import { useSearchParams } from 'next/navigation'
 import { HistoricSystem, Turn } from '@/scripts/historic';
+import { socketActions } from '@/redux/features/socketSlice';
 
 enum GAME_PHASES {
   PLAYER_CHOOSE_ABILITY,
@@ -34,6 +35,8 @@ export default function Page() {
   const [weapon, setWeapon] = useState<Weapon | null>(null);
   const historic = useRef<HistoricSystem>(new HistoricSystem([]));
   const isConnected = useAppSelector((state) => state.authReducer.isConnected);
+  const dispatch = useAppDispatch();
+  const room = useAppSelector((state) => state.socketReducer.room);
   
   const endOfFightModal = useDisclosure();
   const fluxeModal = useDisclosure();
@@ -46,6 +49,15 @@ export default function Page() {
   let isMonsterCombo = useRef(false);
   let isPlayerCombo = useRef(false);
   let actions: MutableRefObject<Action[]> = useRef([]);
+
+  // create room
+  useEffect(() => {
+    dispatch(socketActions.createNewRoom({ password: "" }));
+  }, []);
+
+  useEffect(() => {
+    console.log("here is the new update of the room:", room);
+  }, [room]);
 
   // set entities
   useEffect(() => {
