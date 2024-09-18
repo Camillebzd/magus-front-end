@@ -4,6 +4,8 @@ import { useAppSelector } from "@/redux/hooks";
 import { Tooltip } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
+export type Status = "online" | "connecting" | "offline" | "unknown";
+
 const STATUS_COLOR = {
   online: 'green',
   connecting: 'orange',
@@ -11,34 +13,39 @@ const STATUS_COLOR = {
   unknown: 'gray'
 };
 
+const STATUS_LABEL = {
+  online: "Wallet: connected\nSocket: connected",
+  connecting: 'Wallet: connected\nSocket: disconnected',
+  offline: 'Wallet: disconnected\nSocket: disconnected',
+  unknown: 'Wallet: no data\nSocket: no data'
+};
+
 const ConnectionDot = () => {
   const isWalletConnected = useAppSelector((state) => state.authReducer.isConnected);
   const isSocketConnected = useAppSelector((state) => state.socketReducer.isConnected);
-  const [status, setStatus] = useState(STATUS_COLOR.unknown);
+  const [status, setStatus] = useState<Status>("unknown");
 
   useEffect(() => {
-    if (isSocketConnected && isWalletConnected)
-      setStatus(STATUS_COLOR.online);
+    if (isSocketConnected && isWalletConnected) {
+      setStatus("online");
+    }
     else if ((isSocketConnected && !isWalletConnected) || (!isSocketConnected && isWalletConnected))
-      setStatus(STATUS_COLOR.connecting);
+      setStatus("connecting");
     else if (!isSocketConnected && !isWalletConnected)
-      setStatus(STATUS_COLOR.offline);
+      setStatus("offline");
     else
-    setStatus(STATUS_COLOR.unknown);
+    setStatus("unknown");
   }, [isWalletConnected, isSocketConnected]);
-
-  // Define a color map based on the connection status
-
 
   const dotStyle = {
     width: '15px',
     height: '15px',
     borderRadius: '50%',
-    backgroundColor: status || 'gray', // default to gray if status is unknown
+    backgroundColor: STATUS_COLOR[status] || 'gray', // default to gray if status is unknown
   };
 
   return (
-    <Tooltip label="Hey, I'm here!" >
+    <Tooltip label={STATUS_LABEL[status]} >
       <div style={dotStyle} />
     </Tooltip>
   );
