@@ -34,7 +34,7 @@ const ConnectionDot = () => {
     else if (!isSocketConnected && !isWalletConnected)
       setStatus("offline");
     else
-    setStatus("unknown");
+      setStatus("unknown");
   }, [isWalletConnected, isSocketConnected]);
 
   const dotStyle = {
