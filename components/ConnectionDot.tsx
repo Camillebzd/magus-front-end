@@ -1,7 +1,7 @@
 "use client"
 
 import { useAppSelector } from "@/redux/hooks";
-import { Tooltip } from "@chakra-ui/react";
+import { Text, Tooltip } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
 export type Status = "online" | "connecting" | "offline" | "unknown";
@@ -23,6 +23,7 @@ const STATUS_LABEL = {
 const ConnectionDot = () => {
   const isWalletConnected = useAppSelector((state) => state.authReducer.isConnected);
   const isSocketConnected = useAppSelector((state) => state.socketReducer.isConnected);
+  const isMemberCreated = useAppSelector((state) => state.socketReducer.isCreated);
   const [status, setStatus] = useState<Status>("unknown");
 
   useEffect(() => {
@@ -45,7 +46,15 @@ const ConnectionDot = () => {
   };
 
   return (
-    <Tooltip label={STATUS_LABEL[status]} >
+    <Tooltip
+      label={
+        <div>
+          <Text>Wallet: {isWalletConnected ? 'connected' : 'disconnected'}</Text>
+          <Text>Socket: {isSocketConnected ? 'connected' : 'disconnected'}</Text>
+          <Text>Member: {isMemberCreated ? 'connected' : 'disconnected'}</Text>
+        </div>
+      }
+    >
       <div style={dotStyle} />
     </Tooltip>
   );

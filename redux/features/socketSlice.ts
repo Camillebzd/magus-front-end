@@ -2,7 +2,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import * as Member from '@/sockets/@types/Member';
-import { RoomId } from '@/sockets/@types/Room';
+import { DEFAULT_ROOM_ID, RoomId } from '@/sockets/@types/Room';
 import { Skill } from '@/sockets/@types/Skill';
 
 export type Room = {
@@ -26,8 +26,6 @@ export type SkillsSelected = {
   [id: Member.ID]: Skill
 };
 
-export const DEFAULT_ROOM_ID = "NULL_ID";
-
 const DefaultRoom = {
   id: DEFAULT_ROOM_ID,
   password: "",
@@ -43,7 +41,7 @@ export interface SocketState {
 
 const initialState: SocketState = {
   isConnected: false,
-  isCreated: false, //
+  isCreated: false,
   room: DefaultRoom
 };
 

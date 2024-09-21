@@ -3,7 +3,7 @@ import { SkillsSelected, Skill } from "./Skill";
 
 export type RoomId = string;
 
-export const DefaultRoomId: RoomId = "unset";
+export const DEFAULT_ROOM_ID: RoomId = "NULL_ID";
 
 // export interface Instance {
 //   id: RoomId;

@@ -7,12 +7,19 @@ import { useRouter, usePathname } from "next/navigation";
 import { useUserWeapons } from "@/scripts/customHooks";
 import { UserWeaponsContext } from "@/app/world/context";
 import { Weapon } from "@/scripts/entities";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { socketActions } from "@/redux/features/socketSlice";
+import { DEFAULT_ROOM_ID } from "@/sockets/@types/Room";
+
 
 const WeaponSelectionModal = ({isOpen, onClose, monsterId}: {isOpen: boolean, onClose: () => void, monsterId: number}) => {
   const router = useRouter();
   const path = usePathname();
   const userWeaponsInContext = useContext(UserWeaponsContext);
   const userWeaponsInRedux = useUserWeapons(false);
+  const dispatch = useAppDispatch();
+  const room = useAppSelector((state) => state.socketReducer.room);
+  const [isCreatingRoom, setIsCreatingRoom] = useState(false);
   let userWeapons: Weapon[] = [];
   if (path.includes("world")) { // world page contains context
     userWeapons = userWeaponsInContext;
@@ -29,8 +36,16 @@ const WeaponSelectionModal = ({isOpen, onClose, monsterId}: {isOpen: boolean, on
   const goFight = () => {
     if (weaponSelectedID < 0)
       return;
-    router.push(`/fight?weaponid=${weaponSelectedID}&monsterid=${monsterId}`);
+    setIsCreatingRoom(true);
+    dispatch(socketActions.createNewRoom({ password: "" }));
   };
+
+  useEffect(() => {
+    if (room.id !== DEFAULT_ROOM_ID && isCreatingRoom == true) {
+      setIsCreatingRoom(false); // needed?
+      router.push(`/fight?roomid=${room.id}&weaponid=${weaponSelectedID}&monsterid=${monsterId}`);
+    }
+  }, [room, isCreatingRoom]);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -47,7 +62,7 @@ const WeaponSelectionModal = ({isOpen, onClose, monsterId}: {isOpen: boolean, on
           <Button mr={3} onClick={onClose}>
             Close
           </Button>
-          <Button colorScheme='blue' onClick={goFight}>Fight</Button>
+          <Button colorScheme='blue' onClick={goFight} isLoading={isCreatingRoom}>Fight</Button>
         </ModalFooter>
       </ModalContent>
     </Modal>

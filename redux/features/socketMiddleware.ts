@@ -61,18 +61,20 @@ const socketMiddleware: Middleware = (store) => {
 
         // Handle the creation of member
         socket.socket.on(SocketEvent.MemberCreated, (data: MemberInfo) => {
+          store.dispatch(socketActions.memberCreated(data));
           console.log("Member created correctly:", data);
         });
 
         // Handle the deletion of member
         socket.socket.on(SocketEvent.MemberDeleted, () => {
+          store.dispatch(socketActions.memberDeleted());
           console.log("Member deleted");
         });
 
         // Handle the creation of a room
         socket.socket.on(SocketEvent.RoomCreated, (data: RoomInfo) => {
           store.dispatch(socketActions.roomJoined(data));
-          console.log("Room created:", data.id);
+          console.log("Room created + joined:", data.id);
         });
 
         // Handle the joining of a room

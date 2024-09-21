@@ -11,7 +11,7 @@ import { Ability } from '@/scripts/abilities';
 import { Monster, Weapon } from '@/scripts/entities';
 import { Action, END_OF_TURN } from '@/scripts/actions';
 import { resolveActions } from '@/scripts/fight';
-import { useDisclosure } from '@chakra-ui/react';
+import { Text, useDisclosure } from '@chakra-ui/react';
 import EndOfFightModal from '@/components/EndOfFightModal';
 import { useMonstersWorld, useUserWeapons, useWeaponDeck } from '@/scripts/customHooks';
 import SelectFluxesModal from '@/components/SelectFluxesModal';
@@ -37,7 +37,8 @@ export default function Page() {
   const isConnected = useAppSelector((state) => state.authReducer.isConnected);
   const dispatch = useAppDispatch();
   const room = useAppSelector((state) => state.socketReducer.room);
-  
+  const isInTheRoom = searchParams.get('roomid') === room.id;
+
   const endOfFightModal = useDisclosure();
   const fluxeModal = useDisclosure();
   let abilitySelected = useRef<Ability | null>(null);
@@ -50,11 +51,7 @@ export default function Page() {
   let isPlayerCombo = useRef(false);
   let actions: MutableRefObject<Action[]> = useRef([]);
 
-  // create room
-  useEffect(() => {
-    dispatch(socketActions.createNewRoom({ password: "" }));
-  }, []);
-
+  // update from the room
   useEffect(() => {
     console.log("here is the new update of the room:", room);
   }, [room]);
@@ -95,7 +92,7 @@ export default function Page() {
       return;
     }
     setInfo((currentInfo) => [...currentInfo, `--------- TURN ${turn} ---------`]);
-    historic.current.createTurn({number: turn, actions: []});
+    historic.current.createTurn({ number: turn, actions: [] });
     // draw card if needed
     if (weapon?.deck != null && weapon.deck.length === 0)
       weapon.refillDeckFromDiscard();
@@ -109,7 +106,7 @@ export default function Page() {
     }
     if (!weapon.isEntityAbleToPlay())
       resolveLoop();
-    return () => {actions.current = []; }
+    return () => { actions.current = []; }
   }, [monster, weapon, turn]);
 
   // #region Loading returns
@@ -143,7 +140,7 @@ export default function Page() {
       switch (ret) {
         case END_OF_TURN.PLAYER_COMBO:
           isPlayerCombo.current = true;
-          actions.current = actions.current.filter((action) => {return action.hasBeenDone === false});
+          actions.current = actions.current.filter((action) => { return action.hasBeenDone === false });
           setPhase(GAME_PHASES.PLAYER_CHOOSE_ABILITY_COMBO);
           return;
         case END_OF_TURN.MONSTER_COMBO:
@@ -172,7 +169,7 @@ export default function Page() {
           isPlayerCombo.current = false;
           break;
       }
-      actions.current = actions.current.filter((action) => {return action.hasBeenDone === false});
+      actions.current = actions.current.filter((action) => { return action.hasBeenDone === false });
     }
     // TODO manage this in an "end of turn"
     // TODO the faster apply first ?
@@ -196,7 +193,7 @@ export default function Page() {
   const launchAbility = (ability: Ability, fluxesUsed: number = 0) => {
     if (phase !== GAME_PHASES.PLAYER_CHOOSE_ABILITY && !weapon?.isEntityAbleToPlay())
       return;
-    actions.current.push(new Action({caster: weapon!, ability: ability, target: monster!, hasBeenDone: false, isCombo: isPlayerCombo.current, fluxesUsed: fluxesUsed, info: setInfo, currentTurn: turn}));
+    actions.current.push(new Action({ caster: weapon!, ability: ability, target: monster!, hasBeenDone: false, isCombo: isPlayerCombo.current, fluxesUsed: fluxesUsed, info: setInfo, currentTurn: turn }));
     weapon?.discardFromHand(ability);
     console.log(actions);
     // resolve
@@ -219,12 +216,12 @@ export default function Page() {
       abilitySelected.current = abilityClicked;
       fluxeModal.onOpen();
     }
-    else 
+    else
       launchAbility(abilityClicked, 0);
   };
 
   const phasePrinter = () => {
-    switch(phase) {
+    switch (phase) {
       case GAME_PHASES.PLAYER_CHOOSE_ABILITY:
         return "Choose an ability";
       case GAME_PHASES.PLAYER_CHOOSE_ABILITY_COMBO:
@@ -239,39 +236,47 @@ export default function Page() {
   return (
     <main className={styles.mainFightContainer}>
       <h1 className={styles.pageTitle}>Fight local</h1>
-      <div className={styles.principalFightContainer}>
-        <div className={styles.fightersContainer}>
-          <div>
-            <Entity 
-              entity={weapon}
-              isModifiersOnRight={true}
-            />
-          </div>
-          <div>
-            <Entity 
-              entity={monster}
-              isModifiersOnRight={false}
-            />
-          </div>
+      {!isInTheRoom ? (
+        <div>
+          <Text>Not in the room.</Text>
         </div>
-        <div className={styles.bottomFightContainer}>
-          <div className={styles.infoChatContainer}>
-            <Chat lignes={info}/>
+      ) : (
+        <>
+          <div className={styles.principalFightContainer}>
+            <div className={styles.fightersContainer}>
+              <div>
+                <Entity
+                  entity={weapon}
+                  isModifiersOnRight={true}
+                />
+              </div>
+              <div>
+                <Entity
+                  entity={monster}
+                  isModifiersOnRight={false}
+                />
+              </div>
+            </div>
+            <div className={styles.bottomFightContainer}>
+              <div className={styles.infoChatContainer}>
+                <Chat lignes={info} />
+              </div>
+              <div className={styles.phasePrinter}>
+                <p>{phasePrinter()}</p>
+                <p>Actual turn: {turn}</p>
+                <p>deck: {weapon?.deck.length}</p>
+                <p>discard: {weapon?.discard.length}</p>
+              </div>
+              <div className={styles.abilitiesCointainer}>
+                {/* {weapon?.abilities.map(ability => <AbilityCard key={ability.id} onClick={() => onAbilityClick(ability)} ability={ability}/>)} */}
+                {weapon?.hand.map(ability => <AbilityCard key={ability.idInDeck} onClick={() => onAbilityClick(ability)} ability={ability} />)}
+              </div>
+            </div>
           </div>
-          <div className={styles.phasePrinter}>
-            <p>{phasePrinter()}</p>
-            <p>Actual turn: {turn}</p>
-            <p>deck: {weapon?.deck.length}</p>
-            <p>discard: {weapon?.discard.length}</p>
-          </div>
-          <div className={styles.abilitiesCointainer}>
-            {/* {weapon?.abilities.map(ability => <AbilityCard key={ability.id} onClick={() => onAbilityClick(ability)} ability={ability}/>)} */}
-            {weapon?.hand.map(ability => <AbilityCard key={ability.idInDeck} onClick={() => onAbilityClick(ability)} ability={ability}/>)}
-          </div>
-        </div>
-      </div>
-      {monster && weapon && <EndOfFightModal isOpen={endOfFightModal.isOpen} onClose={endOfFightModal.onClose} weaponId={weapon!.id} difficulty={monster!.difficulty} isWinner={won.current}/>}
-      {monster && weapon && <SelectFluxesModal isOpen={fluxeModal.isOpen} onClose={fluxeModal.onClose} launchAbility={execAbilityModal} fluxesAvailables={weapon.fluxes}/>}
+          {monster && weapon && <EndOfFightModal isOpen={endOfFightModal.isOpen} onClose={endOfFightModal.onClose} weaponId={weapon!.id} difficulty={monster!.difficulty} isWinner={won.current} />}
+          {monster && weapon && <SelectFluxesModal isOpen={fluxeModal.isOpen} onClose={fluxeModal.onClose} launchAbility={execAbilityModal} fluxesAvailables={weapon.fluxes} />}
+        </>
+      )}
     </main>
   );
 };
