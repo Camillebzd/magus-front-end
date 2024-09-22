@@ -171,7 +171,7 @@ export function useStarter() {
       const weaponsAvailables = STARTERS_NAME;
       let starters: Weapon[] = [];
       let starterDataBaseStats: WeaponData[] = [];
-      let starterDataImages: {id: number, name: string, image: string}[] = [];
+      let starterDataImages: { id: number, name: string, image: string }[] = [];
       let abilitiesId: number[] = [];
 
       starterDataBaseStats = await fetchFromDB("weapons/baseStats");
@@ -205,7 +205,7 @@ export function useStarter() {
         // const abilitiesId: number[] |undefined = (await import(`@/data/weapons/abilities.json`)).default.find(weapon => weapon.name == weaponsAvailables[i])?.base;
         try {
           abilitiesId = await getAllAbilitiesIdForWeapon(weaponsAvailables[i], 1);
-        } catch(e) {
+        } catch (e) {
           console.log(e);
           continue;
         }
@@ -244,7 +244,7 @@ export function useRequestAvailable() {
 
   useEffect(() => {
     if (address.length < 42)
-    return;
+      return;
     const updateRequestCount = async () => {
       try {
         const contract = await createContract(address);
@@ -283,10 +283,10 @@ export function useWeaponDeck(weaponId: number) {
 
 export const deckBuildingInitialState: AbilityData[] = [];
 
-export type DeckBuildingAction = { type: 'add', abilityData: AbilityData} | { type: 'remove', abilityData: AbilityData}
+export type DeckBuildingAction = { type: 'add', abilityData: AbilityData } | { type: 'remove', abilityData: AbilityData }
 
 export function deckBuildingReducer(draft: Draft<AbilityData[]>, action: DeckBuildingAction) {
-  switch(action.type) {
+  switch (action.type) {
     case "add": {
       if (draft.filter(ability => ability.id == action.abilityData.id).length + 1 > action.abilityData.tier)
         break;
@@ -339,3 +339,26 @@ export const useDeckDataStorage = (weaponId: number): [AbilityData[], Dispatch<S
 
   return [deck, setDeck];
 }
+
+/**
+ * Custom hook to know if the user is fully set up
+ * @returns true if wallet is connected, socket is connected and member is created
+ */
+export const useIsFullyConnected = () => {
+  const isSocketConnected = useAppSelector((state) => state.socketReducer.isConnected);
+  const isMemberCreated = useAppSelector((state) => state.socketReducer.isCreated);
+  const isWalletConnected = useAppSelector((state) => state.authReducer.isConnected);
+  const [isFullyConnected, setIsFullyConnected] = useState(false);
+
+  useEffect(() => {
+    if (isSocketConnected && isMemberCreated && isWalletConnected) {
+      setIsFullyConnected(true);
+    }
+    else {
+      if (isFullyConnected)
+        setIsFullyConnected(false);
+    }
+  }, [isSocketConnected, isMemberCreated, isWalletConnected]);
+
+  return isFullyConnected;
+};

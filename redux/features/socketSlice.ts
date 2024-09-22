@@ -45,10 +45,6 @@ const initialState: SocketState = {
   room: DefaultRoom
 };
 
-type RoomAction = PayloadAction<{
-  room: string;
-}>;
-
 // Now create the slice
 const socketSlice = createSlice({
   name: "socket",
@@ -81,7 +77,7 @@ const socketSlice = createSlice({
       // not store for the request, waiting for the server to confirm before joining
       return;
     },
-    leaveRoom: (state, action: RoomAction) => {
+    leaveRoom: (state, action: PayloadAction<string>) => {
       // not store for the request, waiting for the server to confirm before leaving
       return;
     },
@@ -108,7 +104,7 @@ const socketSlice = createSlice({
       // state.room.entities = new Map<Member.ID, Member.Instance>();
       return;
     },
-    roomLeaved: (state) => {
+    roomLeft: (state, action: PayloadAction<string>) => {
       // After the socket receive the event from the server in the middleware
       state.room = DefaultRoom;
       return;

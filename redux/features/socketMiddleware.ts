@@ -24,7 +24,7 @@ enum SocketEvent {
   MemberDeleted = "memberDeleted",
   RoomCreated = "roomCreated",
   RoomJoined = "roomJoined",
-  RoomLeaved = "roomLeaved",
+  RoomLeft = "roomLeft",
   SkillSelected = "skillSelected",
   AllSkillsSelected = "allSkillsSelected",
   AllEntities = "allEntities"
@@ -84,9 +84,9 @@ const socketMiddleware: Middleware = (store) => {
         });
 
         // Handle the leaving of a room
-        socket.socket.on(SocketEvent.RoomLeaved, (roomId) => {
-          store.dispatch(socketActions.roomLeaved(roomId));
-          console.log("Room leaved:", roomId);
+        socket.socket.on(SocketEvent.RoomLeft, (roomId) => {
+          store.dispatch(socketActions.roomLeft(roomId));
+          console.log("Room left:", roomId);
         });
 
         // Handle the selection of a skill by a player in the room
@@ -146,7 +146,7 @@ const socketMiddleware: Middleware = (store) => {
 
     // handle leaveRoom action
     if (socketActions.leaveRoom.match(action) && socket) {
-      let room = action.payload.room;
+      let room = action.payload;
       socket.socket.emit(SocketEvent.LeaveRoom, room);
       // Then Pass on to the next middleware to handle state
       // ...
