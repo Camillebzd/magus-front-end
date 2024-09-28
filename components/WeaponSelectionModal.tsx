@@ -36,8 +36,12 @@ const WeaponSelectionModal = ({isOpen, onClose, monsterId}: {isOpen: boolean, on
   const goFight = () => {
     if (weaponSelectedID < 0)
       return;
-    setIsCreatingRoom(true);
-    dispatch(socketActions.createNewRoom({ password: "" }));
+    if (room.id !== DEFAULT_ROOM_ID) {
+      router.push(`/fight?roomid=${room.id}&weaponid=${weaponSelectedID}&monsterid=${monsterId}`);
+    } else {
+      setIsCreatingRoom(true);
+      dispatch(socketActions.createNewRoom({ password: "" }));
+    }
   };
 
   useEffect(() => {
