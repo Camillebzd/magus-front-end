@@ -2,18 +2,20 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import * as Member from '@/sockets/@types/Member';
-import { DEFAULT_ROOM_ID, RoomId } from '@/sockets/@types/Room';
+import { DEFAULT_ADMIN_ID, DEFAULT_ROOM_ID, RoomId } from '@/sockets/@types/Room';
 import { Skill } from '@/sockets/@types/Skill';
 
 export type Room = {
   id: RoomId,
   password: string
+  adminId: string,
   skillsSelected: { [id: Member.ID]: Skill }
   entities: { [id: Member.ID]: Member.FrontInstance }
 };
 
 export type RoomInfo = {
   id: RoomId,
+  adminId: string,
   password: string
 };
 
@@ -29,19 +31,27 @@ export type SkillsSelected = {
 const DefaultRoom = {
   id: DEFAULT_ROOM_ID,
   password: "",
+  adminId: DEFAULT_ADMIN_ID,
   skillsSelected: {},
   entities: {}
+};
+
+const DefaultMemberInformation: MemberInfo = {
+  uid: "NO_ID",
+  name: "NO_NAME",
 };
 
 export interface SocketState {
   isConnected: boolean; // represent if the socket itself is connected to the server
   isCreated: boolean; // represent if the user is created on the server (after wallet connection)
+  member: MemberInfo; // represent the user info as member from the server
   room: Room;
 };
 
 const initialState: SocketState = {
   isConnected: false,
   isCreated: false,
+  member: DefaultMemberInformation,
   room: DefaultRoom
 };
 
@@ -92,13 +102,16 @@ const socketSlice = createSlice({
 
     memberCreated: (state, action: PayloadAction<MemberInfo>) => {
       state.isCreated = true;
+      state.member = action.payload;
     },
     memberDeleted: (state) => {
       state.isCreated = false;
+      state.member = DefaultMemberInformation;
     },
     roomJoined: (state, action: PayloadAction<RoomInfo>) => {
       // After the socket receive the event from the server in the middleware
       state.room.id = action.payload.id;
+      state.room.adminId = action.payload.adminId;
       state.room.password = action.payload.password;
       // state.room.skillsSelected = new Map<Member.ID, Skill>();
       // state.room.entities = new Map<Member.ID, Member.Instance>();
