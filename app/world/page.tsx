@@ -11,6 +11,7 @@ import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import CreateRoomModal from '@/components/CreateRoomModal';
 import JoinRoomModal from '@/components/JoinRoomModal';
 import { socketActions } from '@/redux/features/socketSlice';
+import RoomDetailsModal from '@/components/RoomDetailsModal';
 
 export default function Page() {
   const monsters = useMonstersWorld(true);
@@ -20,21 +21,16 @@ export default function Page() {
   const isFullyConnected = useIsFullyConnected();
   const { isOpen: isOpenCreate, onOpen: onOpenCreate, onClose: onCloseCreate } = useDisclosure()
   const { isOpen: isOpenJoin, onOpen: onOpenJoin, onClose: onCloseJoin } = useDisclosure()
-
-  const leaveRoom = () => {
-    if (isFullyConnected && room.id != DEFAULT_ROOM_ID)
-      dispatch(socketActions.leaveRoom(room.id));
-
-  };
+  const { isOpen: isOpenRoomDetails, onOpen: onOpenRoomDetails, onClose: onCloseRoomDetails } = useDisclosure();
 
   return (
     <main className={styles.main}>
       <h1 className={styles.pageTitle}>World</h1>
-      <h2 className={styles.pageSubtitle}>Room info</h2>
+      <h2 className={styles.pageSubtitle}>Room status</h2>
       <div>
         {room.id == DEFAULT_ROOM_ID ?
           <Flex gap={'5px'} alignItems='center'>
-            <Text>Not in a room.</Text>
+            {/* <Text>Not in a room.</Text> */}
             {
               isFullyConnected ?
                 <>
@@ -47,8 +43,9 @@ export default function Page() {
           </Flex>
           :
           <Flex gap={'5px'} alignItems='center'>
-            <Text>In room: {room.id}</Text>
-            <Button onClick={leaveRoom}>Leave room</Button>
+            {/* <Text>In room: {room.id}</Text>
+            <Button onClick={leaveRoom}>Leave room</Button> */}
+            <Button onClick={onOpenRoomDetails}>Room details</Button>
           </Flex>
         }
       </div>
@@ -62,6 +59,7 @@ export default function Page() {
       {/* <h2 className={styles.pageSubtitle}>Dungeons</h2> */}
       <CreateRoomModal isOpen={isOpenCreate} onClose={onCloseCreate} />
       <JoinRoomModal isOpen={isOpenJoin} onClose={onCloseJoin} />
+      <RoomDetailsModal isOpen={isOpenRoomDetails} onClose={onCloseRoomDetails} />
     </main>
   );
 };

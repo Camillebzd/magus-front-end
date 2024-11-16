@@ -1,9 +1,10 @@
 import { Middleware } from "redux";
 // Actions
-import { MemberInfo, Room, RoomInfo, socketActions } from "./socketSlice";
+import { MemberInfo, Room, RoomCreatedInfo, RoomInfo, socketActions } from "./socketSlice";
 // Socket Factory
 import SocketFactory from "@/sockets/SocketFactory";
 import type { SocketInterface } from "@/sockets/SocketFactory";
+import * as Member from '@/sockets/@types/Member';
 import { connect } from "./authSlice";
 
 enum SocketEvent {
@@ -22,9 +23,11 @@ enum SocketEvent {
   Error = "err",
   MemberCreated = "memberCreated",
   MemberDeleted = "memberDeleted",
-  RoomCreated = "roomCreated",
+  NewRoomCreated = "newRoomCreated",
   RoomJoined = "roomJoined",
   RoomLeft = "roomLeft",
+  MemberAdded = "memberAdded",
+  MemberRemoved = "memberRemoved",
   SkillSelected = "skillSelected",
   AllSkillsSelected = "allSkillsSelected",
   AllEntities = "allEntities"
@@ -72,8 +75,8 @@ const socketMiddleware: Middleware = (store) => {
         });
 
         // Handle the creation of a room
-        socket.socket.on(SocketEvent.RoomCreated, (data: RoomInfo) => {
-          store.dispatch(socketActions.roomJoined(data));
+        socket.socket.on(SocketEvent.NewRoomCreated, (data: RoomCreatedInfo) => {
+          store.dispatch(socketActions.newRoomCreated(data));
           console.log("Room created + joined:", data.id);
         });
 
@@ -87,6 +90,18 @@ const socketMiddleware: Middleware = (store) => {
         socket.socket.on(SocketEvent.RoomLeft, (roomId) => {
           store.dispatch(socketActions.roomLeft(roomId));
           console.log("Room left:", roomId);
+        });
+
+        // Handle the addition of a member in the room
+        socket.socket.on(SocketEvent.MemberAdded, (member: Member.FrontInstance) => {
+          store.dispatch(socketActions.memberAdded(member));
+          console.log("member added:", member.uid);
+        });
+
+        // Handle the deletion of a member in the room
+        socket.socket.on(SocketEvent.MemberRemoved, (member: Member.FrontInstance) => {
+          store.dispatch(socketActions.memberRemoved(member));
+          console.log("member removed:", member.uid);
         });
 
         // Handle the selection of a skill by a player in the room
