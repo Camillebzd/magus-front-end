@@ -37,6 +37,7 @@ const JoinRoomModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => vo
   // Reset state when the modal closes
   const handleModalClose = () => {
     // clean states
+    setRoomId("");
     setPassword("");
     setShowPassword(false);
     setIsJoiningRoom(false);
