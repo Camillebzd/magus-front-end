@@ -109,6 +109,18 @@ const RoomDetailsModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =>
     </Box>
   );
 
+  const displayMonsters = () => (
+    <Box>
+      <Text>Monsters</Text>
+      {room.monsters?.map((monster) => (
+        <Box key={monster.uid} style={{ marginBottom: "1em" }}>
+          <Text>{monster.id}</Text>
+          <Text>{monster.uid}</Text>
+        </Box>
+      ))}
+    </Box>
+  );
+
   return (
     <Modal isOpen={isOpen} onClose={handleModalClose}>
       <ModalOverlay />
@@ -127,6 +139,7 @@ const RoomDetailsModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =>
               : displayInfo("Password", room.password, isCopiedPassword, setIsCopiedPassword)
             }
             {displayEntities()}
+            {displayMonsters()}
           </Box>
         </ModalBody>
         <ModalFooter>

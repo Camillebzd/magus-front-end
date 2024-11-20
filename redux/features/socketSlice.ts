@@ -2,6 +2,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import * as Member from '@/sockets/@types/Member';
+import * as Monster from '@/sockets/@types/Monster';
 import { DEFAULT_ADMIN_ID, DEFAULT_ROOM_ID, RoomId } from '@/sockets/@types/Room';
 import { Skill } from '@/sockets/@types/Skill';
 
@@ -10,7 +11,8 @@ export type Room = {
   password: string
   adminId: string,
   skillsSelected: { [id: Member.ID]: Skill }
-  entities: Member.FrontInstance[] // TODO: add monsters too
+  entities: Member.FrontInstance[]
+  monsters: Monster.Instance[]
 };
 
 export type RoomCreatedInfo = {
@@ -23,7 +25,8 @@ export type RoomInfo = {
   id: RoomId,
   adminId: string,
   password: string
-  entities: Member.FrontInstance[]
+  entities: Member.FrontInstance[] // fort the moment only members
+  monsters: Monster.Instance[] // only monster id stored
 };
 
 export type MemberInfo = {
@@ -40,7 +43,8 @@ const DefaultRoom = {
   password: "",
   adminId: DEFAULT_ADMIN_ID,
   skillsSelected: {},
-  entities: []
+  entities: [],
+  monsters: []
 };
 
 const DefaultMemberInformation: MemberInfo = {
@@ -90,11 +94,19 @@ const socketSlice = createSlice({
       // not store for the request, waiting for the server to confirm before joining
       return;
     },
-    joinRoom: (state, action: PayloadAction<RoomInfo>) => {
+    joinRoom: (state, action: PayloadAction<{ id: string; password: string; }>) => {
       // not store for the request, waiting for the server to confirm before joining
       return;
     },
     leaveRoom: (state, action: PayloadAction<string>) => {
+      // not store for the request, waiting for the server to confirm before leaving
+      return;
+    },
+    addMonsters: (state, action: PayloadAction<number[]>) => {
+      // not store for the request, waiting for the server to confirm before leaving
+      return;
+    },
+    removeMonsters: (state, action: PayloadAction<Monster.Instance[]>) => {
       // not store for the request, waiting for the server to confirm before leaving
       return;
     },
@@ -151,6 +163,23 @@ const socketSlice = createSlice({
       if (index !== -1) {
         state.room.entities.splice(index, 1);
       }
+      return;
+    },
+    monstersAdded: (state, action: PayloadAction<Monster.Instance[]>) => {
+      // After the socket receive the event from the server in the middleware
+      state.room.monsters.push(...action.payload);
+      return;
+    },
+    monstersRemoved: (state, action: PayloadAction<Monster.Instance[]>) => {
+      // After the socket receive the event from the server in the middleware
+      action.payload.forEach(monsterToRemove => {
+        // Find the index of the item with the matching id
+        const index = state.room.monsters.findIndex((monsterInRoom) => monsterInRoom.uid === monsterToRemove.uid);
+        // Remove the item if it exists
+        if (index !== -1) {
+          state.room.monsters.splice(index, 1);
+        }
+      });
       return;
     },
     skillSelected: (state, action: PayloadAction<SkillsSelected>) => {

@@ -5,6 +5,7 @@ import { MemberInfo, Room, RoomCreatedInfo, RoomInfo, socketActions } from "./so
 import SocketFactory from "@/sockets/SocketFactory";
 import type { SocketInterface } from "@/sockets/SocketFactory";
 import * as Member from '@/sockets/@types/Member';
+import * as Monster from '@/sockets/@types/Monster';
 import { connect } from "./authSlice";
 
 enum SocketEvent {
@@ -17,6 +18,8 @@ enum SocketEvent {
   CreateNewRoom = "createNewRoom",
   JoinRoom = "joinRoom",
   LeaveRoom = "leaveRoom",
+  AddMonsters = "addMonsters",
+  RemoveMonsters = "removeMonsters",
   EnterFight = "enterFight",
   SelectSkill = "selectSkill",
   // On events
@@ -28,6 +31,8 @@ enum SocketEvent {
   RoomLeft = "roomLeft",
   MemberAdded = "memberAdded",
   MemberRemoved = "memberRemoved",
+  MonstersAdded = "monstersAdded",
+  MonstersRemoved = "monstersRemoved",
   SkillSelected = "skillSelected",
   AllSkillsSelected = "allSkillsSelected",
   AllEntities = "allEntities"
@@ -104,6 +109,18 @@ const socketMiddleware: Middleware = (store) => {
           console.log("member removed:", member.uid);
         });
 
+        // Handle the addition of monsters in the room
+        socket.socket.on(SocketEvent.MonstersAdded, (monsters: Monster.Instance[]) => {
+          store.dispatch(socketActions.monstersAdded(monsters));
+          console.log("monsters added:", monsters);
+        });
+
+        // Handle the deletion of monsters in the room
+        socket.socket.on(SocketEvent.MonstersRemoved, (monsters: Monster.Instance[]) => {
+          store.dispatch(socketActions.monstersRemoved(monsters));
+          console.log("monsters removed:", monsters);
+        });
+
         // Handle the selection of a skill by a player in the room
         socket.socket.on(SocketEvent.SkillSelected, (data) => {
           store.dispatch(socketActions.skillSelected(data));
@@ -163,6 +180,20 @@ const socketMiddleware: Middleware = (store) => {
     if (socketActions.leaveRoom.match(action) && socket) {
       let room = action.payload;
       socket.socket.emit(SocketEvent.LeaveRoom, room);
+      // Then Pass on to the next middleware to handle state
+      // ...
+    }
+
+    // handle addMonsters action
+    if (socketActions.addMonsters.match(action) && socket) {
+      socket.socket.emit(SocketEvent.AddMonsters, action.payload);
+      // Then Pass on to the next middleware to handle state
+      // ...
+    }
+
+    // handle removeMonsters action
+    if (socketActions.removeMonsters.match(action) && socket) {
+      socket.socket.emit(SocketEvent.RemoveMonsters, action.payload);
       // Then Pass on to the next middleware to handle state
       // ...
     }

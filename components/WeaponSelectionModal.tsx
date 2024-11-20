@@ -51,6 +51,10 @@ const WeaponSelectionModal = ({isOpen, onClose, monsterId}: {isOpen: boolean, on
     }
   }, [room, isCreatingRoom]);
 
+  const addMonsterToRoom = () => {
+    dispatch(socketActions.addMonsters([monsterId]));
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
@@ -66,6 +70,7 @@ const WeaponSelectionModal = ({isOpen, onClose, monsterId}: {isOpen: boolean, on
           <Button mr={3} onClick={onClose}>
             Close
           </Button>
+          {room.id !== DEFAULT_ROOM_ID && <Button mr={3} colorScheme='green' onClick={addMonsterToRoom}>ADD</Button>}
           <Button colorScheme='blue' onClick={goFight} isLoading={isCreatingRoom}>Fight</Button>
         </ModalFooter>
       </ModalContent>
