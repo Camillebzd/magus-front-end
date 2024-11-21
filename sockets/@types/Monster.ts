@@ -4,4 +4,5 @@ export type ID = number;   // id of the monster from DB to represent him
 export interface Instance {
   uid: UID;
   id: ID;
+  kind: "Monster"; // type guards
 }

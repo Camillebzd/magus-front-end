@@ -11,7 +11,7 @@ export type Room = {
   password: string
   adminId: string,
   skillsSelected: { [id: Member.ID]: Skill }
-  entities: Member.FrontInstance[]
+  members: Member.FrontInstance[]
   monsters: Monster.Instance[]
 };
 
@@ -25,7 +25,7 @@ export type RoomInfo = {
   id: RoomId,
   adminId: string,
   password: string
-  entities: Member.FrontInstance[] // fort the moment only members
+  members: Member.FrontInstance[] // fort the moment only members
   monsters: Monster.Instance[] // only monster id stored
 };
 
@@ -43,7 +43,7 @@ const DefaultRoom = {
   password: "",
   adminId: DEFAULT_ADMIN_ID,
   skillsSelected: {},
-  entities: [],
+  members: [],
   monsters: []
 };
 
@@ -132,7 +132,7 @@ const socketSlice = createSlice({
       state.room.id = action.payload.id;
       state.room.adminId = state.member.uid; // you are the admin when you create the room
       state.room.password = action.payload.password;
-      state.room.entities.push(action.payload.you);
+      state.room.members.push(action.payload.you);
       return;
     },
     roomJoined: (state, action: PayloadAction<RoomInfo>) => {
@@ -140,9 +140,9 @@ const socketSlice = createSlice({
       state.room.id = action.payload.id;
       state.room.adminId = action.payload.adminId;
       state.room.password = action.payload.password;
-      state.room.entities = action.payload.entities;
+      state.room.members = action.payload.members;
+      state.room.monsters = action.payload.monsters;
       // state.room.skillsSelected = new Map<Member.ID, Skill>();
-      // state.room.entities = new Map<Member.ID, Member.Instance>();
       return;
     },
     roomLeft: (state, action: PayloadAction<string>) => {
@@ -152,16 +152,16 @@ const socketSlice = createSlice({
     },
     memberAdded: (state, action: PayloadAction<Member.FrontInstance>) => {
       // After the socket receive the event from the server in the middleware
-      state.room.entities.push(action.payload);
+      state.room.members.push(action.payload);
       return;
     },
     memberRemoved: (state, action: PayloadAction<Member.FrontInstance>) => {
       // After the socket receive the event from the server in the middleware
       // Find the index of the item with the matching id
-      const index = state.room.entities.findIndex((entity) => entity.uid === action.payload.uid);
+      const index = state.room.members.findIndex((member) => member.uid === action.payload.uid);
       // Remove the item if it exists
       if (index !== -1) {
-        state.room.entities.splice(index, 1);
+        state.room.members.splice(index, 1);
       }
       return;
     },

@@ -100,10 +100,10 @@ const RoomDetailsModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =>
   const displayEntities = () => (
     <Box>
       <Text>Entities</Text>
-      {room.entities?.map((entity) => (
-        <Box key={entity.uid} style={{ marginBottom: "1em" }}>
-          <Text>{entity.name}</Text>
-          <Text>{entity.uid}</Text>
+      {room.members?.map((member) => (
+        <Box key={member.uid} style={{ marginBottom: "1em" }}>
+          <Text>{member.name}</Text>
+          <Text>{member.uid}</Text>
         </Box>
       ))}
     </Box>
