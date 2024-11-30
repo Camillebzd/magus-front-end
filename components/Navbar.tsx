@@ -21,6 +21,7 @@ import ConnectionDot from './ConnectionDot'
 
 const MENU_LIST = [
   { text: "Home", href: "/" },
+  { text: "Room", href: "/room" },
   { text: "World", href: "/world" },
   { text: "Armory", href: "/armory" },
   { text: "About Us", href: "/about" },

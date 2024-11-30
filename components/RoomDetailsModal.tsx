@@ -1,7 +1,5 @@
 'use client'
 
-import styles from './Card.module.css'
-
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { socketActions } from '@/redux/features/socketSlice';
 import {
@@ -9,9 +7,6 @@ import {
   Button,
   Code,
   Flex,
-  Input,
-  InputGroup,
-  InputRightElement,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -25,7 +20,8 @@ import {
 import { CopyIcon, CheckIcon } from "@chakra-ui/icons";
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { DEFAULT_ROOM_ID } from '@/sockets/@types/Room';
-import Entity from './Entity';
+import * as Member from '@/sockets/@types/Member';
+import * as Monster from '@/sockets/@types/Monster';
 
 const RoomDetailsModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
   const dispatch = useAppDispatch();
@@ -97,15 +93,26 @@ const RoomDetailsModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =>
     </Box>
   );
 
+  const entityInfo = (member: Member.FrontInstance) => (
+    <Box key={member.uid} style={{ marginBottom: "1em" }}>
+      <Text>{member.name}</Text>
+      <Text>{member.uid}</Text>
+    </Box>
+  );
+
   const displayEntities = () => (
     <Box>
       <Text>Entities</Text>
       {room.members?.map((member) => (
-        <Box key={member.uid} style={{ marginBottom: "1em" }}>
-          <Text>{member.name}</Text>
-          <Text>{member.uid}</Text>
-        </Box>
+        entityInfo(member)
       ))}
+    </Box>
+  );
+
+  const monsterInfo = (monster: Monster.Instance) => (
+    <Box key={monster.uid} style={{ marginBottom: "1em" }}>
+      <Text>{monster.id}</Text>
+      <Text>{monster.uid}</Text>
     </Box>
   );
 
@@ -113,10 +120,7 @@ const RoomDetailsModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =>
     <Box>
       <Text>Monsters</Text>
       {room.monsters?.map((monster) => (
-        <Box key={monster.uid} style={{ marginBottom: "1em" }}>
-          <Text>{monster.id}</Text>
-          <Text>{monster.uid}</Text>
-        </Box>
+        monsterInfo(monster)
       ))}
     </Box>
   );
@@ -132,7 +136,7 @@ const RoomDetailsModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =>
             {displayInfo("Room id", room.id, isCopiedRoomId, setIsCopiedRoomId)}
             {displayInfo("Admin id", room.adminId, isCopiedAdminId, setIsCopiedAdminId)}
             {room.password.length === 0 ?
-              <Box>
+              <Box mb={5}>
                 <Text>Password</Text>
                 <Text>no password</Text>
               </Box>
