@@ -7,7 +7,7 @@ const EntityList = () => {
 
   const entitySquare = (member: Member.FrontInstance) => (
     <Box key={member.uid} style={{ marginBottom: "1em" }}>
-      <Text>{member.name}</Text>
+      <Text>{member.name} {member.uid === room.adminId ? 'ADMIN' : ''}</Text>
       <Text>{member.uid}</Text>
       <Text>Weapon: {room.weapons[member.uid] != undefined ? room.weapons[member.uid] : 'not selected'}</Text>
       <Text>Deck: {room.decks[member.uid] != undefined ? 'building ui...' : 'not selected'}</Text>

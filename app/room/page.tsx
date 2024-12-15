@@ -17,6 +17,7 @@ import MonsterList from '@/components/Room/MonsterList';
 export default function Page() {
   const dispatch = useAppDispatch();
   const room = useAppSelector((state) => state.socketReducer.room);
+  const member = useAppSelector((state) => state.socketReducer.member);
   const isFullyConnected = useIsFullyConnected();
   const { isOpen: isOpenCreate, onOpen: onOpenCreate, onClose: onCloseCreate } = useDisclosure();
   const { isOpen: isOpenJoin, onOpen: onOpenJoin, onClose: onCloseJoin } = useDisclosure();
@@ -24,6 +25,23 @@ export default function Page() {
   const leaveRoom = () => {
     if (room.id != DEFAULT_ROOM_ID)
       dispatch(socketActions.leaveRoom(room.id));
+  };
+
+  // check if memberUID selected a weapon and a deck
+  const isMemberReady = (memberUID: string): boolean => (memberUID in room.weapons && memberUID in room.decks);
+
+  // Check if all members in the room are ready
+  const isEveryoneReady = (): boolean => (room.members.filter((member) => isMemberReady(member.uid)).length === room.members.length);
+
+  const startFightButton = () => {
+    // This is the admin
+    if (room.adminId === member.uid) {
+      let isReady = false;
+      // check everyone is ready
+      if (member.uid in room.weapons && member.uid in room.decks && isEveryoneReady() && room.monsters.length > 0)
+        isReady = true;
+      return <Button mt={10} colorScheme='green' isDisabled={!isReady}>Start fight</Button>
+    }
   };
 
   const roomDetails = () => (
@@ -49,7 +67,10 @@ export default function Page() {
       }
       <EntityList />
       <MonsterList />
-      <Button mt={10} colorScheme='red' onClick={leaveRoom}>Leave room</Button>
+      <Flex gap={5}>
+        <Button mt={10} colorScheme='red' onClick={leaveRoom}>Leave room</Button>
+        {startFightButton()}
+      </Flex>
     </Box>
   );
 
