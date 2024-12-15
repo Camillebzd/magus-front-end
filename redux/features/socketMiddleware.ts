@@ -1,6 +1,6 @@
 import { Middleware } from "redux";
 // Actions
-import { MemberInfo, Room, RoomCreatedInfo, RoomInfo, socketActions } from "./socketSlice";
+import { Deck, MemberInfo, Room, RoomCreatedInfo, RoomInfo, socketActions } from "./socketSlice";
 // Socket Factory
 import SocketFactory from "@/sockets/SocketFactory";
 import type { SocketInterface } from "@/sockets/SocketFactory";
@@ -19,6 +19,7 @@ enum SocketEvent {
   JoinRoom = "joinRoom",
   LeaveRoom = "leaveRoom",
   AddMonsters = "addMonsters",
+  SelectWeaponAndDeck = "selectWeaponAndDeck",
   RemoveMonsters = "removeMonsters",
   EnterFight = "enterFight",
   SelectSkill = "selectSkill",
@@ -33,6 +34,10 @@ enum SocketEvent {
   MemberRemoved = "memberRemoved",
   MonstersAdded = "monstersAdded",
   MonstersRemoved = "monstersRemoved",
+  WeaponAdded = "weaponAdded",
+  WeaponRemoved = "weaponRemoved",
+  DeckAdded = "deckAdded",
+  DeckRemoved = "DeckRemoved",
   SkillSelected = "skillSelected",
   AllSkillsSelected = "allSkillsSelected",
   AllEntities = "allEntities"
@@ -121,6 +126,30 @@ const socketMiddleware: Middleware = (store) => {
           console.log("monsters removed:", monsters);
         });
 
+        // Handle the selection of weapon in the room
+        socket.socket.on(SocketEvent.WeaponAdded, (data: { memberId: string, weaponId: string }) => {
+          store.dispatch(socketActions.weaponAdded(data));
+          console.log(`Member ${data.memberId} selected weapon ${data.weaponId}`);
+        });
+
+        // Handle the deletion of weapon in the room
+        socket.socket.on(SocketEvent.WeaponRemoved, (data: { memberId: string, weaponId: string }) => {
+          store.dispatch(socketActions.weaponRemoved(data));
+          console.log(`Member ${data.memberId} unselected weapon ${data.weaponId} `);
+        });
+
+        // Handle the selection of deck in the room
+        socket.socket.on(SocketEvent.DeckAdded, (data: { memberId: string, deck: Deck }) => {
+          store.dispatch(socketActions.deckAdded(data));
+          console.log(`Member ${data.memberId} selected a deck ${data.deck}`);
+        });
+
+        // Handle the deletion of deck in the room
+        socket.socket.on(SocketEvent.DeckRemoved, (data: { memberId: string, deck: Deck }) => {
+          store.dispatch(socketActions.deckRemoved(data));
+          console.log(`Member ${data.memberId} unselected a deck ${data.deck}`);
+        });
+
         // Handle the selection of a skill by a player in the room
         socket.socket.on(SocketEvent.SkillSelected, (data) => {
           store.dispatch(socketActions.skillSelected(data));
@@ -194,6 +223,13 @@ const socketMiddleware: Middleware = (store) => {
     // handle removeMonsters action
     if (socketActions.removeMonsters.match(action) && socket) {
       socket.socket.emit(SocketEvent.RemoveMonsters, action.payload);
+      // Then Pass on to the next middleware to handle state
+      // ...
+    }
+
+    // handle selectWeaponAndDeck action
+    if (socketActions.selectWeaponAndDeck.match(action) && socket) {
+      socket.socket.emit(SocketEvent.SelectWeaponAndDeck, action.payload);
       // Then Pass on to the next middleware to handle state
       // ...
     }

@@ -6,13 +6,17 @@ import * as Monster from '@/sockets/@types/Monster';
 import { DEFAULT_ADMIN_ID, DEFAULT_ROOM_ID, RoomId } from '@/sockets/@types/Room';
 import { Skill } from '@/sockets/@types/Skill';
 
+export type Deck = { [key: number]: number };
+
 export type Room = {
   id: RoomId,
-  password: string
+  password: string,
   adminId: string,
-  skillsSelected: { [id: Member.ID]: Skill }
-  members: Member.FrontInstance[]
-  monsters: Monster.Instance[]
+  skillsSelected: { [id: Member.ID]: Skill },
+  members: Member.FrontInstance[],
+  monsters: Monster.Instance[],
+  weapons: { [member: Member.ID]: string },
+  decks: { [member: Member.ID]: Deck }
 };
 
 export type RoomCreatedInfo = {
@@ -38,13 +42,15 @@ export type SkillsSelected = {
   [id: Member.ID]: Skill
 };
 
-const DefaultRoom = {
+const DefaultRoom: Room = {
   id: DEFAULT_ROOM_ID,
   password: "",
   adminId: DEFAULT_ADMIN_ID,
   skillsSelected: {},
   members: [],
-  monsters: []
+  monsters: [],
+  weapons: {},
+  decks: {}
 };
 
 const DefaultMemberInformation: MemberInfo = {
@@ -103,11 +109,15 @@ const socketSlice = createSlice({
       return;
     },
     addMonsters: (state, action: PayloadAction<number[]>) => {
-      // not store for the request, waiting for the server to confirm before leaving
+      // not store for the request, waiting for the server to confirm before adding monster
       return;
     },
     removeMonsters: (state, action: PayloadAction<Monster.Instance[]>) => {
-      // not store for the request, waiting for the server to confirm before leaving
+      // not store for the request, waiting for the server to confirm before removing monster
+      return;
+    },
+    selectWeaponAndDeck: (state, action: PayloadAction<{weaponId: string, deck: {[key: number]: number;}}>) => {
+      // not store for the request, waiting for the server to confirm before adding weapon and deck
       return;
     },
     enterFight: (state, action: PayloadAction<RoomId>) => {
@@ -181,6 +191,22 @@ const socketSlice = createSlice({
         }
       });
       return;
+    },
+    weaponAdded: (state, action: PayloadAction<{memberId: string, weaponId: string}>) => {
+      // After the socket receive the event from the server in the middleware
+      state.room.weapons[action.payload.memberId] = action.payload.weaponId;
+    },
+    weaponRemoved: (state, action: PayloadAction<{memberId: string, weaponId: string}>) => {
+      // After the socket receive the event from the server in the middleware
+      delete state.room.weapons[action.payload.memberId];
+    },
+    deckAdded: (state, action: PayloadAction<{memberId: string, deck: Deck}>) => {
+      // After the socket receive the event from the server in the middleware
+      state.room.decks[action.payload.memberId] = action.payload.deck;
+    },
+    deckRemoved: (state, action: PayloadAction<{memberId: string, deck: Deck}>) => {
+      // After the socket receive the event from the server in the middleware
+      delete state.room.decks[action.payload.memberId];
     },
     skillSelected: (state, action: PayloadAction<SkillsSelected>) => {
       // After the socket receive the event from the server in the middleware

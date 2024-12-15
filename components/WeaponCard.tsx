@@ -1,7 +1,7 @@
 'use client'
 
 import { Weapon, WeaponMint } from "@/scripts/entities";
-import { Card, CardBody, CardFooter, Heading, Stack, Button, Image } from '@chakra-ui/react'
+import { Card, CardBody, CardFooter, Heading, Stack, Button, Image, useDisclosure } from '@chakra-ui/react'
 
 import styles from './Card.module.css'
 import { useEffect, useRef, useState } from "react";
@@ -12,12 +12,16 @@ import { createContract } from "@/scripts/utils";
 import { useAppSelector } from "@/redux/hooks";
 import { useRouter } from "next/navigation";
 import { Notify } from "notiflix";
+import { DEFAULT_ADMIN_ID } from "@/sockets/@types/Room";
+import CreateDeckModal from "./CreateDeckModal";
 
-const WeaponCard = ({weapon, type}: {weapon: Weapon, type: WeaponGeneralType}) => {
+const WeaponCard = ({ weapon, type }: { weapon: Weapon, type: WeaponGeneralType }) => {
+  const room = useAppSelector((state) => state.socketReducer.room);
   const [isOver, setIsOver] = useState(false);
   const imageWeapon: any = useRef(null);
   const address = useAppSelector((state) => state.authReducer.address);
   const router = useRouter();
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   useEffect(() => {
     if (isOver && imageWeapon != null)
@@ -38,17 +42,17 @@ const WeaponCard = ({weapon, type}: {weapon: Weapon, type: WeaponGeneralType}) =
         speed: weapon.stats.speed,
         mind: weapon.stats.mind,
         offensiveStats: {
-            sharpDamage: weapon.stats.sharpDmg,
-            bluntDamage: weapon.stats.bluntDmg,
-            burnDamage: weapon.stats.burnDmg,
-            pierce: weapon.stats.pierce,
-            lethality: weapon.stats.lethality
+          sharpDamage: weapon.stats.sharpDmg,
+          bluntDamage: weapon.stats.bluntDmg,
+          burnDamage: weapon.stats.burnDmg,
+          pierce: weapon.stats.pierce,
+          lethality: weapon.stats.lethality
         },
         defensiveStats: {
-            sharpResistance: weapon.stats.sharpRes,
-            bluntResistance: weapon.stats.bluntRes,
-            burnResistance: weapon.stats.burnRes,
-            guard: weapon.stats.guard,
+          sharpResistance: weapon.stats.sharpRes,
+          bluntResistance: weapon.stats.bluntRes,
+          burnResistance: weapon.stats.burnRes,
+          guard: weapon.stats.guard,
         },
         handling: weapon.stats.handling,
       },
@@ -56,7 +60,7 @@ const WeaponCard = ({weapon, type}: {weapon: Weapon, type: WeaponGeneralType}) =
       abilities: [],
       identity: weapon.identity
     };
-    weapon.abilities.forEach((ability) => {weaponToMint.abilities.push(ability.name)});
+    weapon.abilities.forEach((ability) => { weaponToMint.abilities.push(ability.name) });
     console.log(weaponToMint);
     if (!address)
       return;
@@ -67,6 +71,23 @@ const WeaponCard = ({weapon, type}: {weapon: Weapon, type: WeaponGeneralType}) =
       router.push('/armory');
     } catch {
       Notify.failure("An error occuquered during the request weapon process.");
+    }
+  };
+
+  const cardFooter = () => {
+    if (type === "starter") {
+      return (
+        <Button position='absolute' top='89%' right='40%' size='sm' colorScheme='blue' onClick={e => { e.preventDefault(); craftStarter(); }}>
+          Choose
+        </Button>
+      );
+    }
+    if (room.id !== DEFAULT_ADMIN_ID) {
+      return (
+        <Button position='absolute' top='89%' right='40%' size='sm' colorScheme='green' onClick={e => { e.preventDefault(); onOpen(); }}>
+          Choose
+        </Button>
+      );
     }
   };
 
@@ -87,13 +108,10 @@ const WeaponCard = ({weapon, type}: {weapon: Weapon, type: WeaponGeneralType}) =
           </Stack>
         </CardBody>
         <CardFooter >
-        {type === "starter" && 
-          (<Button position='absolute' top='89%' right='40%' size='sm' colorScheme='blue' onClick={e => {e.preventDefault(); craftStarter();}}>
-            Choose
-          </Button>)
-        }
+          {cardFooter()}
         </CardFooter>
       </Card>
+      <CreateDeckModal weapon={weapon} isOpen={isOpen} onClose={onClose} />
     </Link>
   );
 }

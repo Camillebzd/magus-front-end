@@ -10,7 +10,6 @@ import CreateRoomModal from '@/components/CreateRoomModal';
 import JoinRoomModal from '@/components/JoinRoomModal';
 import { socketActions } from '@/redux/features/socketSlice';
 import CopyableField from '@/components/CopyableField';
-import * as Monster from '@/sockets/@types/Monster';
 import EntityList from '@/components/Room/EntityList';
 import MonsterList from '@/components/Room/MonsterList';
 
@@ -19,29 +18,13 @@ export default function Page() {
   const dispatch = useAppDispatch();
   const room = useAppSelector((state) => state.socketReducer.room);
   const isFullyConnected = useIsFullyConnected();
-  const { isOpen: isOpenCreate, onOpen: onOpenCreate, onClose: onCloseCreate } = useDisclosure()
-  const { isOpen: isOpenJoin, onOpen: onOpenJoin, onClose: onCloseJoin } = useDisclosure()
+  const { isOpen: isOpenCreate, onOpen: onOpenCreate, onClose: onCloseCreate } = useDisclosure();
+  const { isOpen: isOpenJoin, onOpen: onOpenJoin, onClose: onCloseJoin } = useDisclosure();
 
   const leaveRoom = () => {
     if (room.id != DEFAULT_ROOM_ID)
       dispatch(socketActions.leaveRoom(room.id));
   };
-
-  const monsterInfo = (monster: Monster.Instance) => (
-    <Box key={monster.uid} style={{ marginBottom: "1em" }}>
-      <Text>{monster.id}</Text>
-      <Text>{monster.uid}</Text>
-    </Box>
-  );
-
-  const displayMonsters = () => (
-    <Box>
-      <Text>Monsters</Text>
-      {room.monsters?.map((monster) => (
-        monsterInfo(monster)
-      ))}
-    </Box>
-  );
 
   const roomDetails = () => (
     <Box>
@@ -66,7 +49,6 @@ export default function Page() {
       }
       <EntityList />
       <MonsterList />
-      {/* {displayMonsters()} */}
       <Button mt={10} colorScheme='red' onClick={leaveRoom}>Leave room</Button>
     </Box>
   );
