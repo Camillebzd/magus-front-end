@@ -5,6 +5,7 @@ import * as Member from '@/sockets/@types/Member';
 import * as Monster from '@/sockets/@types/Monster';
 import { DEFAULT_ADMIN_ID, DEFAULT_ROOM_ID, RoomId } from '@/sockets/@types/Room';
 import { Skill } from '@/sockets/@types/Skill';
+import Router from "next/router";
 
 export type Deck = { [key: number]: number };
 
@@ -16,7 +17,8 @@ export type Room = {
   members: Member.FrontInstance[],
   monsters: Monster.Instance[],
   weapons: { [member: Member.ID]: string },
-  decks: { [member: Member.ID]: Deck }
+  decks: { [member: Member.ID]: Deck },
+  goToRoomId: RoomId
 };
 
 export type RoomCreatedInfo = {
@@ -50,7 +52,8 @@ const DefaultRoom: Room = {
   members: [],
   monsters: [],
   weapons: {},
-  decks: {}
+  decks: {},
+  goToRoomId: DEFAULT_ROOM_ID
 };
 
 const DefaultMemberInformation: MemberInfo = {
@@ -120,8 +123,8 @@ const socketSlice = createSlice({
       // not store for the request, waiting for the server to confirm before adding weapon and deck
       return;
     },
-    enterFight: (state, action: PayloadAction<RoomId>) => {
-      // not store for the request, waiting for the server to confirm before leaving
+    startFigh: (state, action: PayloadAction) => {
+      // not store for the request, waiting for the server to confirm before moving user
       return;
     },
     selectSkill: (state, action: PayloadAction<Skill>) => {
@@ -207,6 +210,19 @@ const socketSlice = createSlice({
     deckRemoved: (state, action: PayloadAction<{memberId: string, deck: Deck}>) => {
       // After the socket receive the event from the server in the middleware
       delete state.room.decks[action.payload.memberId];
+    },
+    fightStarted: (state, action: PayloadAction<string>) => {
+      // After the socket receive the event from the server in the middleware
+      const roomId = action.payload
+
+      if (roomId == state.room.id)
+        // Can't change the page from here so listen to the state in the component and change from it
+        // Router.push(`fight/?roomid=${roomId}&weaponid=${state.room.weapons[state.member.uid]}&monsterid=${0}`);
+        state.room.goToRoomId = roomId;
+    },
+    resetGoToRoomId: (state, action: PayloadAction) => {
+      // not in the middleware because it is just to reset the state after the fightStarted event.
+      state.room.goToRoomId = DEFAULT_ROOM_ID;
     },
     skillSelected: (state, action: PayloadAction<SkillsSelected>) => {
       // After the socket receive the event from the server in the middleware

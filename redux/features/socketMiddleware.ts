@@ -21,7 +21,7 @@ enum SocketEvent {
   AddMonsters = "addMonsters",
   SelectWeaponAndDeck = "selectWeaponAndDeck",
   RemoveMonsters = "removeMonsters",
-  EnterFight = "enterFight",
+  StartFigh = "startFigh",
   SelectSkill = "selectSkill",
   // On events
   Error = "err",
@@ -38,6 +38,7 @@ enum SocketEvent {
   WeaponRemoved = "weaponRemoved",
   DeckAdded = "deckAdded",
   DeckRemoved = "DeckRemoved",
+  FightStarted = "fightStarted",
   SkillSelected = "skillSelected",
   AllSkillsSelected = "allSkillsSelected",
   AllEntities = "allEntities"
@@ -150,6 +151,12 @@ const socketMiddleware: Middleware = (store) => {
           console.log(`Member ${data.memberId} unselected a deck ${data.deck}`);
         });
 
+        // Handle the start fight
+        socket.socket.on(SocketEvent.FightStarted, (roomId: string) => {
+          console.log(`Fight starting, move to the fight page with id ${roomId}`);
+          store.dispatch(socketActions.fightStarted(roomId));
+        });
+
         // Handle the selection of a skill by a player in the room
         socket.socket.on(SocketEvent.SkillSelected, (data) => {
           store.dispatch(socketActions.skillSelected(data));
@@ -234,9 +241,9 @@ const socketMiddleware: Middleware = (store) => {
       // ...
     }
 
-    // handle enterFight action
-    if (socketActions.enterFight.match(action) && socket) {
-      socket.socket.emit(SocketEvent.EnterFight, action.payload);
+    // handle startFigh action
+    if (socketActions.startFigh.match(action) && socket) {
+      socket.socket.emit(SocketEvent.StartFigh);
       // Then Pass on to the next middleware to handle state
       // ...
     }

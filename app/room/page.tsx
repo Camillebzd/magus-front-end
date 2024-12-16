@@ -12,9 +12,12 @@ import { socketActions } from '@/redux/features/socketSlice';
 import CopyableField from '@/components/CopyableField';
 import EntityList from '@/components/Room/EntityList';
 import MonsterList from '@/components/Room/MonsterList';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 
 export default function Page() {
+  const router = useRouter();
   const dispatch = useAppDispatch();
   const room = useAppSelector((state) => state.socketReducer.room);
   const member = useAppSelector((state) => state.socketReducer.member);
@@ -22,9 +25,22 @@ export default function Page() {
   const { isOpen: isOpenCreate, onOpen: onOpenCreate, onClose: onCloseCreate } = useDisclosure();
   const { isOpen: isOpenJoin, onOpen: onOpenJoin, onClose: onCloseJoin } = useDisclosure();
 
+  useEffect(() => {
+    if (room.goToRoomId != DEFAULT_ROOM_ID) {
+      // first reset the state
+      dispatch(socketActions.resetGoToRoomId());
+      // then move page
+      router.push(`fight/?roomid=${room.goToRoomId}&weaponid=${room.weapons[member.uid]}&monsterid=${0}`);
+    }
+  }, [room.goToRoomId]);
+
   const leaveRoom = () => {
     if (room.id != DEFAULT_ROOM_ID)
       dispatch(socketActions.leaveRoom(room.id));
+  };
+
+  const startFight = () => {
+    dispatch(socketActions.startFigh());
   };
 
   // check if memberUID selected a weapon and a deck
@@ -40,7 +56,7 @@ export default function Page() {
       // check everyone is ready
       if (member.uid in room.weapons && member.uid in room.decks && isEveryoneReady() && room.monsters.length > 0)
         isReady = true;
-      return <Button mt={10} colorScheme='green' isDisabled={!isReady}>Start fight</Button>
+      return <Button mt={10} colorScheme='green' isDisabled={!isReady} onClick={startFight}>Start fight</Button>
     }
   };
 
