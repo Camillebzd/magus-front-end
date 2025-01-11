@@ -5,7 +5,6 @@ import * as Member from '@/sockets/@types/Member';
 import * as Monster from '@/sockets/@types/Monster';
 import { DEFAULT_ADMIN_ID, DEFAULT_ROOM_ID, RoomId } from '@/sockets/@types/Room';
 import { Skill } from '@/sockets/@types/Skill';
-import Router from "next/router";
 
 export type Deck = { [key: number]: number };
 
@@ -18,6 +17,7 @@ export type Room = {
   monsters: Monster.Instance[],
   weapons: { [member: Member.ID]: string },
   decks: { [member: Member.ID]: Deck },
+  acceptedMembers: Member.ID[],
   goToRoomId: RoomId
 };
 
@@ -53,6 +53,7 @@ const DefaultRoom: Room = {
   monsters: [],
   weapons: {},
   decks: {},
+  acceptedMembers: [],
   goToRoomId: DEFAULT_ROOM_ID
 };
 
@@ -125,6 +126,10 @@ const socketSlice = createSlice({
     },
     startFigh: (state, action: PayloadAction) => {
       // not store for the request, waiting for the server to confirm before moving user
+      return;
+    },
+    acceptFight: (state, action: PayloadAction) => {
+      // not store for the request, waiting for the server to confirm before confirming the user in fight
       return;
     },
     selectSkill: (state, action: PayloadAction<Skill>) => {
@@ -215,10 +220,20 @@ const socketSlice = createSlice({
       // After the socket receive the event from the server in the middleware
       const roomId = action.payload
 
-      if (roomId == state.room.id)
+      if (roomId == state.room.id) {
+        // clear accepted members
+        state.room.acceptedMembers = [];
         // Can't change the page from here so listen to the state in the component and change from it
         // Router.push(`fight/?roomid=${roomId}&weaponid=${state.room.weapons[state.member.uid]}&monsterid=${0}`);
         state.room.goToRoomId = roomId;
+      }
+    },
+    acceptedFight: (state, action: PayloadAction<string>) => {
+      // After the socket receive the event from the server in the middleware
+      const memberId = action.payload
+
+      if (!state.room.acceptedMembers.includes(memberId))
+        state.room.acceptedMembers.push(memberId);
     },
     resetGoToRoomId: (state, action: PayloadAction) => {
       // not in the middleware because it is just to reset the state after the fightStarted event.

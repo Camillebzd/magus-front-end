@@ -9,7 +9,6 @@ export interface Instance {
   roomId: string;
   connection: Socket;
   data: any;
-  kind: "Member"; // type guards
 }
 
 // Instance used by the website so remove
@@ -20,5 +19,4 @@ export interface FrontInstance {
   name: Name;
   roomId: string;
   data: any;
-  kind: "Member"; // type guards
 }

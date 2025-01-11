@@ -12,9 +12,8 @@ import { socketActions } from '@/redux/features/socketSlice';
 import CopyableField from '@/components/CopyableField';
 import EntityList from '@/components/Room/EntityList';
 import MonsterList from '@/components/Room/MonsterList';
-import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-
+import AcceptFightListener from '@/components/AcceptFightListener';
 
 export default function Page() {
   const router = useRouter();
@@ -24,15 +23,6 @@ export default function Page() {
   const isFullyConnected = useIsFullyConnected();
   const { isOpen: isOpenCreate, onOpen: onOpenCreate, onClose: onCloseCreate } = useDisclosure();
   const { isOpen: isOpenJoin, onOpen: onOpenJoin, onClose: onCloseJoin } = useDisclosure();
-
-  useEffect(() => {
-    if (room.goToRoomId != DEFAULT_ROOM_ID) {
-      // first reset the state
-      dispatch(socketActions.resetGoToRoomId());
-      // then move page
-      router.push(`fight/?roomid=${room.goToRoomId}&weaponid=${room.weapons[member.uid]}&monsterid=${0}`);
-    }
-  }, [room.goToRoomId]);
 
   const leaveRoom = () => {
     if (room.id != DEFAULT_ROOM_ID)
@@ -115,6 +105,7 @@ export default function Page() {
       </div>
       <CreateRoomModal isOpen={isOpenCreate} onClose={onCloseCreate} />
       <JoinRoomModal isOpen={isOpenJoin} onClose={onCloseJoin} />
+      <AcceptFightListener />
     </main>
   );
 };

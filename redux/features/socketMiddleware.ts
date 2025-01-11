@@ -22,6 +22,7 @@ enum SocketEvent {
   SelectWeaponAndDeck = "selectWeaponAndDeck",
   RemoveMonsters = "removeMonsters",
   StartFigh = "startFigh",
+  AcceptFight = "acceptFight",
   SelectSkill = "selectSkill",
   // On events
   Error = "err",
@@ -39,6 +40,7 @@ enum SocketEvent {
   DeckAdded = "deckAdded",
   DeckRemoved = "DeckRemoved",
   FightStarted = "fightStarted",
+  AcceptedFight = "acceptedFight",
   SkillSelected = "skillSelected",
   AllSkillsSelected = "allSkillsSelected",
   AllEntities = "allEntities"
@@ -157,6 +159,12 @@ const socketMiddleware: Middleware = (store) => {
           store.dispatch(socketActions.fightStarted(roomId));
         });
 
+        // Handle the accept fight phase answers
+        socket.socket.on(SocketEvent.AcceptedFight, (memberID: string) => {
+          console.log(`User accepted the fight: ${memberID}`);
+          store.dispatch(socketActions.acceptedFight(memberID));
+        });
+
         // Handle the selection of a skill by a player in the room
         socket.socket.on(SocketEvent.SkillSelected, (data) => {
           store.dispatch(socketActions.skillSelected(data));
@@ -244,6 +252,13 @@ const socketMiddleware: Middleware = (store) => {
     // handle startFigh action
     if (socketActions.startFigh.match(action) && socket) {
       socket.socket.emit(SocketEvent.StartFigh);
+      // Then Pass on to the next middleware to handle state
+      // ...
+    }
+
+    // handle startFigh action
+    if (socketActions.acceptFight.match(action) && socket) {
+      socket.socket.emit(SocketEvent.AcceptFight);
       // Then Pass on to the next middleware to handle state
       // ...
     }
