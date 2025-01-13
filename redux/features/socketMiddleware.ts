@@ -96,7 +96,7 @@ const socketMiddleware: Middleware = (store) => {
         // Handle the joining of a room
         socket.socket.on(SocketEvent.RoomJoined, (data: RoomInfo) => {
           store.dispatch(socketActions.roomJoined(data));
-          console.log("Room joined:", data.id);
+          console.log("Room joined:", data);
         });
 
         // Handle the leaving of a room

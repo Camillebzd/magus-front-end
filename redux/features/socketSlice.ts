@@ -33,6 +33,9 @@ export type RoomInfo = {
   password: string
   members: Member.FrontInstance[] // fort the moment only members
   monsters: Monster.Instance[] // only monster id stored
+  weapons: { [member: Member.ID]: string },
+  decks: { [member: Member.ID]: Deck },
+
 };
 
 export type MemberInfo = {
@@ -160,6 +163,8 @@ const socketSlice = createSlice({
       state.room.password = action.payload.password;
       state.room.members = action.payload.members;
       state.room.monsters = action.payload.monsters;
+      state.room.weapons = action.payload.weapons;
+      state.room.decks = action.payload.decks;
       // state.room.skillsSelected = new Map<Member.ID, Skill>();
       return;
     },
