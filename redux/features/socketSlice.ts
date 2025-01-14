@@ -135,6 +135,10 @@ const socketSlice = createSlice({
       // not store for the request, waiting for the server to confirm before confirming the user in fight
       return;
     },
+    rejectFight: (state, action: PayloadAction) => {
+      // not store for the request, waiting for the server to confirm before confirming the user in fight
+      return;
+    },
     selectSkill: (state, action: PayloadAction<Skill>) => {
       // not store for the request, waiting for the server to confirm before leaving
       return;
@@ -239,6 +243,12 @@ const socketSlice = createSlice({
 
       if (!state.room.acceptedMembers.includes(memberId))
         state.room.acceptedMembers.push(memberId);
+    },
+    rejectedFight: (state, action: PayloadAction<string>) => {
+      // After the socket receive the event from the server in the middleware
+      const memberId = action.payload
+
+      state.room.acceptedMembers = [];
     },
     resetGoToRoomId: (state, action: PayloadAction) => {
       // not in the middleware because it is just to reset the state after the fightStarted event.

@@ -34,6 +34,10 @@ const AcceptFightListener = () => {
       // show modal
       onOpen();
     }
+    if (room.acceptedMembers.length == 0 && isOpen) {
+      // close modal
+      onClose();
+    }
   }, [room.acceptedMembers]);
 
   // listen when the server redirect to the fight page
@@ -58,7 +62,7 @@ const AcceptFightListener = () => {
 
   const rejectFight = () => {
     // send the reject to the server
-    // dispatch(socketActions.rejectFight());
+    dispatch(socketActions.rejectFight());
   };
 
   const modalFooter = () => {
