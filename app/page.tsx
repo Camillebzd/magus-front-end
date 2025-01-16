@@ -24,14 +24,15 @@ export default function Home() {
         be easy and as free as it can be (you will still have to pay the gas fees, I love you but not that much).
       </p>
       <p className={styles.paragraphe}>Start to play:</p>
-      <ol type="1" >
+      <p>WIP...</p>
+      {/* <ol type="1" >
         <li>Connect your wallet</li>
         <li>Go on a Etherlink testnet faucet and get some free tokens</li>
         <li>Go in the Armory section</li>
         <li>Click on the button to create a free weapon</li>
         <li>Go in the World page and click on monster and on the fight button to kick their ass</li>
         <li>If you want to enhance it you will have to use XTZ tokens</li>
-      </ol>
+      </ol> */}
     </main>
   )
 }
