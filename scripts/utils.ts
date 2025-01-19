@@ -3,6 +3,10 @@ import contractABI from "@/abi/GearFight.json";
 
 import { Ability } from './abilities';
 import { Identity, WeaponMintStats } from './entities';
+import { getContract } from 'thirdweb';
+import { client, etherlinkTestnet } from '@/app/thirdwebInfo'
+import { ethers5Adapter } from "thirdweb/adapters/ethers5";
+import { useActiveAccount } from 'thirdweb/react';
 
 const CONTRACT_ADDRESS = (process.env.NEXT_PUBLIC_CONTRACT_ADDRESS)!.toLowerCase();
 const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
@@ -24,10 +28,21 @@ export function randomIntFromInterval(min: number, max: number) {
 
 // function to create a contract ethers.js of gearFactory
 export async function createContract(walletAddress: string) {
-  const ethereum: any  = window.ethereum;
+  const ethereum: any  = window.ethereum; // dangerous because if network on Rabby different things explode
   const provider = new ethers.providers.Web3Provider(ethereum) // new ethers.BrowserProvider(ethereum); // V6
   const signer = await provider.getSigner(walletAddress);
   const contract = new ethers.Contract(CONTRACT_ADDRESS, contractABI.abi, signer);
+  return contract;
+}
+
+// function to create a contract thirdweb
+export async function createReadContract() {
+  const contract = getContract({
+    client,
+    chain: etherlinkTestnet,
+    address: CONTRACT_ADDRESS,
+    abi: contractABI.abi as any,
+  });
   return contract;
 }
 

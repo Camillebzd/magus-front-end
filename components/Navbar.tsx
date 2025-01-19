@@ -11,13 +11,13 @@ import NavItem from './NavItem'
 import styles from '../app/page.module.css'
 
 import { ConnectButton, useActiveWallet } from "thirdweb/react";
-import { createWallet, inAppWallet } from "thirdweb/wallets";
+import { createWallet } from "thirdweb/wallets";
 
 import { connect, disconnect } from "@/redux/features/authSlice";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { createThirdwebClient, defineChain } from 'thirdweb'
 import { socketActions } from '@/redux/features/socketSlice'
 import ConnectionDot from './ConnectionDot'
+import { client, etherlinkTestnet } from '@/app/thirdwebInfo'
 
 const MENU_LIST = [
   { text: "Home", href: "/" },
@@ -32,28 +32,6 @@ const wallets = [
   createWallet("com.coinbase.wallet"),
   createWallet("me.rainbow"),
 ];
-
-const client = createThirdwebClient({
-  clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID || "",
-});
-
-const chain = defineChain({
-  id: 128123,
-  name: "Etherlink Testnet",
-  rpc: "https://node.ghostnet.etherlink.com",
-  nativeCurrency: {
-    name: "Tez",
-    symbol: "XTZ",
-    decimals: 18,
-  },
-  blockExplorers: [{
-    url: "https://testnet.explorer.etherlink.com/",
-    apiUrl: "https://testnet.explorer.etherlink.com/api",
-    name: "Blockscout"
-  }],
-  testnet: true,
-
-});
 
 const Navbar = () => {
   const [display, changeDisplay] = useState('none')
@@ -121,7 +99,7 @@ const Navbar = () => {
         <ConnectButton
           client={client}
           wallets={wallets}
-          chain={chain}
+          chain={etherlinkTestnet}
         />
       </Flex>
 

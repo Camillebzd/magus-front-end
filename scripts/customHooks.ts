@@ -5,10 +5,11 @@ import { MonsterDataSerilizable, fillMonstersWorldData } from "@/redux/features/
 import { fillStoreAbilities } from "@/redux/features/abilitySlice";
 import { Ability, AbilityData } from "./abilities";
 import { AttributeOnNFT, WeaponNFT, fillUserWeapons, weapons } from "@/redux/features/weaponSlice";
-import { createContract, fetchFromDB, getAllAbilitiesIdForWeapon } from "./utils";
+import { createContract, createReadContract, fetchFromDB, getAllAbilitiesIdForWeapon } from "./utils";
 import { Draft } from "immer";
 import { Notify } from "notiflix";
 import { STARTERS_NAME } from "./systemValues";
+import { readContract } from "thirdweb";
 
 function createMonsters(monstersData: MonsterDataSerilizable[], abilities: Ability[]) {
   let monsters: Monster[] = [];
@@ -247,9 +248,19 @@ export function useRequestAvailable() {
       return;
     const updateRequestCount = async () => {
       try {
-        const contract = await createContract(address);
-        const maxWeaponsRequest: BigInt = await contract.maxWeaponsRequest();
-        const weaponsRequested: BigInt = await contract.weaponsRequested(address);
+        // const contract = await createContract(address);
+        // const maxWeaponsRequest: BigInt = await contract.maxWeaponsRequest();
+        // const weaponsRequested: BigInt = await contract.weaponsRequested(address);
+        const contract = await createReadContract();
+        const maxWeaponsRequest = await readContract({
+          contract: contract,
+          method: "function maxWeaponsRequest() view returns (uint256)",
+        });
+        const weaponsRequested = await readContract({
+          contract: contract,
+          method: "function weaponsRequested(address) view returns (uint256)",
+          params: [address as `0x${string}`]
+        });
         setRequestAvailable(Number(maxWeaponsRequest) - Number(weaponsRequested));
       } catch (e) {
         console.log(e);

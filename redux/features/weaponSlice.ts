@@ -1,9 +1,10 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 import axios from "axios";
-import { createContract } from "@/scripts/utils";
+import { createContract, createReadContract } from "@/scripts/utils";
 import { RootState } from "../store";
 import { Notify } from "notiflix";
+import { readContract } from "thirdweb";
 
 const CONTRACT_ADDRESS = (process.env.NEXT_PUBLIC_CONTRACT_ADDRESS)!.toLowerCase();
 
@@ -44,12 +45,18 @@ export const fillUserWeapons = createAsyncThunk<WeaponNFT[], boolean, { state: R
         return [];
       }
       const nfts = response.data.items;
-      const contract = await createContract(address);
+      // const contract = await createContract(address);
+      const contract = await createReadContract();
       let weapons: WeaponNFT[] = [];
       // console.log("nfts:", nfts);
       await Promise.all(nfts.map(async (nft: any) => {
         if (nft.token.address.toLowerCase() == CONTRACT_ADDRESS) {
-          let weaponURI = await contract.tokenURI(nft.id);
+          // let weaponURI = await contract.tokenURI(nft.id);
+          let weaponURI = await readContract({
+            contract: contract,
+            method: "function tokenURI(uint256) view returns (string)",
+            params: [nft.id],
+          });
           let weaponObj: WeaponNFT = JSON.parse(Buffer.from(weaponURI.substring(29), 'base64').toString('ascii'));
           weaponObj.tokenId = nft.id;
           weapons.push(weaponObj);
@@ -73,9 +80,15 @@ export const refreshOwnedTokenMetadata = createAsyncThunk<{ weaponIndex: number,
       console.log("Error:can't refresh metadata on non existant or non possessed weapon.");
       return { weaponIndex, newWeaponData: undefined };
     }
-    const contract = await createContract(thunkAPI.getState().authReducer.address);
+    // const contract = await createContract(thunkAPI.getState().authReducer.address);
+    const contract = await createReadContract();
     try {
-      let weaponURI = await contract.TokenURI(tokenId);
+      // let weaponURI = await contract.TokenURI(tokenId);
+      let weaponURI = await readContract({
+        contract: contract,
+        method: "function tokenURI(uint256) view returns (string)",
+        params: [BigInt(tokenId)],
+      });
       let weaponObj: WeaponNFT = JSON.parse(Buffer.from(weaponURI.substring(29), 'base64').toString('ascii'));
       weaponObj.tokenId = tokenId;
       console.log(`token with id: ${tokenId} refreshed!`);
