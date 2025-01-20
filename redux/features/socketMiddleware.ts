@@ -7,6 +7,7 @@ import type { SocketInterface } from "@/sockets/SocketFactory";
 import * as Member from '@/sockets/@types/Member';
 import * as Monster from '@/sockets/@types/Monster';
 import { connect } from "./authSlice";
+import { Notify } from "notiflix";
 
 enum SocketEvent {
   // Native events
@@ -67,8 +68,7 @@ const socketMiddleware: Middleware = (store) => {
         // handle all Error events
         socket.socket.on(SocketEvent.Error, (message) => {
           console.error(message);
-          // TODO dispatch errors and create an error provider at
-          // the route of the project to handle them
+          Notify.failure(message);
         });
 
         // Handle disconnect event
