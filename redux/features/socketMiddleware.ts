@@ -41,7 +41,7 @@ enum SocketEvent {
   WeaponRemoved = "weaponRemoved",
   DeckAdded = "deckAdded",
   DeckRemoved = "DeckRemoved",
-  FightStarted = "fightStarted",
+  EnterFight = "enterFight",
   AcceptedFight = "acceptedFight",
   RejectedFight = "rejectedFight",
   SkillSelected = "skillSelected",
@@ -155,10 +155,10 @@ const socketMiddleware: Middleware = (store) => {
           console.log(`Member ${data.memberId} unselected a deck ${data.deck}`);
         });
 
-        // Handle the start fight
-        socket.socket.on(SocketEvent.FightStarted, (roomId: string) => {
+        // Handle the enterFight event
+        socket.socket.on(SocketEvent.EnterFight, (roomId: string) => {
           console.log(`Fight starting, move to the fight page with id ${roomId}`);
-          store.dispatch(socketActions.fightStarted(roomId));
+          store.dispatch(socketActions.enterFight(roomId));
         });
 
         // Handle the accept fight phase answers

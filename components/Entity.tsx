@@ -2,7 +2,7 @@ import { Monster, Weapon } from "@/scripts/entities";
 import styles from "./Entity.module.css";
 import { Badge, Image } from "@chakra-ui/react";
 
-const Entity = ({entity, isModifiersOnRight}: {entity: Weapon | Monster | null, isModifiersOnRight: boolean}) => {
+const Entity = ({entity, isModifiersOnRight}: {entity: Weapon | Monster | undefined, isModifiersOnRight: boolean}) => {
   if (!entity)
     return <div>Entity is empty...</div>;
 

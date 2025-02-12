@@ -121,3 +121,18 @@ export type Order = {
   id: number;
   description: string;  
 };
+
+/// Object with key as the abilityId and value as the number of copies
+export type RAW_ABILITIES = {[abilityId: string]: number};
+
+export function fromRawAbilityToAbility(data: RAW_ABILITIES, abilityList: Ability[]): Ability[] {
+  const abilities: Ability[] = []
+  Object.entries(data).forEach(([abilityId, amount]) => {
+    const ability = abilityList.find(ability => ability.id === parseInt(abilityId));
+    if (ability) {
+      for (let i = 0; i < amount; i++)
+        abilities.push(ability);
+    }
+  });
+  return abilities;
+}

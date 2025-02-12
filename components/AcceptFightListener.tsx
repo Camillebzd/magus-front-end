@@ -49,7 +49,8 @@ const AcceptFightListener = () => {
       dispatch(socketActions.resetGoToRoomId());
       // then move page
       // router.push(`fight/?roomid=${room.goToRoomId}&weaponid=${room.weapons[member.uid]}&monsterid=${0}`);
-      router.push(`fight/${room.goToRoomId}/?roomid=${room.goToRoomId}&weaponid=${room.weapons[member.uid]}&monsterid=${0}`);
+      // router.push(`fight/${room.goToRoomId}/?roomid=${room.goToRoomId}&weaponid=${room.weapons[member.uid]}&monsterid=${0}`);
+      router.push(`fight/${room.goToRoomId}`);
     }
   }, [room.goToRoomId]);
 

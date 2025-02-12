@@ -56,9 +56,9 @@ const WeaponCard = ({ weapon, type }: { weapon: Weapon, type: WeaponGeneralType 
         },
         handling: weapon.stats.handling,
       },
-      xp: weapon.xp,
+      xp: 0,
       abilities: [],
-      identity: weapon.identity
+      identity: "None"
     };
     weapon.abilities.forEach((ability) => { weaponToMint.abilities.push(ability.name) });
     console.log(weaponToMint);

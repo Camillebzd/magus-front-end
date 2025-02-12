@@ -4,7 +4,7 @@ import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { MonsterDataSerilizable, fillMonstersWorldData } from "@/redux/features/monsterSlice";
 import { fillStoreAbilities } from "@/redux/features/abilitySlice";
 import { Ability, AbilityData } from "./abilities";
-import { AttributeOnNFT, WeaponNFT, fillUserWeapons, weapons } from "@/redux/features/weaponSlice";
+import { AttributeOnNFT, WeaponNFT, fillAllWeapons, fillUserWeapons, weapons } from "@/redux/features/weaponSlice";
 import { createContract, createReadContract, fetchFromDB, getAllAbilitiesIdForWeapon } from "./utils";
 import { Draft } from "immer";
 import { Notify } from "notiflix";
@@ -23,6 +23,7 @@ function createMonsters(monstersData: MonsterDataSerilizable[], abilities: Abili
         console.log("Error: a monster data id doesn't have a supported ability.");
     });
     monsters.push(new Monster({
+      uid: "0", // uid will be handled on server side
       id: monsterData.id,
       name: monsterData.name,
       image: monsterData.image,
@@ -91,6 +92,7 @@ function createWeapon(weaponsDataNFT: WeaponNFT, abilities: Ability[]) {
         console.log("Warning an ability on a weapon is not a valid ability: ", abilityName);
     });
   let data: WeaponData = {
+    uid: "0", // uid will be handled on server side
     name: weaponsDataNFT.name,
     id: parseInt(weaponsDataNFT.tokenId),
     description: weaponsDataNFT.description,
@@ -111,8 +113,8 @@ function createWeapon(weaponsDataNFT: WeaponNFT, abilities: Ability[]) {
     guard: parseInt(getGearAttributeInfo(weaponsDataNFT.attributes, "Guard") as string),
     lethality: parseInt(getGearAttributeInfo(weaponsDataNFT.attributes, "Lethality") as string),
     abilities: weaponAbilities as Ability[],
-    xp: parseInt(getGearAttributeInfo(weaponsDataNFT.attributes, "Experience") as string),
-    identity: getGearAttributeInfo(weaponsDataNFT.attributes, "Identity") as Identity,
+    // xp: parseInt(getGearAttributeInfo(weaponsDataNFT.attributes, "Experience") as string),
+    // identity: getGearAttributeInfo(weaponsDataNFT.attributes, "Identity") as Identity,
   };
   return new Weapon(data);
 }
@@ -121,7 +123,7 @@ export function useUserWeapons(forceFill: boolean = false) {
   const [weapons, setWeapons] = useState<Weapon[]>([]);
   const isConnected = useAppSelector((state) => state.authReducer.isConnected);
   const weaponsDataNFT = useAppSelector((state) => state.weaponReducer.userWeapons);
-  const isLoading = useAppSelector((state) => state.weaponReducer.isLoading);
+  const isLoading = useAppSelector((state) => state.weaponReducer.areUserWeaponsLoading);
   const abilities = useAbilities(false); // care to not update from monster slice or this will trigger here
   const dispatch = useAppDispatch();
 
@@ -132,6 +134,27 @@ export function useUserWeapons(forceFill: boolean = false) {
     if (!isLoading)
       dispatch(fillUserWeapons(forceFill));
   }, [isConnected]);
+
+  useEffect(() => {
+    if (weaponsDataNFT.length < 1 || abilities.length < 1)
+      return;
+    let dataToSet: Weapon[] = weaponsDataNFT.map(weaponDataNFT => createWeapon(weaponDataNFT, abilities));
+    dataToSet.sort((a, b) => a.id - b.id);
+    setWeapons(dataToSet);
+  }, [weaponsDataNFT, abilities]);
+
+  return weapons;
+}
+
+export function useAllWeapons(forceFill: boolean = false) {
+  const [weapons, setWeapons] = useState<Weapon[]>([]);
+  const weaponsDataNFT = useAppSelector((state) => state.weaponReducer.allWeapons);
+  const abilities = useAbilities(false); // care to not update from monster slice or this will trigger here
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(fillAllWeapons(forceFill));
+  }, []);
 
   useEffect(() => {
     if (weaponsDataNFT.length < 1 || abilities.length < 1)
@@ -223,8 +246,8 @@ export function useStarter() {
             weaponAbilities.push(ability);
         });
         starterWeapon["abilities"] = weaponAbilities;
-        starterWeapon["xp"] = 0;
-        starterWeapon["identity"] = weaponsAvailables[i];
+        // starterWeapon["xp"] = 0;
+        // starterWeapon["identity"] = weaponsAvailables[i];
         starterWeapon["id"] = i;
         starters.push(new Weapon(starterWeapon));
       }

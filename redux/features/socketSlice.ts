@@ -225,7 +225,7 @@ const socketSlice = createSlice({
       // After the socket receive the event from the server in the middleware
       delete state.room.decks[action.payload.memberId];
     },
-    fightStarted: (state, action: PayloadAction<string>) => {
+    enterFight: (state, action: PayloadAction<string>) => {
       // After the socket receive the event from the server in the middleware
       const roomId = action.payload
 
@@ -251,7 +251,7 @@ const socketSlice = createSlice({
       state.room.acceptedMembers = [];
     },
     resetGoToRoomId: (state, action: PayloadAction) => {
-      // not in the middleware because it is just to reset the state after the fightStarted event.
+      // not in the middleware because it is just to reset the state after the enterFight event.
       state.room.goToRoomId = DEFAULT_ROOM_ID;
     },
     skillSelected: (state, action: PayloadAction<SkillsSelected>) => {

@@ -68,17 +68,19 @@ export enum RULE_ORDER {
 };
 
 export type ActionData = {
+  uid: string;
   caster: Weapon | Monster;
   target: Weapon | Monster;
   ability: Ability;
-  isCombo: boolean;
-  hasBeenDone: boolean;
+  isCombo?: boolean;
+  hasBeenDone?: boolean;
   fluxesUsed: number;
-  info: Dispatch<SetStateAction<string[]>>;
-  currentTurn: number;
+  info?: Dispatch<SetStateAction<string[]>>;
+  currentTurn?: number;
 };
 
 export class Action {
+  uid: string;
   caster: Weapon | Monster;
   target: Weapon | Monster;
   ability: Ability;
@@ -97,13 +99,14 @@ export class Action {
   historicSystem: null | HistoricSystem = null;
 
   constructor(data: ActionData) {
+    this.uid = data.uid;
     this.caster = data.caster;
     this.target = data.target;
     this.ability = data.ability;
     this.isCombo = data.isCombo || false;
     this.hasBeenDone = data.hasBeenDone || false;
     this.fluxesUsed = data.fluxesUsed || 0;
-    this.info = data.info;
+    this.info = data.info || undefined;
     this.currentTurn = data.currentTurn || 0;
   }
 

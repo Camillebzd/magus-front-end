@@ -5,6 +5,8 @@ import { createContract, createReadContract } from "@/scripts/utils";
 import { RootState } from "../store";
 import { Notify } from "notiflix";
 import { readContract } from "thirdweb";
+import { etherlinkTestnet } from "@/app/thirdwebInfo";
+import { getNFTs } from "thirdweb/extensions/erc721";
 
 const CONTRACT_ADDRESS = (process.env.NEXT_PUBLIC_CONTRACT_ADDRESS)!.toLowerCase();
 
@@ -34,7 +36,7 @@ export const fillUserWeapons = createAsyncThunk<WeaponNFT[], boolean, { state: R
       return [];
     }
     try {
-      const url = `https://testnet.explorer.etherlink.com/api/v2/addresses/${address}/nft?type=ERC-721`;
+      const url = `${etherlinkTestnet.blockExplorers![0].apiUrl}/v2/addresses/${address}/nft?type=ERC-721`;
       const response = await axios.get(url, {
         headers: {
           'accept': 'application/json'
@@ -103,14 +105,49 @@ export const refreshOwnedTokenMetadata = createAsyncThunk<{ weaponIndex: number,
   }
 );
 
+export const fillAllWeapons = createAsyncThunk<WeaponNFT[], boolean, { state: RootState }>(
+  'weapons/fillAllWeapons',
+  async (forceReaload: boolean, thunkAPI) => {
+    if (thunkAPI.getState().weaponReducer.allWeapons.length > 0 && !forceReaload)
+      return thunkAPI.getState().weaponReducer.allWeapons;
+    console.log("starting of fillAllWeapons");
+    try {
+      const contract = await createReadContract();
+      // TMP solution, ADD totalSupply on NFT contract
+      const totalSupply = 2;
+      let weapons: WeaponNFT[] = [];
+      await Promise.all(Array.from({ length: totalSupply }, (_, index) => index).map(async (tokenId) => {
+          let weaponURI = await readContract({
+            contract: contract,
+            method: "function tokenURI(uint256) view returns (string)",
+            params: [BigInt(tokenId)],
+          });
+          let weaponObj: WeaponNFT = JSON.parse(Buffer.from(weaponURI.substring(29), 'base64').toString('ascii'));
+          weaponObj.tokenId = tokenId.toString();
+          weapons.push(weaponObj);
+      }));
+      console.log("all weapons", weapons);
+      return weapons;
+    } catch (e) {
+      Notify.failure('An error occured during the nft data recovery.');
+      console.error(e);
+      return [];
+    }
+  }
+);
+
 type WeaponState = {
-  userWeapons: WeaponNFT[], // User weapons data
-  isLoading: boolean        // protection to prevent multiple call
+  userWeapons: WeaponNFT[],       // User weapons data
+  allWeapons: WeaponNFT[],        // All weapons data
+  areUserWeaponsLoading: boolean  // protection to prevent multiple call
+  areAllWeaponsLoading: boolean   // protection to prevent multiple call
 };
 
 const initialState = {
   userWeapons: [],
-  isLoading: false
+  allWeapons: [],
+  areUserWeaponsLoading: false,
+  areAllWeaponsLoading: false
 } as WeaponState;
 
 export const weapons = createSlice({
@@ -121,18 +158,28 @@ export const weapons = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(fillUserWeapons.pending, (state, action) => {
-      state.isLoading = true;
+      state.areUserWeaponsLoading = true;
     }),
       builder.addCase(fillUserWeapons.fulfilled, (state, action) => {
         state.userWeapons = action.payload;
-        state.isLoading = false;
+        state.areUserWeaponsLoading = false;
       }),
       builder.addCase(fillUserWeapons.rejected, (state, action) => {
-        state.isLoading = false;
+        state.areUserWeaponsLoading = false;
       }),
       builder.addCase(refreshOwnedTokenMetadata.fulfilled, (state, action) => {
         if (action.payload.newWeaponData)
           state.userWeapons[action.payload.weaponIndex] = action.payload.newWeaponData;
+      }),
+      builder.addCase(fillAllWeapons.pending, (state, action) => {
+        state.areAllWeaponsLoading = true;
+      }),
+      builder.addCase(fillAllWeapons.fulfilled, (state, action) => {
+        state.allWeapons = action.payload;
+        state.areAllWeaponsLoading = false;
+      }),
+      builder.addCase(fillAllWeapons.rejected, (state, action) => {
+        state.areAllWeaponsLoading = false;
       })
   }
 });
