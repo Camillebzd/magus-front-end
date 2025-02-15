@@ -9,7 +9,7 @@ export type RawDataAction = {
   uid: string;
   caster: string; // uid of the caster
   target: string; // uid of the target
-  ability: number; // id of the ability
+  ability: string; // uid of the ability
   fluxesUsed: number;
   currentTurn: number;
 }
@@ -21,23 +21,48 @@ class ActionManager {
 
   /**
    * Create an action from raw data.
+   * @dev The uid of the abilities should be set for monsters and weapons!!!!
    * @param rawDataAction Data of the action
+   * @param weapons Map of the weapons
+   * @param monsters Map of the monsters
    * @returns The action created from the data
    */
   createActionFromRawData(rawDataAction: RawDataAction, weapons: Map<Member.ID, Weapon>, monsters: Map<string, Monster>): Action | null {
-    const weapon = weapons.get(rawDataAction.caster);
-    const monster = monsters.get(rawDataAction.target);
-    const ability = weapon?.abilities.filter(ability => ability.id == rawDataAction.ability)[0];
-
-    if (!weapon || !monster || !ability) {
-      console.error("Error: couldn't create the action from the raw data.");
+    // find the caster in the weapons or monsters
+    const caster = weapons.get(rawDataAction.caster) || monsters.get(rawDataAction.caster);
+    if (!caster) {
+      console.error("Error: couldn't find the caster for the action from the raw data, uid: " + rawDataAction.caster);
       return null;
     }
+    // find the target in the weapons or monsters
+    // const targets: (Weapon | Monster | null)[] = rawDataAction.target.map(targetUid => {
+    //   const target = weapons.get(targetUid) || monsters.get(targetUid);
+    //   if (!target) {
+    //     console.error("Error: couldn't find the target for the action from the raw data, uid: " + targetUid);
+    //     return null;
+    //   }
+    //   return target;
+    // });
+    // if (targets.includes(null)) {
+    //   return null;
+    // }
+    const target = weapons.get(rawDataAction.caster) || monsters.get(rawDataAction.caster);
+    if (!target) {
+      console.error("Error: couldn't find the target for the action from the raw data, uid: " + rawDataAction.target);
+      return null;
+    }
+    // // find the ability in the caster's abilities
+    const ability = caster.abilities.find(ability => ability.uid === rawDataAction.ability);
+    if (!ability) {
+      console.error("Error: couldn't find the ability for the action from the raw data, uid: " + rawDataAction.ability);
+      return null;
+    }
+
     return new Action({
       uid: rawDataAction.uid,
-      caster: weapon,
+      caster: caster,
       ability: ability,
-      target: monster,
+      target: target,
       fluxesUsed: rawDataAction.fluxesUsed,
       currentTurn: rawDataAction.currentTurn
     });
@@ -53,7 +78,7 @@ class ActionManager {
       uid: action.uid,
       caster: action.caster.uid,
       target: action.target.uid,
-      ability: action.ability.id,
+      ability: action.ability.uid,
       fluxesUsed: action.fluxesUsed,
       currentTurn: action.currentTurn
     };

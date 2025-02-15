@@ -7,7 +7,7 @@ import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import Entity from '@/components/Entity';
 import Chat from '@/components/Chat';
 import AbilityCard from '@/components/AbilityCard';
-import { Ability, fromRawAbilityToAbility } from '@/scripts/abilities';
+import { Ability, fromRawAbilityToAbility, RawDataDeck } from '@/scripts/abilities';
 import { Monster, Weapon } from '@/scripts/entities';
 import { Action, END_OF_TURN } from '@/scripts/actions';
 import { resolveActions } from '@/scripts/fight';
@@ -82,24 +82,24 @@ export default function Page({params}: {params: {roomId: string}}) {
     setSocket(socketInstance);
 
     // Listen to events related to hand, deck and discard
-    socketInstance.on('setDeck', (cards: {[key: number]: number}) => {
+    socketInstance.on('setDeck', (cards: RawDataDeck) => {
       console.log('setDeck', cards);
       const deckToSet: Ability[] = fromRawAbilityToAbility(cards, weapon!.abilities);
       setDeck(deckToSet);
     });
-    socketInstance.on('setHand', (cards: {[key: number]: number}) => {
+    socketInstance.on('setHand', (cards: RawDataDeck) => {
       console.log('setHand', cards);
       const handToSet: Ability[] = fromRawAbilityToAbility(cards, weapon!.abilities);
       setHand(handToSet);
     });
 
-    socketInstance.on('drawCards', (cards: {[key: number]: number}) => {
+    socketInstance.on('drawCards', (cards: RawDataDeck) => {
       console.log('drawCards', cards);
       const cardToDraw: Ability[] = fromRawAbilityToAbility(cards, weapon!.abilities);
       setHand((currentHand) => [...currentHand, ...cardToDraw]);
       setDeck((currentDeck) => currentDeck.filter(ability => !cardToDraw.includes(ability)));
     });
-    socketInstance.on('discardCards', (cards: {[key: number]: number}) => {
+    socketInstance.on('discardCards', (cards: RawDataDeck) => {
       console.log('discardCards', cards);
       const cardToDiscard: Ability[] = fromRawAbilityToAbility(cards, weapon!.abilities);
       setDiscard((currentDiscard) => [...currentDiscard, ...cardToDiscard]);
@@ -160,13 +160,13 @@ export default function Page({params}: {params: {roomId: string}}) {
     const weaponData = allWeapons.find(weapon => weapon.id === parseInt(room.weapons[userId]))?.clone();
     if (!weapon && weaponData) {
       // weaponData.setLogger(setInfo);
-      const userDeck = room.decks[userId];
-      const deckToAttach: Ability[] = []
-      weaponData.abilities.forEach(ability => {
-        for (let i = 0; i < userDeck[ability.id]; i++)
-          deckToAttach.push(ability);
-      });
-      weaponData.fillDeck(deckToAttach);
+      // const userDeck = room.decks[userId];
+      // const deckToAttach: Ability[] = []
+      // weaponData.abilities.forEach(ability => {
+      //   for (let i = 0; i < userDeck[ability.id]; i++)
+      //     deckToAttach.push(ability);
+      // });
+      // weaponData.fillDeck(deckToAttach);
       weaponData.uid = userId;
       setWeapon(weaponData);
     }

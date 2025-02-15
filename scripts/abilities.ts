@@ -20,6 +20,20 @@ export type AbilityData = {
   tier: Tier,
 };
 
+// export type AbilityFromDB = AbilityData & {_id: string};
+export type AbilityFromDB = {
+  _id: string
+  id: number,
+  name: string,
+  damage: number,
+  initiative: number,
+  type: AbilityType,
+  isMagical: boolean,
+  effects: number[],
+  effectsValue: EffectValue[],
+  tier: Tier,
+}
+
 export class Ability {
   id: number = 0;
   name: string = "Unknown";
@@ -31,8 +45,10 @@ export class Ability {
   effectsValue: EffectValue[] = [];
   tier: Tier = 4;
   idInDeck = 0;
+  uid: string;
 
-  constructor(data: AbilityData) {
+  constructor(data: AbilityData | AbilityFromDB, uid?: string) {
+    this.uid = uid || "0"; // not in the DB
     this.id = data.id;
     this.name = data.name;
     this.damage = data.damage;
@@ -55,7 +71,8 @@ export class Ability {
       effects: this.effects,
       effectsValue: this.effectsValue,
       tier: this.tier,
-    } as AbilityData;
+      uid: this.uid
+    } as AbilityData & {uid: string};
   }
 
   clone() {
@@ -69,7 +86,7 @@ export class Ability {
       effects: this.effects,
       effectsValue: this.effectsValue,
       tier: this.tier
-    });
+    }, this.uid);
   }
 };
 
@@ -122,16 +139,20 @@ export type Order = {
   description: string;  
 };
 
-/// Object with key as the abilityId and value as the number of copies
-export type RAW_ABILITIES = {[abilityId: string]: number};
+/// Object with key as the abilityId and value as array of abilityUid
+export type RawDataDeck = {[abilityId: string]: string[]};
 
-export function fromRawAbilityToAbility(data: RAW_ABILITIES, abilityList: Ability[]): Ability[] {
-  const abilities: Ability[] = []
-  Object.entries(data).forEach(([abilityId, amount]) => {
+export function fromRawAbilityToAbility(data: RawDataDeck, abilityList: Ability[]): Ability[] {
+  const abilities: Ability[] = [];
+
+  Object.entries(data).forEach(([abilityId, uidList]) => {
     const ability = abilityList.find(ability => ability.id === parseInt(abilityId));
     if (ability) {
-      for (let i = 0; i < amount; i++)
-        abilities.push(ability);
+      for (let i = 0; i < uidList.length; i++) {
+        const newAbility = ability.clone();
+        newAbility.uid = uidList[i];
+        abilities.push(newAbility);
+      }
     }
   });
   return abilities;

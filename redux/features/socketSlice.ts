@@ -5,8 +5,7 @@ import * as Member from '@/sockets/@types/Member';
 import * as Monster from '@/sockets/@types/Monster';
 import { DEFAULT_ADMIN_ID, DEFAULT_ROOM_ID, RoomId } from '@/sockets/@types/Room';
 import { Skill } from '@/sockets/@types/Skill';
-
-export type Deck = { [key: number]: number };
+import { RawDataDeck } from "@/scripts/abilities";
 
 export type Room = {
   id: RoomId,
@@ -16,7 +15,7 @@ export type Room = {
   members: Member.FrontInstance[],
   monsters: Monster.Instance[],
   weapons: { [member: Member.ID]: string },
-  decks: { [member: Member.ID]: Deck },
+  decks: { [member: Member.ID]: RawDataDeck },
   acceptedMembers: Member.ID[],
   goToRoomId: RoomId
 };
@@ -34,7 +33,7 @@ export type RoomInfo = {
   members: Member.FrontInstance[] // fort the moment only members
   monsters: Monster.Instance[] // only monster id stored
   weapons: { [member: Member.ID]: string },
-  decks: { [member: Member.ID]: Deck },
+  decks: { [member: Member.ID]: RawDataDeck },
 
 };
 
@@ -123,7 +122,7 @@ const socketSlice = createSlice({
       // not store for the request, waiting for the server to confirm before removing monster
       return;
     },
-    selectWeaponAndDeck: (state, action: PayloadAction<{weaponId: string, deck: {[key: number]: number;}}>) => {
+    selectWeaponAndDeck: (state, action: PayloadAction<{weaponId: string, deck: RawDataDeck}>) => {
       // not store for the request, waiting for the server to confirm before adding weapon and deck
       return;
     },
@@ -217,11 +216,11 @@ const socketSlice = createSlice({
       // After the socket receive the event from the server in the middleware
       delete state.room.weapons[action.payload.memberId];
     },
-    deckAdded: (state, action: PayloadAction<{memberId: string, deck: Deck}>) => {
+    deckAdded: (state, action: PayloadAction<{memberId: string, deck: RawDataDeck}>) => {
       // After the socket receive the event from the server in the middleware
       state.room.decks[action.payload.memberId] = action.payload.deck;
     },
-    deckRemoved: (state, action: PayloadAction<{memberId: string, deck: Deck}>) => {
+    deckRemoved: (state, action: PayloadAction<{memberId: string, deck: RawDataDeck}>) => {
       // After the socket receive the event from the server in the middleware
       delete state.room.decks[action.payload.memberId];
     },

@@ -17,7 +17,8 @@ import { useState } from 'react';
 import { Weapon } from '@/scripts/entities';
 import { MouseEvent } from 'react';
 import { DECK_MAX_SIZE } from '@/scripts/systemValues';
-import { AbilityData } from '@/scripts/abilities';
+import { AbilityData, RawDataDeck } from '@/scripts/abilities';
+import UniqueIdGenerator from '@/scripts/UniqueIdGenerator';
 
 type decklistElem = {
   num: number,
@@ -82,10 +83,17 @@ const CreateDeckModal = ({ weapon, isOpen, onClose }: { weapon: Weapon, isOpen: 
   };
 
   const sendWeaponAndDeck = () => {
-    let rawDataDeck: {[key: number]: number} = {};
+    let rawDataDeck: RawDataDeck = {};
 
     if (deck.length === DECK_MAX_SIZE) {
-      list.map((elem) => rawDataDeck[elem.abilityData.id] = elem.num);
+      list.forEach((elem) => {
+        if (!rawDataDeck[elem.abilityData.id]) {
+          rawDataDeck[elem.abilityData.id] = [];
+        }
+        for (let i = 0; i < elem.num; i++) {
+          rawDataDeck[elem.abilityData.id].push(UniqueIdGenerator.getInstance().generateSnowflakeId());
+        }
+      });
       console.log("deck:", rawDataDeck);
       dispatch(socketActions.selectWeaponAndDeck({ weaponId: weapon.id.toString(), deck: rawDataDeck }));
       onClose();
