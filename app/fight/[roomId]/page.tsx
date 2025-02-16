@@ -174,7 +174,7 @@ export default function Page({params}: {params: {roomId: string}}) {
 
   // Set monster at begining (only one supported for the moment)
   useEffect(() => {
-    if (!allMonsters || allMonsters.length === 0)
+    if (!allMonsters || allMonsters.length === 0 || monster)
       return;
     let monsterData = allMonsters.find(monster => monster.id === room.monsters[0]?.id)?.clone();
     if (!monsterData) {
@@ -182,7 +182,11 @@ export default function Page({params}: {params: {roomId: string}}) {
       return;
     }
     monsterData.uid = room.monsters[0]?.uid;
+    monsterData.abilities.forEach(ability => {
+      ability.uid = room.monsters[0]?.abilities[ability.id][0];
+    });
     setMonster(monsterData);
+    console.log("monsterData", monsterData);
   }, [allMonsters]);
 
   const launchAbility = (ability: Ability, fluxesUsed: number = 0) => {
