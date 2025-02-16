@@ -61,6 +61,7 @@ export default function Page({params}: {params: {roomId: string}}) {
   const [turn, setTurn] = useState(1);
   let isPlayerCombo = useRef(false);
   let [actions, setActions] = useState<Action[]>([]);
+
   const addActions = (newActions: Action[]) => {
     setActions(currentActions => {
       return [
@@ -116,14 +117,15 @@ export default function Page({params}: {params: {roomId: string}}) {
       monsterMap.set(monster.uid, monster);
       console.log('weaponMap', weaponMap);
       console.log('monsterMap', monsterMap);  
-      console.log('monstersActions', monstersRawDataAction);
+      console.log('monstersActions raw', monstersRawDataAction);
       const monstersActions: Action[] = monstersRawDataAction
       .map(rawDataAction => {
         return actionManager.current.createActionFromRawData(rawDataAction, weaponMap, monsterMap);
       })
       .filter((action): action is Action => action !== null);
+      console.log('monstersActions', monstersActions);
       if (monstersActions.length > 0) {
-        // addActions(monstersActions);
+        addActions(monstersActions);
       }
     });
 
@@ -256,14 +258,14 @@ export default function Page({params}: {params: {roomId: string}}) {
                 />
               </div>
               <div>
-                {/* {actions.length > 0 ? 
+                {actions.length > 0 ? 
                   actions?.map(action => (
                     <div key={action.uid}>
                       <p>{action?.caster.name}: {action?.ability.name} {"->"} {action?.target.name}</p>
                     </div>
                   ))
                   : <p>No actions</p>
-                } */}
+                }
               </div>
               <div>
                 <Entity

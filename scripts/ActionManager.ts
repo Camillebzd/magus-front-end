@@ -46,7 +46,7 @@ class ActionManager {
     // if (targets.includes(null)) {
     //   return null;
     // }
-    const target = weapons.get(rawDataAction.caster) || monsters.get(rawDataAction.caster);
+    const target = weapons.get(rawDataAction.target) || monsters.get(rawDataAction.target);
     if (!target) {
       console.error("Error: couldn't find the target for the action from the raw data, uid: " + rawDataAction.target);
       return null;
