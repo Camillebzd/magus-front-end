@@ -18,6 +18,7 @@ import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { socketActions } from '@/redux/features/socketSlice'
 import ConnectionDot from './ConnectionDot'
 import { client, etherlinkTestnet } from '@/app/thirdwebInfo'
+import AcceptFightListener from './AcceptFightListener'
 
 const MENU_LIST = [
   { text: "Home", href: "/" },
@@ -149,6 +150,7 @@ const Navbar = () => {
           {MENU_LIST.map(elem => <NavItem key={elem.text} text={elem.text} href={elem.href} isActive={activeSection === elem.href} setActiveSection={setActiveSection} />)}
         </Flex>
       </Flex>
+      <AcceptFightListener />
     </Flex>
   );
 };

@@ -351,9 +351,11 @@ function getStorageValue<Type>(key: string, defaultValue: Type) {
 }
 
 export const useLocalStorage = <Type>(key: string, defaultValue: Type): [Type, Dispatch<SetStateAction<Type>>] => {
-  const [value, setValue] = useState(() => {
-    return getStorageValue(key, defaultValue);
-  });
+  const [value, setValue] = useState(() => getStorageValue(key, defaultValue));
+
+  useEffect(() => {
+    setValue(getStorageValue(key, defaultValue));
+  }, [key]);
 
   useEffect(() => {
     localStorage.setItem(key, JSON.stringify(value));

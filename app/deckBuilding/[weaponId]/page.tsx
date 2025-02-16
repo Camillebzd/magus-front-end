@@ -19,8 +19,8 @@ type decklistElem = {
 export default function Page({params}: {params: {weaponId: string}}) {
   const isConnected = useAppSelector((state) => state.authReducer.isConnected);
   const userWeapon = useUserWeapons(false).find(weapon => weapon.id == parseInt(params.weaponId));
-  const [deck, dispatchDeck] = useImmerReducer(deckBuildingReducer, deckBuildingInitialState);
   const [deckData, setDeckData] = useDeckDataStorage(parseInt(params.weaponId));
+  const [deck, dispatchDeck] = useImmerReducer(deckBuildingReducer, deckData);
   const list: decklistElem[] = deck.reduce((acc: decklistElem[], curr) => {
     for (let i = 0; i < acc.length; i++) {
       if (acc[i].abilityData.id == curr.id) {

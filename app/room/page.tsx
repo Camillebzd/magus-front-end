@@ -13,7 +13,6 @@ import CopyableField from '@/components/CopyableField';
 import EntityList from '@/components/Room/EntityList';
 import MonsterList from '@/components/Room/MonsterList';
 import { useRouter } from 'next/navigation';
-import AcceptFightListener from '@/components/AcceptFightListener';
 
 export default function Page() {
   const router = useRouter();
@@ -105,7 +104,6 @@ export default function Page() {
       </div>
       <CreateRoomModal isOpen={isOpenCreate} onClose={onCloseCreate} />
       <JoinRoomModal isOpen={isOpenJoin} onClose={onCloseJoin} />
-      <AcceptFightListener />
     </main>
   );
 };
