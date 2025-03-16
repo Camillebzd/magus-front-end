@@ -3,7 +3,7 @@
 import { Button, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Text } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
-const SelectFluxesModal = ({isOpen, onClose, launchAbility, fluxesAvailables}: {isOpen: boolean, onClose: () => void, launchAbility: (fluxeSelected: number) => void, fluxesAvailables: number}) => {
+const SelectFluxesModal = ({isOpen, onClose, selectAbility, fluxesAvailables}: {isOpen: boolean, onClose: () => void, selectAbility: (fluxeSelected: number) => void, fluxesAvailables: number}) => {
   const [fluxesSelected, setFluxesSelected] = useState(1);
 
   useEffect(() => {
@@ -33,7 +33,7 @@ const SelectFluxesModal = ({isOpen, onClose, launchAbility, fluxesAvailables}: {
           <Button colorScheme='red' mr={3} onClick={onClose}>
             Cancel
           </Button>
-          <Button colorScheme='blue' onClick={() => launchAbility(fluxesSelected)}>
+          <Button colorScheme='blue' onClick={() => selectAbility(fluxesSelected)}>
             Launch
           </Button>
         </ModalFooter>

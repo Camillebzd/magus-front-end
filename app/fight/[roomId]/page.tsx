@@ -1,13 +1,13 @@
 'use client'
 
-import { MutableRefObject, useEffect, useRef, useState } from 'react';
+import { MutableRefObject, use, useEffect, useRef, useState } from 'react';
 import styles from '@/app/page.module.css';
 
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import Entity from '@/components/Entity';
 import Chat from '@/components/Chat';
 import AbilityCard from '@/components/AbilityCard';
-import { Ability, fromRawAbilityToAbility, RawDataDeck } from '@/scripts/abilities';
+import { Ability, fromRawAbilitiesToAbilities, RawDataAbilities } from '@/scripts/abilities';
 import { Monster, Weapon } from '@/scripts/entities';
 import { Action, END_OF_TURN } from '@/scripts/actions';
 import { resolveActions } from '@/scripts/fight';
@@ -22,6 +22,7 @@ import { socketActions } from '@/redux/features/socketSlice';
 import SocketFactory from '@/sockets/SocketFactory';
 import { Socket } from 'socket.io-client';
 import ActionManager, { RawDataAction } from '@/scripts/ActionManager';
+import UniqueIdGenerator from '@/scripts/UniqueIdGenerator';
 
 enum GAME_PHASES {
   WAIT_BEFORE_START,
@@ -83,26 +84,32 @@ export default function Page({params}: {params: {roomId: string}}) {
     setSocket(socketInstance);
 
     // Listen to events related to hand, deck and discard
-    socketInstance.on('setDeck', (cards: RawDataDeck) => {
+    socketInstance.on('setDeck', (cards: RawDataAbilities) => {
       console.log('setDeck', cards);
-      const deckToSet: Ability[] = fromRawAbilityToAbility(cards, weapon!.abilities);
-      setDeck(deckToSet);
+      const deckToSet: Ability[] = fromRawAbilitiesToAbilities(cards, weapon!.abilities);
+      // setDeck(deckToSet);
+      const weaponCopied = weapon.clone();
+      weaponCopied.deck = deckToSet;
+      setWeapon(weaponCopied);
     });
-    socketInstance.on('setHand', (cards: RawDataDeck) => {
+    socketInstance.on('setHand', (cards: RawDataAbilities) => {
       console.log('setHand', cards);
-      const handToSet: Ability[] = fromRawAbilityToAbility(cards, weapon!.abilities);
-      setHand(handToSet);
+      const handToSet: Ability[] = fromRawAbilitiesToAbilities(cards, weapon!.abilities);
+      // setHand(handToSet);
+      const weaponCopied = weapon.clone();
+      weaponCopied.hand = handToSet;
+      setWeapon(weaponCopied);
     });
 
-    socketInstance.on('drawCards', (cards: RawDataDeck) => {
+    socketInstance.on('drawCards', (cards: RawDataAbilities) => {
       console.log('drawCards', cards);
-      const cardToDraw: Ability[] = fromRawAbilityToAbility(cards, weapon!.abilities);
+      const cardToDraw: Ability[] = fromRawAbilitiesToAbilities(cards, weapon!.abilities);
       setHand((currentHand) => [...currentHand, ...cardToDraw]);
       setDeck((currentDeck) => currentDeck.filter(ability => !cardToDraw.includes(ability)));
     });
-    socketInstance.on('discardCards', (cards: RawDataDeck) => {
+    socketInstance.on('discardCards', (cards: RawDataAbilities) => {
       console.log('discardCards', cards);
-      const cardToDiscard: Ability[] = fromRawAbilityToAbility(cards, weapon!.abilities);
+      const cardToDiscard: Ability[] = fromRawAbilitiesToAbilities(cards, weapon!.abilities);
       setDiscard((currentDiscard) => [...currentDiscard, ...cardToDiscard]);
       setHand((currentHand) => currentHand.filter(ability => !cardToDiscard.includes(ability)));
     });
@@ -110,22 +117,22 @@ export default function Page({params}: {params: {roomId: string}}) {
       setPhase(GAME_PHASES.PLAYER_CHOOSE_ABILITY);
     });
     // tmp create map for weapon and monster as only one supported
-    socketInstance.on('monstersActions', (monstersRawDataAction: RawDataAction[]) => {
+    socketInstance.on('actionAdded', (rawDataActions: RawDataAction[]) => {
       const weaponMap = new Map<string, Weapon>();
       weaponMap.set(weapon.uid, weapon);
       const monsterMap = new Map<string, Monster>();
       monsterMap.set(monster.uid, monster);
       console.log('weaponMap', weaponMap);
       console.log('monsterMap', monsterMap);  
-      console.log('monstersActions raw', monstersRawDataAction);
-      const monstersActions: Action[] = monstersRawDataAction
+      console.log('receveidActions raw', rawDataActions);
+      const receveidActions: Action[] = rawDataActions
       .map(rawDataAction => {
         return actionManager.current.createActionFromRawData(rawDataAction, weaponMap, monsterMap);
       })
       .filter((action): action is Action => action !== null);
-      console.log('monstersActions', monstersActions);
-      if (monstersActions.length > 0) {
-        addActions(monstersActions);
+      console.log('receveidActions', receveidActions);
+      if (receveidActions.length > 0) {
+        addActions(receveidActions);
       }
     });
 
@@ -144,7 +151,7 @@ export default function Page({params}: {params: {roomId: string}}) {
       socketInstance.off('drawCards');
       socketInstance.off('discardCards');
       socketInstance.off('startFight');
-      socketInstance.off('monstersActions');
+      socketInstance.off('actionAdded');
     };
   }, [weapon, monster]);
 
@@ -191,22 +198,28 @@ export default function Page({params}: {params: {roomId: string}}) {
     console.log("monsterData", monsterData);
   }, [allMonsters]);
 
-  const launchAbility = (ability: Ability, fluxesUsed: number = 0) => {
+  const selectAbility = (ability: Ability, fluxesUsed: number = 0) => {
     // if (phase !== GAME_PHASES.PLAYER_CHOOSE_ABILITY && !weapon?.isEntityAbleToPlay())
     //   return;
-    // actions.current.push(new Action({ caster: weapon!, ability: ability, target: monster!, hasBeenDone: false, isCombo: isPlayerCombo.current, fluxesUsed: fluxesUsed, info: setInfo, currentTurn: turn }));
-    // weapon?.discardFromHand(ability);
-    // console.log(actions);
-    // resolve
-    // resolveLoop();
-
-
+    if (!socket || !weapon || !monster)
+      return;
+    // TODO Create the raw data of an action and send it to the server
+    const actionData: RawDataAction = {
+      uid: UniqueIdGenerator.getInstance().generateSnowflakeId(2),
+      caster: weapon.uid,
+      target: monster.uid,
+      ability: ability.uid,
+      fluxesUsed: fluxesUsed,
+      currentTurn: turn,
+    };
+    console.log('actionData', actionData);
+    socket.emit('selectAbility', actionData);
   };
 
   const execAbilityModal = (fluxeSelected: number) => {
     if (abilitySelected.current) {
       weapon?.useFluxes(fluxeSelected);
-      launchAbility(abilitySelected.current, fluxeSelected);
+      selectAbility(abilitySelected.current, fluxeSelected);
       abilitySelected.current = null;
     }
     fluxeModal.onClose();
@@ -222,7 +235,7 @@ export default function Page({params}: {params: {roomId: string}}) {
       fluxeModal.onOpen();
     }
     else
-      launchAbility(abilityClicked, 0);
+      selectAbility(abilityClicked, 0);
   };
 
   const phasePrinter = () => {
@@ -281,17 +294,16 @@ export default function Page({params}: {params: {roomId: string}}) {
               <div className={styles.phasePrinter}>
                 <p>{phasePrinter()}</p>
                 <p>Actual turn: {turn}</p>
-                <p>deck: {deck.length}</p>
+                <p>deck: {weapon?.deck.length}</p>
                 <p>discard: {discard.length}</p>
               </div>
               <div className={styles.abilitiesCointainer}>
-                {/* {weapon?.abilities.map(ability => <AbilityCard key={ability.id} onClick={() => onAbilityClick(ability)} ability={ability}/>)} */}
-                {hand.map((ability, index) => <AbilityCard key={index} onClick={() => onAbilityClick(ability)} ability={ability} />)}
+                {weapon?.hand.map((ability) => <AbilityCard key={ability.uid} onClick={() => onAbilityClick(ability)} ability={ability} />)}
               </div>
             </div>
           </div>
           {monster && weapon && <EndOfFightModal isOpen={endOfFightModal.isOpen} onClose={endOfFightModal.onClose} weaponId={weapon!.id} difficulty={monster!.difficulty} isWinner={won.current} />}
-          {monster && weapon && <SelectFluxesModal isOpen={fluxeModal.isOpen} onClose={fluxeModal.onClose} launchAbility={execAbilityModal} fluxesAvailables={weapon.fluxes} />}
+          {monster && weapon && <SelectFluxesModal isOpen={fluxeModal.isOpen} onClose={fluxeModal.onClose} selectAbility={execAbilityModal} fluxesAvailables={weapon.fluxes} />}
         </>
       )}
     </main>

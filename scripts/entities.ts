@@ -16,12 +16,13 @@ import {
   MAX_DECAYING_MODIFIER_COUNTER,
 } from "./systemValues";
 // import { Action } from "./actions";
-import { Ability, Modifier, ModifierDirection } from "./abilities";
+import { Ability, Modifier, ModifierDirection, RawDataAbilities } from "./abilities";
 import { Action } from "./actions";
 import { Dispatch, SetStateAction } from "react";
 import { HistoricSystem } from "./historic";
+import UniqueIdGenerator from '@/scripts/UniqueIdGenerator';
 
-export const SPEED_STATE = {"SLOW": -1, "NORMAL": 1, "FAST": 1};
+export const SPEED_STATE = { "SLOW": -1, "NORMAL": 1, "FAST": 1 };
 
 /**
  * This type represent an entity with only basic data.
@@ -128,7 +129,7 @@ export type EntityInfo = {
   played: boolean,
 }
 
-export class Entity {
+export abstract class Entity {
   id = 0;
   uid = "0x"; // monster: unique id in case there is multiple monster of the same type -> id, weapon: member id (owner)
   name = "";
@@ -167,6 +168,7 @@ export class Entity {
   };
   fluxes = 0;
   abilities: Ability[] = [];
+  deck: Ability[] = []; // contains the abilities of the entity for the fight system (all the abilities should have an UID in this array)
   modifiers: Modifier[] = [];
   isNPC = true;
   played = false;
@@ -233,6 +235,28 @@ export class Entity {
     //   return;
     // this.info((currentInfo) => [...currentInfo, message]);
   }
+
+  /**
+   * Set the deck on an entity
+   * @param newDeck New deck
+   */
+  setDeck(newDeck: Ability[]) {
+    this.deck = newDeck;
+  }
+
+  /**
+   * Is the ability usable for the entity
+   * @param abilityUid Ability UID
+   * @returns true if the ability is usable, false otherwise
+   */
+  abstract isAbilityUsable(abilityUid: string): boolean;
+
+  /**
+   * Returns the ability matching the UID provided, undefined otherwise
+   * @param abilityUid Ability UID
+   * @returns The ability if the UID match one, undefined otherwise
+   */
+  abstract getAbilityByUID(abilityUid: string): Ability | undefined;
 
   // return a ability of the entity or undefined
   getAbility(abilityId: number) {
@@ -648,12 +672,12 @@ export type WeaponMint = {
   abilities: string[],
 }
 
-export type Identity = "None" | string;
+// export type Identity = "None" | string;
 
-export type WeaponDataAddition = {
-  identity: Identity,
-  xp: number
-}
+// export type WeaponDataAddition = {
+//   identity: Identity,
+//   xp: number
+// }
 
 export type WeaponData = EntityData;// & WeaponDataAddition;
 
@@ -671,8 +695,18 @@ export class Weapon extends Entity {
     // this.xp = data.xp;
   }
 
+  isAbilityUsable(abilityUid: string): boolean {
+    // On entity check if the ability is in the hand array
+    return this.hand.findIndex((ability) => ability.uid === abilityUid) !== -1;
+  }
+
+  getAbilityByUID(abilityUid: string): Ability | undefined {
+    // On entity check if the ability is in the hand or deck array    
+    return this.hand.find((ability) => ability.uid === abilityUid) || this.deck.find((ability) => ability.uid === abilityUid);
+  }
+
   clone() {
-    return new Weapon(
+    let newWeapon = new Weapon(
       {
         id: this.id,
         uid: this.uid,
@@ -699,6 +733,10 @@ export class Weapon extends Entity {
         // identity: this.identity
       }
     );
+    newWeapon.deck = this.deck;
+    newWeapon.discard = this.discard;
+    newWeapon.hand = this.hand;    
+    return newWeapon;
   }
 
 
@@ -766,6 +804,7 @@ export type MonsterID = number;   // id of the monster from DB to represent him
 export interface MonsterInstance {
   uid: MonsterUID;
   id: MonsterID;
+  abilities: RawDataAbilities; // not named deck but is the same TODO: custom type with 1 uid and % of chance to use the ability7
 }
 
 /**
@@ -810,10 +849,30 @@ export class Monster extends Entity {
     this.difficulty = data.difficulty;
   }
 
+  isAbilityUsable(abilityUid: string): boolean {
+    // On monster check if the ability is in the deck array
+    return this.deck.findIndex((ability) => ability.uid === abilityUid) !== -1;
+  }
+
+  getAbilityByUID(abilityUid: string): Ability | undefined {
+    // On entity check if the ability is in deck array    
+    return this.deck.find((ability) => ability.uid === abilityUid);
+  }
+
   instance(): MonsterInstance {
+    let abilities: RawDataAbilities = {};
+
+    for (const ability of this.abilities) {
+      const abilityId = ability.id;
+      if (!abilities[abilityId]) {
+        abilities[abilityId] = [];
+      }
+      abilities[abilityId].push(ability.uid);
+    }
     return {
       uid: this.uid,
       id: this.id,
+      abilities: abilities
     }
   }
 
@@ -867,15 +926,15 @@ export class Monster extends Entity {
     this.useFluxes(fluxesUsed);
     // if (!this.info)
     //   return undefined;
-    return new Action({ 
-      uid: getRandomInt(1000000000000).toString(),
-      caster: this, 
-      ability: monsterAbility, 
-      target: target, 
-      hasBeenDone: false, 
-      isCombo: isCombo, 
-      fluxesUsed: fluxesUsed,/* info: this.info,*/ 
-      currentTurn: turn 
+    return new Action({
+      uid: UniqueIdGenerator.getInstance().generateSnowflakeId(2),
+      caster: this,
+      ability: monsterAbility,
+      target: target,
+      hasBeenDone: false,
+      isCombo: isCombo,
+      fluxesUsed: fluxesUsed,/* info: this.info,*/
+      currentTurn: turn
     });
   }
 }

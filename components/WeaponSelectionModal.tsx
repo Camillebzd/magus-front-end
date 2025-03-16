@@ -10,7 +10,7 @@ import { Weapon } from "@/scripts/entities";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { socketActions } from "@/redux/features/socketSlice";
 import { DEFAULT_ROOM_ID } from "@/sockets/@types/Room";
-import { RawDataDeck } from "@/scripts/abilities";
+import { RawDataAbilities } from "@/scripts/abilities";
 import { DECK_MAX_SIZE } from "@/scripts/systemValues";
 import UniqueIdGenerator from "@/scripts/UniqueIdGenerator";
 
@@ -56,13 +56,13 @@ const WeaponSelectionModal = ({isOpen, onClose, monsterId}: {isOpen: boolean, on
       // push the monster to the room
       dispatch(socketActions.addMonsters([monsterId]));
       // push the weapon and deck to the room
-      let rawDataDeck: RawDataDeck = {};
+      let rawDataDeck: RawDataAbilities = {};
       if (deck.length === DECK_MAX_SIZE) {
         deck.forEach((elem) => {
           if (!rawDataDeck[elem.id]) {
             rawDataDeck[elem.id] = [];
           }
-          rawDataDeck[elem.id].push(UniqueIdGenerator.getInstance().generateSnowflakeId());
+          rawDataDeck[elem.id].push(UniqueIdGenerator.getInstance().generateSnowflakeId(200));
         });
         dispatch(socketActions.selectWeaponAndDeck({ weaponId: weaponSelectedID.toString(), deck: rawDataDeck }));
       } else {

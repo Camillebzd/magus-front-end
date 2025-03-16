@@ -17,7 +17,7 @@ import { useState } from 'react';
 import { Weapon } from '@/scripts/entities';
 import { MouseEvent } from 'react';
 import { DECK_MAX_SIZE } from '@/scripts/systemValues';
-import { AbilityData, RawDataDeck } from '@/scripts/abilities';
+import { AbilityData, RawDataAbilities } from '@/scripts/abilities';
 import UniqueIdGenerator from '@/scripts/UniqueIdGenerator';
 
 type decklistElem = {
@@ -83,7 +83,7 @@ const CreateDeckModal = ({ weapon, isOpen, onClose }: { weapon: Weapon, isOpen: 
   };
 
   const sendWeaponAndDeck = () => {
-    let rawDataDeck: RawDataDeck = {};
+    let rawDataDeck: RawDataAbilities = {};
 
     if (deck.length === DECK_MAX_SIZE) {
       list.forEach((elem) => {
@@ -91,7 +91,7 @@ const CreateDeckModal = ({ weapon, isOpen, onClose }: { weapon: Weapon, isOpen: 
           rawDataDeck[elem.abilityData.id] = [];
         }
         for (let i = 0; i < elem.num; i++) {
-          rawDataDeck[elem.abilityData.id].push(UniqueIdGenerator.getInstance().generateSnowflakeId());
+          rawDataDeck[elem.abilityData.id].push(UniqueIdGenerator.getInstance().generateSnowflakeId(200));
         }
       });
       console.log("deck:", rawDataDeck);

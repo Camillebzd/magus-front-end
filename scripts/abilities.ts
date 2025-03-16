@@ -1,3 +1,5 @@
+import UniqueIdGenerator from "./UniqueIdGenerator";
+
 export type EffectValue = {
   id: number;
   value: number;
@@ -88,6 +90,10 @@ export class Ability {
       tier: this.tier
     }, this.uid);
   }
+
+  generateUID() {
+    this.uid = UniqueIdGenerator.getInstance().generateSnowflakeId(200);
+  }
 };
 
 export type AftermathType = "MODIFIER" | "RULE";
@@ -139,10 +145,17 @@ export type Order = {
   description: string;  
 };
 
-/// Object with key as the abilityId and value as array of abilityUid
-export type RawDataDeck = {[abilityId: string]: string[]};
+/**
+ * Represent the raw data of a deck (or hand).
+ * The key is the id of the skill and the value
+ * an array with the uid of the skill.
+ * Example: {1: ["uid1", "uid2"], 2: ["uid3"]}
+ */
+export type RawDataAbilities = {
+  [key: number]: string[];
+};
 
-export function fromRawAbilityToAbility(data: RawDataDeck, abilityList: Ability[]): Ability[] {
+export function fromRawAbilitiesToAbilities(data: RawDataAbilities, abilityList: Ability[]): Ability[] {
   const abilities: Ability[] = [];
 
   Object.entries(data).forEach(([abilityId, uidList]) => {

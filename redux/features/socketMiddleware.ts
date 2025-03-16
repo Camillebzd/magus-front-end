@@ -8,7 +8,7 @@ import * as Member from '@/sockets/@types/Member';
 import * as Monster from '@/sockets/@types/Monster';
 import { connect } from "./authSlice";
 import { Notify } from "notiflix";
-import { RawDataDeck } from "@/scripts/abilities";
+import { RawDataAbilities } from "@/scripts/abilities";
 
 enum SocketEvent {
   // Native events
@@ -145,13 +145,13 @@ const socketMiddleware: Middleware = (store) => {
         });
 
         // Handle the selection of deck in the room
-        socket.socket.on(SocketEvent.DeckAdded, (data: { memberId: string, deck: RawDataDeck }) => {
+        socket.socket.on(SocketEvent.DeckAdded, (data: { memberId: string, deck: RawDataAbilities }) => {
           store.dispatch(socketActions.deckAdded(data));
           console.log(`Member ${data.memberId} selected a deck ${data.deck}`);
         });
 
         // Handle the deletion of deck in the room
-        socket.socket.on(SocketEvent.DeckRemoved, (data: { memberId: string, deck: RawDataDeck }) => {
+        socket.socket.on(SocketEvent.DeckRemoved, (data: { memberId: string, deck: RawDataAbilities }) => {
           store.dispatch(socketActions.deckRemoved(data));
           console.log(`Member ${data.memberId} unselected a deck ${data.deck}`);
         });
