@@ -102,7 +102,7 @@ const socketSlice = createSlice({
       // not store for the request of user creation
       return;
     },
-    createNewRoom: (state, action: PayloadAction<{ password: string }>) => {
+    createNewRoom: (state, action: PayloadAction<string>) => {
       // not store for the request, waiting for the server to confirm before joining
       return;
     },

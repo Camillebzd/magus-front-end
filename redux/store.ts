@@ -7,7 +7,7 @@ import weaponReducer from "./features/weaponSlice";
 import weaponDeckReducer from "./features/weaponDeckSlice";
 import socketReducer from "./features/socketSlice";
 
-import socketMiddleware from "./features/socketMiddleware";
+import socketMiddleware from "@/sockets/socketMiddleware";
 
 export const store = configureStore({
   reducer: {

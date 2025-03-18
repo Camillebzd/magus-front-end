@@ -45,7 +45,7 @@ const CreateRoomModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => 
 
   const createRoom = () => {
     setIsCreatingRoom(true);
-    dispatch(socketActions.createNewRoom({ password }));
+    dispatch(socketActions.createNewRoom(password));
   };
 
   return (

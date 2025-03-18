@@ -5,6 +5,7 @@ import { ThirdwebProvider } from "./thirdwebProvider";
 import Navbar from '@/components/Navbar'
 import { ReduxProvider } from "@/redux/provider";
 import { ChakraProviders } from './chakraProviders';
+import { SocketProvider } from '@/sockets/socketContext';
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -24,9 +25,11 @@ export default function RootLayout({
         <ReduxProvider>
           <ChakraProviders>
             <ThirdwebProvider>
-              <Navbar />
+              <SocketProvider>
+                <Navbar />
+                {children}
+              </SocketProvider>
             </ThirdwebProvider>
-            {children}
           </ChakraProviders>
         </ReduxProvider>
       </body>

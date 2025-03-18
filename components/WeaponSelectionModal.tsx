@@ -46,7 +46,7 @@ const WeaponSelectionModal = ({isOpen, onClose, monsterId}: {isOpen: boolean, on
     setIsCreatingFight(true);
     // check if the room is already created
     if (room.id === DEFAULT_ROOM_ID)
-      dispatch(socketActions.createNewRoom({ password: "" }));
+      dispatch(socketActions.createNewRoom(""));
   };
 
   // When the room is created, add the monster and the weapon to the room
