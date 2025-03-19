@@ -1,6 +1,8 @@
 import { Action } from "./actions";
 import { Monster, Weapon } from "./entities";
 import * as Member from "@/sockets/@types/Member";
+import { ATTACKER_SPEED_WEIGHT } from "./systemValues";
+import { getRandomInt } from "./utils";
 
 /**
  * Represent the raw data of an action.
@@ -82,6 +84,23 @@ class ActionManager {
       fluxesUsed: action.fluxesUsed,
       currentTurn: action.currentTurn
     };
+  }
+
+  /**
+   * Order the actions by speed and priority.
+   * @dev This function will modify the array of actions passed by reference.
+   * @param actions The actions to sort
+   */
+  sortActionsOrder(actions: Action[]) {
+    actions.sort((a, b) => {
+      let prioDif = (b.caster.getSpeedState() + b.getSpeedRule()) - (a.caster.getSpeedState() + a.getSpeedRule());
+      if (prioDif == 0) {
+        let speedDif = (b.ability.initiative * ((b.caster.stats.speed ** ATTACKER_SPEED_WEIGHT) / 1000)) - (a.ability.initiative * ((a.caster.stats.speed ** ATTACKER_SPEED_WEIGHT) / 1000));
+        return speedDif == 0 ? (getRandomInt(1) == 0 ? -1 : 1) : speedDif;
+      } else
+        return prioDif;
+    });
+    return actions;
   }
 }
 

@@ -70,7 +70,10 @@ export default function Page({ params }: { params: { roomId: string } }) {
           // Remove any existing action from the same caster
           const filtered = acc.filter(existing => existing.caster.uid !== newAction.caster.uid);
           // Add the new action
-          return [...filtered, newAction];
+          let newActions = [...filtered, newAction];
+          // Sort the actions
+          actionManager.current.sortActionsOrder(newActions);
+          return newActions;
         }, currentActions)
       ];
     });
