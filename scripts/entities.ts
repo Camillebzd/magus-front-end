@@ -735,7 +735,7 @@ export class Weapon extends Entity {
     );
     newWeapon.deck = this.deck;
     newWeapon.discard = this.discard;
-    newWeapon.hand = this.hand;    
+    newWeapon.hand = this.hand;
     return newWeapon;
   }
 
@@ -877,7 +877,7 @@ export class Monster extends Entity {
   }
 
   clone() {
-    return new Monster({
+    let newMonster = new Monster({
       id: this.id,
       uid: this.uid,
       name: this.name,
@@ -901,6 +901,8 @@ export class Monster extends Entity {
       abilities: this.abilities,
       difficulty: this.difficulty
     });
+    newMonster.deck = this.deck;
+    return newMonster;
   }
 
   launchRandomAbility(target: Monster | Weapon, isCombo: boolean, turn: number) {

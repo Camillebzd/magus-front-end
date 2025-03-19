@@ -52,7 +52,7 @@ class ActionManager {
       return null;
     }
     // // find the ability in the caster's abilities
-    const ability = caster.abilities.find(ability => ability.uid === rawDataAction.ability);
+    const ability = caster.getAbilityByUID(rawDataAction.ability);
     if (!ability) {
       console.error("Error: couldn't find the ability for the action from the raw data, uid: " + rawDataAction.ability);
       return null;

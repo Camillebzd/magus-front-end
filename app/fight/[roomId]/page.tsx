@@ -23,6 +23,7 @@ import SocketFactory from '@/sockets/SocketFactory';
 import { Socket } from 'socket.io-client';
 import ActionManager, { RawDataAction } from '@/scripts/ActionManager';
 import UniqueIdGenerator from '@/scripts/UniqueIdGenerator';
+import { useSocket } from '@/sockets/socketContext';
 
 enum GAME_PHASES {
   WAIT_BEFORE_START,
@@ -31,8 +32,10 @@ enum GAME_PHASES {
   RESOLUTION,
 }
 
-export default function Page({params}: {params: {roomId: string}}) {
-  const [socket, setSocket] = useState<Socket | null>(null);
+export default function Page({ params }: { params: { roomId: string } }) {
+  const socket = useSocket();
+  const isSocketInitialized = useRef(false);
+  const listenersInitialized = useRef(false);
 
   const pathname = usePathname();
   const room = useAppSelector((state) => state.socketReducer.room);
@@ -40,9 +43,6 @@ export default function Page({params}: {params: {roomId: string}}) {
   const isInTheRoom = pathname.split('/')[2] === room.id;
   const allWeapons = useAllWeapons(false);
   const allMonsters = useMonstersWorld(false);
-  const [hand, setHand] = useState<Ability[]>([]);
-  const [deck, setDeck] = useState<Ability[]>([]);
-  const [discard, setDiscard] = useState<Ability[]>([]);
   const [weapon, setWeapon] = useState<Weapon | undefined>(undefined);
   const [monster, setMonster] = useState<Monster | undefined>(undefined);
   // const monster = useMonstersWorld(false).find(monster => monster.id === room.monsters[0]?.id)?.clone(); // only taking the first one atm
@@ -76,68 +76,103 @@ export default function Page({params}: {params: {roomId: string}}) {
     });
   };
 
+  // First useEffect remains the same - just for socket initialization
+  useEffect(() => {
+    if (!socket || isSocketInitialized.current) return;
+
+    isSocketInitialized.current = true;
+
+    return () => {
+      console.log('cleaning up socket connections');
+      socket.off('setDeck');
+      socket.off('setHand');
+      socket.off('drawCards');
+      socket.off('discardCards');
+      socket.off('startFight');
+      socket.off('actionAdded');
+
+      // Reset the listeners flag on cleanup
+      listenersInitialized.current = false;
+    };
+  }, [socket]);
+
   // Socket init
   useEffect(() => {
-    if (!weapon || socket != null || !monster)
+    if (!socket || !weapon || !monster || !isSocketInitialized.current || listenersInitialized.current)
       return;
-    const socketInstance = SocketFactory.create().socket; // socket should be created already, otherwise things will explode here
-    setSocket(socketInstance);
+
+    listenersInitialized.current = true;
 
     // Listen to events related to hand, deck and discard
-    socketInstance.on('setDeck', (cards: RawDataAbilities) => {
+    socket.on('setDeck', (cards: RawDataAbilities) => {
       console.log('setDeck', cards);
       const deckToSet: Ability[] = fromRawAbilitiesToAbilities(cards, weapon!.abilities);
-      // setDeck(deckToSet);
-      const weaponCopied = weapon.clone();
-      weaponCopied.deck = deckToSet;
-      setWeapon(weaponCopied);
+      setWeapon((currentWeapon) => {
+        if (!currentWeapon) return currentWeapon;
+        const weaponCopied = currentWeapon.clone();
+        weaponCopied.deck = deckToSet;
+        return weaponCopied;
+      });
     });
-    socketInstance.on('setHand', (cards: RawDataAbilities) => {
+    socket.on('setHand', (cards: RawDataAbilities) => {
       console.log('setHand', cards);
       const handToSet: Ability[] = fromRawAbilitiesToAbilities(cards, weapon!.abilities);
-      // setHand(handToSet);
-      const weaponCopied = weapon.clone();
-      weaponCopied.hand = handToSet;
-      setWeapon(weaponCopied);
+      setWeapon((currentWeapon) => {
+        if (!currentWeapon) return currentWeapon;
+        const weaponCopied = currentWeapon.clone();
+        weaponCopied.hand = handToSet;
+        return weaponCopied;
+      });
     });
 
-    socketInstance.on('drawCards', (cards: RawDataAbilities) => {
+    socket.on('drawCards', (cards: RawDataAbilities) => {
       console.log('drawCards', cards);
       const cardToDraw: Ability[] = fromRawAbilitiesToAbilities(cards, weapon!.abilities);
-      setHand((currentHand) => [...currentHand, ...cardToDraw]);
-      setDeck((currentDeck) => currentDeck.filter(ability => !cardToDraw.includes(ability)));
     });
-    socketInstance.on('discardCards', (cards: RawDataAbilities) => {
+    socket.on('discardCards', (cards: RawDataAbilities) => {
       console.log('discardCards', cards);
       const cardToDiscard: Ability[] = fromRawAbilitiesToAbilities(cards, weapon!.abilities);
-      setDiscard((currentDiscard) => [...currentDiscard, ...cardToDiscard]);
-      setHand((currentHand) => currentHand.filter(ability => !cardToDiscard.includes(ability)));
     });
-    socketInstance.on('startFight', () => {
+    socket.on('startFight', () => {
       setPhase(GAME_PHASES.PLAYER_CHOOSE_ABILITY);
     });
     // tmp create map for weapon and monster as only one supported
-    socketInstance.on('actionAdded', (rawDataActions: RawDataAction[]) => {
-      const weaponMap = new Map<string, Weapon>();
-      weaponMap.set(weapon.uid, weapon);
-      const monsterMap = new Map<string, Monster>();
-      monsterMap.set(monster.uid, monster);
-      console.log('weaponMap', weaponMap);
-      console.log('monsterMap', monsterMap);  
-      console.log('receveidActions raw', rawDataActions);
-      const receveidActions: Action[] = rawDataActions
-      .map(rawDataAction => {
-        return actionManager.current.createActionFromRawData(rawDataAction, weaponMap, monsterMap);
-      })
-      .filter((action): action is Action => action !== null);
-      console.log('receveidActions', receveidActions);
-      if (receveidActions.length > 0) {
-        addActions(receveidActions);
-      }
+    socket.on('actionAdded', (rawDataActions: RawDataAction[]) => {
+      // Get the latest weapon and monster for the maps
+      setWeapon(prevWeapon => {
+        setMonster(prevMonster => {
+          if (!prevWeapon || !prevMonster) return prevMonster;
+
+          const weaponMap = new Map<string, Weapon>();
+          weaponMap.set(prevWeapon.uid, prevWeapon);
+
+          const monsterMap = new Map<string, Monster>();
+          monsterMap.set(prevMonster.uid, prevMonster);
+
+          console.log('weaponMap', weaponMap);
+          console.log('monsterMap', monsterMap);
+          console.log('receivedActions raw', rawDataActions);
+
+          const receivedActions: Action[] = rawDataActions
+            .map(rawDataAction => {
+              return actionManager.current.createActionFromRawData(rawDataAction, weaponMap, monsterMap);
+            })
+            .filter((action): action is Action => action !== null);
+
+          console.log('receivedActions', receivedActions);
+          if (receivedActions.length > 0) {
+            addActions(receivedActions);
+          }
+
+          return prevMonster;
+        });
+
+        return prevWeapon;
+      });
     });
 
     // Trigger the init Hand and deck
-    socketInstance.emit('initHandAndDeck');
+    socket.emit('initHandAndDeck');
 
     // socketInstance.on('fightFinished', () => {
     //   console.log('Fight finished');
@@ -145,15 +180,8 @@ export default function Page({params}: {params: {roomId: string}}) {
 
     // Cleanup on unmount
     return () => {
-      // socketInstance.off('fightFinished');
-      socketInstance.off('setDeck');
-      socketInstance.off('setHand');
-      socketInstance.off('drawCards');
-      socketInstance.off('discardCards');
-      socketInstance.off('startFight');
-      socketInstance.off('actionAdded');
     };
-  }, [weapon, monster]);
+  }, [weapon, monster, socket]);
 
   // update from the room
   useEffect(() => {
@@ -164,10 +192,10 @@ export default function Page({params}: {params: {roomId: string}}) {
   // Set the Weapon at begining (only user itself supported for the moment)
   // is the deck part needed on the weapon client side?
   useEffect(() => {
-    if (!allWeapons)
+    if (!allWeapons || weapon)
       return;
     const weaponData = allWeapons.find(weapon => weapon.id === parseInt(room.weapons[userId]))?.clone();
-    if (!weapon && weaponData) {
+    if (weaponData) {
       // weaponData.setLogger(setInfo);
       // const userDeck = room.decks[userId];
       // const deckToAttach: Ability[] = []
@@ -194,6 +222,7 @@ export default function Page({params}: {params: {roomId: string}}) {
     monsterData.abilities.forEach(ability => {
       ability.uid = room.monsters[0]?.abilities[ability.id][0];
     });
+    monsterData.deck = monsterData.abilities; // for the moment the deck is the same as the abilities
     setMonster(monsterData);
     console.log("monsterData", monsterData);
   }, [allMonsters]);
@@ -271,7 +300,7 @@ export default function Page({params}: {params: {roomId: string}}) {
                 />
               </div>
               <div>
-                {actions.length > 0 ? 
+                {actions.length > 0 ?
                   actions?.map(action => (
                     <div key={action.uid}>
                       <p>{action?.caster.name}: {action?.ability.name} {"->"} {action?.target.name}</p>
@@ -295,7 +324,7 @@ export default function Page({params}: {params: {roomId: string}}) {
                 <p>{phasePrinter()}</p>
                 <p>Actual turn: {turn}</p>
                 <p>deck: {weapon?.deck.length}</p>
-                <p>discard: {discard.length}</p>
+                <p>discard: {weapon?.discard.length}</p>
               </div>
               <div className={styles.abilitiesCointainer}>
                 {weapon?.hand.map((ability) => <AbilityCard key={ability.uid} onClick={() => onAbilityClick(ability)} ability={ability} />)}
