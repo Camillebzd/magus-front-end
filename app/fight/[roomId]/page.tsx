@@ -11,7 +11,7 @@ import { Ability, fromRawAbilitiesToAbilities, RawDataAbilities } from '@/script
 import { Monster, Weapon } from '@/scripts/entities';
 import { Action, END_OF_TURN } from '@/scripts/actions';
 import { resolveActions } from '@/scripts/fight';
-import { Text, useDisclosure } from '@chakra-ui/react';
+import { Button, Text, useDisclosure } from '@chakra-ui/react';
 import EndOfFightModal from '@/components/EndOfFightModal';
 import { useAbilities, useAllWeapons, useMonstersWorld, useUserWeapons, useWeaponDeck } from '@/scripts/customHooks';
 import SelectFluxesModal from '@/components/SelectFluxesModal';
@@ -28,6 +28,7 @@ import { useSocket } from '@/sockets/socketContext';
 enum GAME_PHASES {
   WAIT_BEFORE_START,
   PLAYER_CHOOSE_ABILITY,
+  PLAYER_WAIT_FOR_OTHERS,
   PLAYER_CHOOSE_ABILITY_COMBO,
   RESOLUTION,
 }
@@ -93,6 +94,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
       socket.off('discardCards');
       socket.off('startFight');
       socket.off('actionAdded');
+      socket.off('actionValidated');
 
       // Reset the listeners flag on cleanup
       listenersInitialized.current = false;
@@ -174,6 +176,23 @@ export default function Page({ params }: { params: { roomId: string } }) {
       });
     });
 
+    socket.on('actionValidated', (rawDataActions: RawDataAction[]) => {
+      // update the action list
+      setActions(currentActions => {
+        return currentActions.map(action => {
+          const validatedAction = rawDataActions.find(rawDataAction => rawDataAction.uid === action.uid);
+          if (validatedAction) {
+            action.hasBeenValidated = true;
+            // set the phase to wait if action is validated for the player
+            if (action.caster.uid === weapon?.uid) {
+              setPhase(GAME_PHASES.PLAYER_WAIT_FOR_OTHERS);
+            }
+          }
+          return action;
+        });
+      });
+    });
+
     // Trigger the init Hand and deck
     socket.emit('initHandAndDeck');
 
@@ -243,6 +262,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
       ability: ability.uid,
       fluxesUsed: fluxesUsed,
       currentTurn: turn,
+      hasBeenValidated: false,
     };
     console.log('actionData', actionData);
     socket.emit('selectAbility', actionData);
@@ -276,6 +296,8 @@ export default function Page({ params }: { params: { roomId: string } }) {
         return "Waiting for all the players to be ready";
       case GAME_PHASES.PLAYER_CHOOSE_ABILITY:
         return "Choose an ability";
+      case GAME_PHASES.PLAYER_WAIT_FOR_OTHERS:
+        return "Wait for the others";
       case GAME_PHASES.PLAYER_CHOOSE_ABILITY_COMBO:
         return "Choose an ability for the COMBO";
       case GAME_PHASES.RESOLUTION:
@@ -306,7 +328,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
                 {actions.length > 0 ?
                   actions?.map(action => (
                     <div key={action.uid}>
-                      <p>{action?.caster.name}: {action?.ability.name} {"->"} {action?.target.name}</p>
+                      <p>{action?.caster.name}: {action?.ability.name} {"->"} {action?.target.name} {action?.hasBeenValidated ? '✓' : 'x'}</p>
                     </div>
                   ))
                   : <p>No actions</p>
@@ -330,6 +352,13 @@ export default function Page({ params }: { params: { roomId: string } }) {
                 <p>discard: {weapon?.discard.length}</p>
               </div>
               <div className={styles.abilitiesCointainer}>
+                <Button onClick={() => {
+                  if (phase === GAME_PHASES.PLAYER_CHOOSE_ABILITY) {
+                    socket.emit('validateAbility');
+                  }
+                }}>
+                  Validate
+                </Button>
                 {weapon?.hand.map((ability) => <AbilityCard key={ability.uid} onClick={() => onAbilityClick(ability)} ability={ability} />)}
               </div>
             </div>

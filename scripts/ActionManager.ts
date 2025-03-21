@@ -14,6 +14,7 @@ export type RawDataAction = {
   ability: string; // uid of the ability
   fluxesUsed: number;
   currentTurn: number;
+  hasBeenValidated: boolean;
 }
 
 /**
@@ -66,7 +67,8 @@ class ActionManager {
       ability: ability,
       target: target,
       fluxesUsed: rawDataAction.fluxesUsed,
-      currentTurn: rawDataAction.currentTurn
+      currentTurn: rawDataAction.currentTurn,
+      hasBeenValidated: rawDataAction.hasBeenValidated
     });
   }
 
@@ -82,7 +84,8 @@ class ActionManager {
       target: action.target.uid,
       ability: action.ability.uid,
       fluxesUsed: action.fluxesUsed,
-      currentTurn: action.currentTurn
+      currentTurn: action.currentTurn,
+      hasBeenValidated: action.hasBeenValidated
     };
   }
 

@@ -74,6 +74,7 @@ export type ActionData = {
   ability: Ability;
   isCombo?: boolean;
   hasBeenDone?: boolean;
+  hasBeenValidated?: boolean;
   fluxesUsed: number;
   info?: Dispatch<SetStateAction<string[]>>;
   currentTurn?: number;
@@ -86,6 +87,7 @@ export class Action {
   ability: Ability;
   isCombo = false;
   hasBeenDone = false;
+  hasBeenValidated = false;
   fluxesUsed = 0;
   info: Dispatch<SetStateAction<string[]>> | undefined = undefined;
   abilityWasCrit = false;
@@ -105,6 +107,7 @@ export class Action {
     this.ability = data.ability;
     this.isCombo = data.isCombo || false;
     this.hasBeenDone = data.hasBeenDone || false;
+    this.hasBeenValidated = data.hasBeenValidated || false;
     this.fluxesUsed = data.fluxesUsed || 0;
     this.info = data.info || undefined;
     this.currentTurn = data.currentTurn || 0;
