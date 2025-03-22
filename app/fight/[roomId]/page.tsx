@@ -64,22 +64,6 @@ export default function Page({ params }: { params: { roomId: string } }) {
   let isPlayerCombo = useRef(false);
   let [actions, setActions] = useState<Action[]>([]);
 
-  const addActions = (newActions: Action[]) => {
-    setActions(currentActions => {
-      return [
-        ...newActions.reduce((acc, newAction) => {
-          // Remove any existing action from the same caster
-          const filtered = acc.filter(existing => existing.caster.uid !== newAction.caster.uid);
-          // Add the new action
-          let newActions = [...filtered, newAction];
-          // Sort the actions
-          actionManager.current.sortActionsOrder(newActions);
-          return newActions;
-        }, currentActions)
-      ];
-    });
-  };
-
   // First useEffect remains the same - just for socket initialization
   useEffect(() => {
     if (!socket || isSocketInitialized.current) return;
@@ -93,7 +77,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
       socket.off('drawCards');
       socket.off('discardCards');
       socket.off('startFight');
-      socket.off('actionAdded');
+      socket.off('actionUpdated');
       socket.off('actionValidated');
 
       // Reset the listeners flag on cleanup
@@ -142,7 +126,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
       setPhase(GAME_PHASES.PLAYER_CHOOSE_ABILITY);
     });
     // tmp create map for weapon and monster as only one supported
-    socket.on('actionAdded', (rawDataActions: RawDataAction[]) => {
+    socket.on('actionUpdated', (rawDataActions: RawDataAction[]) => {
       // Get the latest weapon and monster for the maps
       setWeapon(prevWeapon => {
         setMonster(prevMonster => {
@@ -166,7 +150,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
 
           console.log('receivedActions', receivedActions);
           if (receivedActions.length > 0) {
-            addActions(receivedActions);
+            setActions(receivedActions);
           }
 
           return prevMonster;
