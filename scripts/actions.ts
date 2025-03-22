@@ -1,5 +1,5 @@
 import { fetchFromDB, getRandomInt } from "./utils";
-import { 
+import {
   TARGET_ABILITY,
   CONDITIONS
 } from "./systemValues";
@@ -51,7 +51,7 @@ const initData = async () => {
 }
 initData();
 
-export enum END_OF_TURN {NORMAL, TARGET_BLOCKED, PLAYER_COMBO, MONSTER_COMBO, PLAYER_DIED, MONSTER_DIED};
+export enum END_OF_TURN { NORMAL, TARGET_BLOCKED, PLAYER_COMBO, MONSTER_COMBO, PLAYER_DIED, MONSTER_DIED };
 
 export enum RULE_ORDER {
   VERY_BEGINNING = 1,
@@ -80,6 +80,20 @@ export type ActionData = {
   currentTurn?: number;
 };
 
+/**
+ * Instructions to send from the server to resolve the action on the client.
+ * The server will send this object to the client to resolve the action in a 
+ * deterministic way.
+ */
+export type ActionInstructions = {
+  actionUid: string;
+  damageCalculated: number;
+  effectsTriggered: number[];
+  abilityWasCrit: boolean;
+  abilityWasBlocked: boolean;
+  triggeredCombo: boolean;
+};
+
 export class Action {
   uid: string;
   caster: Weapon | Monster;
@@ -90,6 +104,8 @@ export class Action {
   hasBeenValidated = false;
   fluxesUsed = 0;
   info: Dispatch<SetStateAction<string[]>> | undefined = undefined;
+  effectsTriggered: number[] = []; // ids of the effects triggered
+  damageCalculated = 0;
   abilityWasCrit = false;
   abilityWasBlocked = false;
   triggeredCombo = false;
@@ -126,7 +142,14 @@ export class Action {
   }
 
   // Main fct that resolve the action
-  resolve() {
+  resolve(instruction: ActionInstructions) {
+    // Add the instruction data before the resolve
+    this.abilityWasCrit = instruction.abilityWasCrit;
+    this.abilityWasBlocked = instruction.abilityWasBlocked;
+    this.triggeredCombo = instruction.triggeredCombo;
+    this.effectsTriggered = instruction.effectsTriggered;
+    this.damageCalculated = instruction.damageCalculated;
+    // Resolve the action
     this.applyRule(RULE_ORDER.VERY_BEGINNING);
     this.log(`${this.caster.name} launch ${this.ability.name}.`);
     if (this.caster.isConfused()) {
@@ -138,23 +161,28 @@ export class Action {
     if (this.ability.type != "SPECIAL") {
       this.applyRule(RULE_ORDER.BEFORE_PARRY_CHECK);
       // 3. & 4. Parry
-      if (this.target.isBlocking() && this.caster.allowTargetToBlock()) {
-        this.abilityWasBlocked = true;
+      // if (this.target.isBlocking() && this.caster.allowTargetToBlock()) {
+      if (this.abilityWasBlocked) {
+        // this.abilityWasBlocked = true;
         this.endOfResolve();
         return END_OF_TURN.TARGET_BLOCKED;
       }
       this.applyRule(RULE_ORDER.BEFORE_DAMAGE_CALCULATION);
       // 5., 6., 7. & 8. Calc dmg + crit + modifiers
-      this.finalDamage = this.caster.calculateFinalDamage(this.ability.id, this.target);
+      // this.finalDamage = this.caster.calculateFinalDamage(this.ability.id, this.target);
+      this.finalDamage = this.damageCalculated;
+      console.log("1 finalDamage: ", this.finalDamage);
       this.applyRule(RULE_ORDER.BEFORE_CRIT_CALCULATION);
-      if (this.caster.isAddingCrit()) {
-        this.abilityWasCrit = true;
+      // if (this.caster.isAddingCrit()) {
+      if (this.abilityWasCrit) {
+        // this.abilityWasCrit = true;
         this.finalDamage = this.caster.addCritOnDamage(this.finalDamage);
       }
       this.finalDamage = this.caster.addModifiersOnDamage(this.finalDamage);
       this.applyRule(RULE_ORDER.BEFORE_DAMAGE_APPLICATION);
       // 9. Apply dmg & buff / debuff
       this.damageInflicted = this.target.applyDamage(this.finalDamage);
+      console.log("2 damageInflicted: ", this.damageInflicted);
     }
     this.applyRule(RULE_ORDER.BEFORE_MODIFIER_APPLICATION);
     this.addModifiers();
@@ -199,7 +227,11 @@ export class Action {
         return;
       }
       // ApplyChance
-      if (getRandomInt(100) >= effect.applyChance) {
+      // if (getRandomInt(100) >= effect.applyChance) {
+      //   console.log("failed to apply modifier");
+      //   return;
+      // }
+      if (this.effectsTriggered.indexOf(effect.id) == -1) {
         console.log("failed to apply modifier");
         return;
       }
@@ -271,7 +303,11 @@ export class Action {
       if (order.id != orderId)
         return;
       // ApplyChance
-      if (getRandomInt(100) >= effect.applyChance) {
+      // if (getRandomInt(100) >= effect.applyChance) {
+      //   console.log("failed to apply rule");
+      //   return;
+      // }
+      if (this.effectsTriggered.indexOf(effect.id) == -1) {
         console.log("failed to apply rule");
         return;
       }
@@ -513,7 +549,7 @@ export class Action {
 
   // return the entity obj targeted by the target input obj, null if no target selected and undefined if not supported
   getTarget(target: Target) {
-    switch(target.id) {
+    switch (target.id) {
       case TARGET_ABILITY.TARGET_OF_ABILITY:
         return this.target;
       case TARGET_ABILITY.CASTER_OF_ABILITY:

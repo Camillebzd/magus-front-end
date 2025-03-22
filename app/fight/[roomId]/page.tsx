@@ -1,6 +1,6 @@
 'use client'
 
-import { MutableRefObject, use, useEffect, useRef, useState } from 'react';
+import { act, MutableRefObject, use, useEffect, useRef, useState } from 'react';
 import styles from '@/app/page.module.css';
 
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
@@ -9,7 +9,7 @@ import Chat from '@/components/Chat';
 import AbilityCard from '@/components/AbilityCard';
 import { Ability, fromRawAbilitiesToAbilities, RawDataAbilities } from '@/scripts/abilities';
 import { Monster, Weapon } from '@/scripts/entities';
-import { Action, END_OF_TURN } from '@/scripts/actions';
+import { Action, ActionInstructions, END_OF_TURN } from '@/scripts/actions';
 import { resolveActions } from '@/scripts/fight';
 import { Button, Text, useDisclosure } from '@chakra-ui/react';
 import EndOfFightModal from '@/components/EndOfFightModal';
@@ -46,6 +46,8 @@ export default function Page({ params }: { params: { roomId: string } }) {
   const allMonsters = useMonstersWorld(false);
   const [weapon, setWeapon] = useState<Weapon | undefined>(undefined);
   const [monster, setMonster] = useState<Monster | undefined>(undefined);
+  const weaponRef = useRef<Weapon | undefined>(undefined);
+  const monsterRef = useRef<Monster | undefined>(undefined);
   // const monster = useMonstersWorld(false).find(monster => monster.id === room.monsters[0]?.id)?.clone(); // only taking the first one atm
   const actionManager = useRef<ActionManager>(new ActionManager());
 
@@ -63,6 +65,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
   const [turn, setTurn] = useState(1);
   let isPlayerCombo = useRef(false);
   let [actions, setActions] = useState<Action[]>([]);
+  const actionsRef = useRef<Action[] | undefined>(undefined);
 
   // First useEffect remains the same - just for socket initialization
   useEffect(() => {
@@ -84,6 +87,19 @@ export default function Page({ params }: { params: { roomId: string } }) {
       listenersInitialized.current = false;
     };
   }, [socket]);
+
+  // Update refs whenever state changes
+  useEffect(() => {
+    weaponRef.current = weapon;
+  }, [weapon]);
+
+  useEffect(() => {
+    monsterRef.current = monster;
+  }, [monster]);
+
+  useEffect(() => {
+    actionsRef.current = actions;
+  }, [actions]);
 
   // Socket init
   useEffect(() => {
@@ -128,36 +144,33 @@ export default function Page({ params }: { params: { roomId: string } }) {
     // tmp create map for weapon and monster as only one supported
     socket.on('actionUpdated', (rawDataActions: RawDataAction[]) => {
       // Get the latest weapon and monster for the maps
-      setWeapon(prevWeapon => {
-        setMonster(prevMonster => {
-          if (!prevWeapon || !prevMonster) return prevMonster;
+      const currentWeapon = weaponRef.current;
+      const currentMonster = monsterRef.current;
 
-          const weaponMap = new Map<string, Weapon>();
-          weaponMap.set(prevWeapon.uid, prevWeapon);
+      if (!currentWeapon || !currentMonster) return;
 
-          const monsterMap = new Map<string, Monster>();
-          monsterMap.set(prevMonster.uid, prevMonster);
+      const weaponMap = new Map<string, Weapon>();
+      weaponMap.set(currentWeapon.uid, currentWeapon);
 
-          console.log('weaponMap', weaponMap);
-          console.log('monsterMap', monsterMap);
-          console.log('receivedActions raw', rawDataActions);
+      const monsterMap = new Map<string, Monster>();
+      monsterMap.set(currentMonster.uid, currentMonster);
 
-          const receivedActions: Action[] = rawDataActions
-            .map(rawDataAction => {
-              return actionManager.current.createActionFromRawData(rawDataAction, weaponMap, monsterMap);
-            })
-            .filter((action): action is Action => action !== null);
+      console.log('weaponMap', weaponMap);
+      console.log('monsterMap', monsterMap);
+      console.log('receivedActions raw', rawDataActions);
 
-          console.log('receivedActions', receivedActions);
-          if (receivedActions.length > 0) {
-            setActions(receivedActions);
-          }
+      const receivedActions: Action[] = rawDataActions
+        .map(rawDataAction => {
+          return actionManager.current.createActionFromRawData(
+            rawDataAction, weaponMap, monsterMap
+          );
+        })
+        .filter((action): action is Action => action !== null);
 
-          return prevMonster;
-        });
-
-        return prevWeapon;
-      });
+      console.log('receivedActions', receivedActions);
+      if (receivedActions.length > 0) {
+        setActions(receivedActions);
+      }
     });
 
     socket.on('actionValidated', (rawDataActions: RawDataAction[]) => {
@@ -175,6 +188,20 @@ export default function Page({ params }: { params: { roomId: string } }) {
           return action;
         });
       });
+    });
+
+    socket.on('turnInstructions', (instructions: ActionInstructions[]) => {
+      actionsRef.current?.forEach(action => {
+        const instruction = instructions.find(instruction => instruction.actionUid === action.uid);
+        if (!instruction) {
+          console.error('Instruction not found for action', action);
+          return;
+        }
+        action.resolve(instruction);
+      });
+      console.log('monster after resolve', monster);
+      console.log('weapon after resolve', weapon);
+      setActions([]);
     });
 
     // Trigger the init Hand and deck
