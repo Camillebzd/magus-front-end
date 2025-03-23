@@ -64,18 +64,32 @@ export type EntityData = {
   level: number,
   stage: number,
   health: number,
+  healthBase?: number,
+  healthMax?: number,
   speed: number,
+  speedBase?: number,
   mind: number,
+  mindBase?: number,
   sharpDmg: number,
+  sharpDmgBase?: number,
   bluntDmg: number,
+  bluntDmgBase?: number,
   burnDmg: number,
+  burnDmgBase?: number,
   sharpRes: number,
+  sharpResBase?: number,
   bluntRes: number,
+  bluntResBase?: number,
   burnRes: number,
+  burnResBase?: number,
   pierce: number,
-  lethality: number,
-  guard: number,
+  pierceBase?: number,
   handling: number,
+  handlingBase?: number,
+  guard: number,
+  guardBase?: number,
+  lethality: number,
+  lethalityBase?: number,
   abilities: Ability[]
 };
 
@@ -193,32 +207,32 @@ export abstract class Entity {
     this.level = data.level;
     this.stage = data.stage;
     this.stats.health = data.health;
-    this.stats.healthBase = data.health;
-    this.stats.healthMax = data.health;
+    this.stats.healthBase = data?.healthBase || data.health;
+    this.stats.healthMax = data?.healthMax || data.health;
     this.stats.speed = data.speed;
-    this.stats.speedBase = data.speed;
+    this.stats.speedBase = data?.speedBase || data.speed;
     this.stats.mind = data.mind;
-    this.stats.mindBase = data.mind;
+    this.stats.mindBase = data?.mindBase || data.mind;
     this.stats.sharpDmg = data.sharpDmg;
-    this.stats.sharpDmgBase = data.sharpDmg;
+    this.stats.sharpDmgBase = data?.sharpDmgBase || data.sharpDmg;
     this.stats.bluntDmg = data.bluntDmg;
-    this.stats.bluntDmgBase = data.bluntDmg;
+    this.stats.bluntDmgBase = data?.bluntDmgBase || data.bluntDmg;
     this.stats.burnDmg = data.burnDmg;
-    this.stats.burnDmgBase = data.burnDmg;
+    this.stats.burnDmgBase = data?.burnDmgBase || data.burnDmg;
     this.stats.sharpRes = data.sharpRes;
-    this.stats.sharpResBase = data.sharpRes;
+    this.stats.sharpResBase = data?.sharpResBase || data.sharpRes;
     this.stats.bluntRes = data.bluntRes;
-    this.stats.bluntResBase = data.bluntRes;
+    this.stats.bluntResBase = data?.bluntResBase || data.bluntRes;
     this.stats.burnRes = data.burnRes;
-    this.stats.burnResBase = data.burnRes;
+    this.stats.burnResBase = data?.burnResBase || data.burnRes;
     this.stats.pierce = data.pierce;
-    this.stats.pierceBase = data.pierce;
+    this.stats.pierceBase = data?.pierceBase || data.pierce;
     this.stats.handling = data.handling;
-    this.stats.handlingBase = data.handling;
+    this.stats.handlingBase = data?.handlingBase || data.handling;
     this.stats.guard = data.guard;
-    this.stats.guardBase = data.guard;
+    this.stats.guardBase = data?.guardBase || data.guard;
     this.stats.lethality = data.lethality;
-    this.stats.lethalityBase = data.lethality;
+    this.stats.lethalityBase = data?.lethalityBase || data.lethality;
     this.setFluxesFromMind();
     this.abilities = data.abilities;
     // this.info = logger;
@@ -257,6 +271,12 @@ export abstract class Entity {
    * @returns The ability if the UID match one, undefined otherwise
    */
   abstract getAbilityByUID(abilityUid: string): Ability | undefined;
+
+  /**
+   * Returns a clone of the entity
+   * @returns A clone of the entity with exactly the same data
+   */
+  abstract clone(): Entity;
 
   // return a ability of the entity or undefined
   getAbility(abilityId: number) {
@@ -717,18 +737,32 @@ export class Weapon extends Entity {
         stage: this.stage,
         // xp: this.xp,
         health: this.stats.health,
+        healthBase: this.stats.healthBase,
+        healthMax: this.stats.healthMax,
         speed: this.stats.speed,
+        speedBase: this.stats.speedBase,
         mind: this.stats.mind,
+        mindBase: this.stats.mindBase,
         sharpDmg: this.stats.sharpDmg,
+        sharpDmgBase: this.stats.sharpDmgBase,
         bluntDmg: this.stats.bluntDmg,
+        bluntDmgBase: this.stats.bluntDmgBase,
         burnDmg: this.stats.burnDmg,
+        burnDmgBase: this.stats.burnDmgBase,
         sharpRes: this.stats.sharpRes,
+        sharpResBase: this.stats.sharpResBase,
         bluntRes: this.stats.bluntRes,
+        bluntResBase: this.stats.bluntResBase,
         burnRes: this.stats.burnRes,
+        burnResBase: this.stats.burnResBase,
         pierce: this.stats.pierce,
+        pierceBase: this.stats.pierceBase,
         handling: this.stats.handling,
+        handlingBase: this.stats.handlingBase,
         guard: this.stats.guard,
+        guardBase: this.stats.guardBase,
         lethality: this.stats.lethality,
+        lethalityBase: this.stats.lethalityBase,
         abilities: this.abilities,
         // identity: this.identity
       }
@@ -888,18 +922,32 @@ export class Monster extends Entity {
       level: this.level,
       stage: this.stage,
       health: this.stats.health,
+      healthBase: this.stats.healthBase,
+      healthMax: this.stats.healthMax,
       speed: this.stats.speed,
+      speedBase: this.stats.speedBase,
       mind: this.stats.mind,
+      mindBase: this.stats.mindBase,
       sharpDmg: this.stats.sharpDmg,
+      sharpDmgBase: this.stats.sharpDmgBase,
       bluntDmg: this.stats.bluntDmg,
+      bluntDmgBase: this.stats.bluntDmgBase,
       burnDmg: this.stats.burnDmg,
+      burnDmgBase: this.stats.burnDmgBase,
       sharpRes: this.stats.sharpRes,
+      sharpResBase: this.stats.sharpResBase,
       bluntRes: this.stats.bluntRes,
+      bluntResBase: this.stats.bluntResBase,
       burnRes: this.stats.burnRes,
+      burnResBase: this.stats.burnResBase,
       pierce: this.stats.pierce,
+      pierceBase: this.stats.pierceBase,
       handling: this.stats.handling,
+      handlingBase: this.stats.handlingBase,
       guard: this.stats.guard,
+      guardBase: this.stats.guardBase,
       lethality: this.stats.lethality,
+      lethalityBase: this.stats.lethalityBase,
       abilities: this.abilities,
       difficulty: this.difficulty
     });
