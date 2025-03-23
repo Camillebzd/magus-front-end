@@ -779,8 +779,10 @@ export class Weapon extends Entity {
   }
 
   // draw a random ability from deck and add it in the hand
-  drawOneRandomFromDeck() {
-    getFromArrayToArray(this.deck, this.hand, this.deck[getRandomInt(this.deck.length)]);
+  drawOneFromDeck(abilityToDraw: Ability | null = null): Ability {
+    const ability = abilityToDraw == null ? this.deck[getRandomInt(this.deck.length)] : abilityToDraw;
+    getFromArrayToArray(this.deck, this.hand, ability);
+    return ability;
   }
 
   // remove an ability from the hand and add it in the discard

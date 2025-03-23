@@ -97,7 +97,7 @@ export default function Page() {
     if (weapon?.deck != null && weapon.deck.length === 0)
       weapon.refillDeckFromDiscard();
     while (weapon.hand.length < HAND_SIZE) {
-      weapon.drawOneRandomFromDeck();
+      weapon.drawOneFromDeck();
     }
     if (monster.isEntityAbleToPlay()) {
       let monsterAction = monster.launchRandomAbility(weapon, isMonsterCombo.current, turn);
