@@ -253,6 +253,12 @@ const socketSlice = createSlice({
       // not in the middleware because it is just to reset the state after the enterFight event.
       state.room.goToRoomId = DEFAULT_ROOM_ID;
     },
+    cleanEndOfFight: (state, action: PayloadAction) => {
+      // not in the middleware because it is just to reset the state after the fight is over.
+      state.room.acceptedMembers = [];
+      state.room.goToRoomId = DEFAULT_ROOM_ID;
+    },
+    // unused?
     skillSelected: (state, action: PayloadAction<SkillsSelected>) => {
       // After the socket receive the event from the server in the middleware
       state.room.skillsSelected = { ...state.room.skillsSelected, ...action.payload };

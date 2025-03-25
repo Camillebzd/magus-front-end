@@ -8,7 +8,7 @@ import { Notify } from "notiflix";
 import { useXpStorage } from "@/scripts/customHooks";
 import { useEffect, useState } from "react";
 
-const EndOfFightModal = ({isOpen, onClose, weaponId, difficulty, isWinner}: {isOpen: boolean, onClose: () => void, weaponId: number, difficulty: number, isWinner: boolean}) => {
+const EndOfFightModal = ({isOpen, onClose, weaponId, difficulty, isWinner, cleanEndOfFight}: {isOpen: boolean, onClose: () => void, weaponId: number, difficulty: number, isWinner: boolean, cleanEndOfFight: () => void}) => {
   const address = useAppSelector((state) => state.authReducer.address);
   const router = useRouter();
   const [xp, setXp] = useXpStorage(weaponId);
@@ -29,6 +29,7 @@ const EndOfFightModal = ({isOpen, onClose, weaponId, difficulty, isWinner}: {isO
   }, []);
 
   const goToWorld = () => {
+    cleanEndOfFight();
     router.push('/world');
   };
 
@@ -59,9 +60,10 @@ const EndOfFightModal = ({isOpen, onClose, weaponId, difficulty, isWinner}: {isO
 
   const resultSentence = () => {
     if (isWinner)
-      return `Congratulation for your win, you can gain ${xpReward}XP.`;
+      // return `Congratulation for your win, you can gain ${xpReward}XP.`;
+    return `Congratulation for your win, you can retry or leave.`;
     else
-      return 'You lost...';
+      return 'You lost... but you can retry or run away.';
   };
 
   return (
@@ -77,7 +79,8 @@ const EndOfFightModal = ({isOpen, onClose, weaponId, difficulty, isWinner}: {isO
           <Button mr={3} onClick={goToWorld}>
             World
           </Button>
-          {isWinner && <Button colorScheme='blue' onClick={gainXP}>Gain XP</Button>}
+          {/* {isWinner && <Button colorScheme='blue' onClick={gainXP}>Gain XP</Button>} */}
+          {isWinner && <Button colorScheme='blue'>Retry</Button>}
         </ModalFooter>
       </ModalContent>
     </Modal>

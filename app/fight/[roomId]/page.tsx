@@ -83,6 +83,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
       socket.off('actionUpdated');
       socket.off('actionValidated');
       socket.off('turnInstructions');
+      socket.off('fightFinished');
 
       // Reset the listeners flag on cleanup
       listenersInitialized.current = false;
@@ -215,10 +216,10 @@ export default function Page({ params }: { params: { roomId: string } }) {
     });
 
     socket.on('turnInstructions', (instructions: ActionInstructions[]) => {
-      actionsRef.current?.forEach(action => {
-        const instruction = instructions.find(instruction => instruction.actionUid === action.uid);
-        if (!instruction) {
-          console.error('Instruction not found for action', action);
+      instructions.forEach(instruction => {
+        const action = actionsRef.current?.find(action => action.uid === instruction.actionUid);
+        if (!action) {
+          console.error('Action not found for instruction', instruction);
           return;
         }
         action.resolve(instruction);
@@ -230,23 +231,19 @@ export default function Page({ params }: { params: { roomId: string } }) {
       setPhase(GAME_PHASES.PLAYER_CHOOSE_ABILITY);
     });
 
+    socket.on('fightFinished', (entity: "draw" | "weapons" | "monsters") => {
+      console.log('fightFinished', entity);
+      won.current = entity === "weapons";
+      endOfFightModal.onOpen();
+    });
+  
     // Trigger the init Hand and deck
     socket.emit('initHandAndDeck');
-
-    // socketInstance.on('fightFinished', () => {
-    //   console.log('Fight finished');
-    // });
 
     // Cleanup on unmount
     return () => {
     };
   }, [weapon, monster, socket]);
-
-  // update from the room
-  useEffect(() => {
-    // console.log("here is the new update of the room:", room);
-  }, [room]);
-
 
   // Set the Weapon at begining (only user itself supported for the moment)
   // is the deck part needed on the weapon client side?
@@ -285,6 +282,21 @@ export default function Page({ params }: { params: { roomId: string } }) {
     setMonster(monsterData);
     console.log("monsterData", monsterData);
   }, [allMonsters]);
+
+  const cleanEndOfFight = () => {
+    // clean sockets
+    socket.off('setDeck');
+    socket.off('setHand');
+    socket.off('drawCards');
+    socket.off('discardCards');
+    socket.off('startFight');
+    socket.off('actionUpdated');
+    socket.off('actionValidated');
+    socket.off('turnInstructions');
+    socket.off('fightFinished');
+    // clean redux state
+    dispatch(socketActions.cleanEndOfFight());
+  };
 
   const selectAbility = (ability: Ability, fluxesUsed: number = 0) => {
     // if (phase !== GAME_PHASES.PLAYER_CHOOSE_ABILITY && !weapon?.isEntityAbleToPlay())
@@ -400,7 +412,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
               </div>
             </div>
           </div>
-          {monster && weapon && <EndOfFightModal isOpen={endOfFightModal.isOpen} onClose={endOfFightModal.onClose} weaponId={weapon!.id} difficulty={monster!.difficulty} isWinner={won.current} />}
+          {monster && weapon && <EndOfFightModal isOpen={endOfFightModal.isOpen} onClose={endOfFightModal.onClose} weaponId={weapon!.id} difficulty={monster!.difficulty} isWinner={won.current} cleanEndOfFight={cleanEndOfFight}/>}
           {monster && weapon && <SelectFluxesModal isOpen={fluxeModal.isOpen} onClose={fluxeModal.onClose} selectAbility={execAbilityModal} fluxesAvailables={weapon.fluxes} />}
         </>
       )}
