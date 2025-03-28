@@ -225,7 +225,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
       console.log('monster after resolve', monsterRef.current);
       console.log('weapon after resolve', weaponRef.current);
       setActions([]);
-      setTurn(turn + 1);
+      setTurn((currentTurn) => currentTurn + 1);
       setPhase(GAME_PHASES.PLAYER_CHOOSE_ABILITY);
     });
 
