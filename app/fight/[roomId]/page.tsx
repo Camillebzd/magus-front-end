@@ -77,8 +77,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
       console.log('cleaning up socket connections');
       socket.off('setDeck');
       socket.off('setHand');
-      socket.off('drawCards');
-      socket.off('discardCards');
+      socket.off('discardRefillAndDraw');
       socket.off('startFight');
       socket.off('actionUpdated');
       socket.off('actionValidated');
@@ -132,36 +131,35 @@ export default function Page({ params }: { params: { roomId: string } }) {
       });
     });
 
-    socket.on('drawCards', (cards: RawDataAbilities) => {
-      console.log('drawCards', cards);
+    socket.on('discardRefillAndDraw', (instructions: {discard: RawDataAbilities, shouldRefillDeck: boolean, draw: RawDataAbilities}) => {
+      console.log('discard cards', instructions.discard);
+      console.log('shouldRefillDeck', instructions.shouldRefillDeck);
+      console.log('draw cards', instructions.draw);
       setWeapon((currentWeapon) => {
         if (!currentWeapon) return currentWeapon;
-        const cardsToDraw: Ability[] = currentWeapon.deck.filter(ability => {
-          // check if current ability is in the cards to draw
-          const uids = cards[ability.id];
-          if (!uids) return false;
-          return uids.includes(ability.uid);
-        });
-        const weaponCopied = currentWeapon.clone();
-        cardsToDraw.forEach(cardToDraw => weaponCopied.drawOneFromDeck(cardToDraw));
-        return weaponCopied;
-      });
-    });
-    socket.on('discardCards', (cards: RawDataAbilities) => {
-      console.log('discardCards', cards);
-      setWeapon((currentWeapon) => {
-        if (!currentWeapon) return currentWeapon;
+        // first discard
         const cardsToDiscard: Ability[] = currentWeapon.hand.filter(ability => {
           // check if current ability is in the cards to discard
-          const uids = cards[ability.id];
+          const uids = instructions.discard[ability.id];
           if (!uids) return false;
           return uids.includes(ability.uid);
         });
         const weaponCopied = currentWeapon.clone();
         cardsToDiscard.forEach(cardToDiscard => weaponCopied.discardFromHand(cardToDiscard));
+        // then refill the deck if needed
+        if (instructions.shouldRefillDeck) {
+          weaponCopied.refillDeckFromDiscard();
+        }
+        // then draw the cards
+        const cardsToDraw: Ability[] = currentWeapon.deck.filter(ability => {
+          // check if current ability is in the cards to draw
+          const uids = instructions.draw[ability.id];
+          if (!uids) return false;
+          return uids.includes(ability.uid);
+        });
+        cardsToDraw.forEach(cardToDraw => weaponCopied.drawOneFromDeck(cardToDraw));
         return weaponCopied;
       });
-
     });
     socket.on('startFight', () => {
       setPhase(GAME_PHASES.PLAYER_CHOOSE_ABILITY);
@@ -287,8 +285,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
     // clean sockets
     socket.off('setDeck');
     socket.off('setHand');
-    socket.off('drawCards');
-    socket.off('discardCards');
+    socket.off('discardRefillAndDraw');
     socket.off('startFight');
     socket.off('actionUpdated');
     socket.off('actionValidated');
