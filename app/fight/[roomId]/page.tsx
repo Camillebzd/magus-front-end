@@ -24,6 +24,7 @@ import { Socket } from 'socket.io-client';
 import ActionManager, { RawDataAction } from '@/scripts/ActionManager';
 import UniqueIdGenerator from '@/scripts/UniqueIdGenerator';
 import { useSocket } from '@/sockets/socketContext';
+import { useRouter } from "next/navigation";
 
 enum GAME_PHASES {
   WAIT_BEFORE_START,
@@ -37,6 +38,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
   const socket = useSocket();
   const isSocketInitialized = useRef(false);
   const listenersInitialized = useRef(false);
+  const router = useRouter();
 
   const pathname = usePathname();
   const room = useAppSelector((state) => state.socketReducer.room);
@@ -301,7 +303,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
     })
   }, [turn]);
 
-  const cleanEndOfFight = () => {
+  const goToWorld = () => {
     // clean sockets
     socket.off('setDeck');
     socket.off('setHand');
@@ -313,6 +315,13 @@ export default function Page({ params }: { params: { roomId: string } }) {
     socket.off('fightFinished');
     // clean redux state
     dispatch(socketActions.cleanEndOfFight());
+
+    // if user is admin, remove monsters
+    if (room.adminId === userId) {
+      dispatch(socketActions.removeMonsters(room.monsters));
+    }
+
+    router.push('/world');
   };
 
   const selectAbility = (ability: Ability, fluxesUsed: number = 0) => {
@@ -320,7 +329,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
     //   return;
     if (!socket || !weapon || !monster)
       return;
-    // TODO Create the raw data of an action and send it to the server
+    // Create the raw data of an action and send it to the server
     const actionData: RawDataAction = {
       uid: UniqueIdGenerator.getInstance().generateSnowflakeId(2),
       caster: weapon.uid,
@@ -429,7 +438,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
               </div>
             </div>
           </div>
-          {monster && weapon && <EndOfFightModal isOpen={endOfFightModal.isOpen} onClose={endOfFightModal.onClose} weaponId={weapon!.id} difficulty={monster!.difficulty} isWinner={won.current} cleanEndOfFight={cleanEndOfFight} />}
+          {monster && weapon && <EndOfFightModal isOpen={endOfFightModal.isOpen} onClose={endOfFightModal.onClose} weaponId={weapon!.id} difficulty={monster!.difficulty} isWinner={won.current} goToWorld={goToWorld} />}
           {monster && weapon && <SelectFluxesModal isOpen={fluxeModal.isOpen} onClose={fluxeModal.onClose} selectAbility={execAbilityModal} fluxesAvailables={weapon.fluxes} />}
         </>
       )}

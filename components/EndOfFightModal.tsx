@@ -2,15 +2,13 @@
 
 import { useAppSelector } from "@/redux/hooks";
 import { Button, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Text } from "@chakra-ui/react";
-import { useRouter } from "next/navigation";
 import { createContract, fetchFromDB } from "@/scripts/utils";
 import { Notify } from "notiflix";
 import { useXpStorage } from "@/scripts/customHooks";
 import { useEffect, useState } from "react";
 
-const EndOfFightModal = ({isOpen, onClose, weaponId, difficulty, isWinner, cleanEndOfFight}: {isOpen: boolean, onClose: () => void, weaponId: number, difficulty: number, isWinner: boolean, cleanEndOfFight: () => void}) => {
+const EndOfFightModal = ({isOpen, onClose, weaponId, difficulty, isWinner, goToWorld}: {isOpen: boolean, onClose: () => void, weaponId: number, difficulty: number, isWinner: boolean, goToWorld: () => void}) => {
   const address = useAppSelector((state) => state.authReducer.address);
-  const router = useRouter();
   const [xp, setXp] = useXpStorage(weaponId);
   const [xpReward, setXpReward] = useState(0);
 
@@ -27,11 +25,6 @@ const EndOfFightModal = ({isOpen, onClose, weaponId, difficulty, isWinner, clean
     }
     getXpRewardData();
   }, []);
-
-  const goToWorld = () => {
-    cleanEndOfFight();
-    router.push('/world');
-  };
 
   const gainXP = async () => {
     // if (address.length < 42) {
