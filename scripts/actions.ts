@@ -163,6 +163,7 @@ export class Action {
       // 3. & 4. Parry
       // if (this.target.isBlocking() && this.caster.allowTargetToBlock()) {
       if (this.abilityWasBlocked) {
+        this.log(`The ability has been blocked.`);
         // this.abilityWasBlocked = true;
         this.endOfResolve();
         return END_OF_TURN.TARGET_BLOCKED;
@@ -175,13 +176,14 @@ export class Action {
       this.applyRule(RULE_ORDER.BEFORE_CRIT_CALCULATION);
       // if (this.caster.isAddingCrit()) {
       if (this.abilityWasCrit) {
-        // this.abilityWasCrit = true;
+        this.log(`The ability was a crit!`);
         this.finalDamage = this.caster.addCritOnDamage(this.finalDamage);
       }
       this.finalDamage = this.caster.addModifiersOnDamage(this.finalDamage);
       this.applyRule(RULE_ORDER.BEFORE_DAMAGE_APPLICATION);
       // 9. Apply dmg & buff / debuff
       this.damageInflicted = this.target.applyDamage(this.finalDamage);
+      this.log(`${this.target.name} takes ${this.damageInflicted} damage.`);
       console.log("2 damageInflicted: ", this.damageInflicted);
     }
     this.applyRule(RULE_ORDER.BEFORE_MODIFIER_APPLICATION);
@@ -273,6 +275,7 @@ export class Action {
       for (let i = 0; i < fluxQuantity; i++) {
         target.addModifier(modifier, modifierStack, this.caster);
       }
+      this.log(`${this.caster.name} add ${modifierStack} stacks of ${modifier.name} on ${target.name}.`);
     });
   }
 

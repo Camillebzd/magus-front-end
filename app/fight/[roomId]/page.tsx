@@ -131,7 +131,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
       });
     });
 
-    socket.on('discardRefillAndDraw', (instructions: {discard: RawDataAbilities, shouldRefillDeck: boolean, draw: RawDataAbilities}) => {
+    socket.on('discardRefillAndDraw', (instructions: { discard: RawDataAbilities, shouldRefillDeck: boolean, draw: RawDataAbilities }) => {
       console.log('discard cards', instructions.discard);
       console.log('shouldRefillDeck', instructions.shouldRefillDeck);
       console.log('draw cards', instructions.draw);
@@ -163,6 +163,12 @@ export default function Page({ params }: { params: { roomId: string } }) {
     });
     socket.on('startFight', () => {
       setPhase(GAME_PHASES.PLAYER_CHOOSE_ABILITY);
+      // first logs
+      setInfo(currentInfo => {
+        const newInfo = [...currentInfo];
+        newInfo.push(`####### Turn ${turn} #######`);
+        return newInfo;
+      })
     });
     // tmp create map for weapon and monster as only one supported
     socket.on('actionUpdated', (rawDataActions: RawDataAction[]) => {
@@ -214,12 +220,15 @@ export default function Page({ params }: { params: { roomId: string } }) {
     });
 
     socket.on('turnInstructions', (instructions: ActionInstructions[]) => {
+      console.log('turnInstructions', instructions);
+      // resolve the actions
       instructions.forEach(instruction => {
         const action = actionsRef.current?.find(action => action.uid === instruction.actionUid);
         if (!action) {
           console.error('Action not found for instruction', instruction);
           return;
         }
+        action.info = setInfo;
         action.resolve(instruction);
       });
       console.log('monster after resolve', monsterRef.current);
@@ -234,7 +243,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
       won.current = entity === "weapons";
       endOfFightModal.onOpen();
     });
-  
+
     // Trigger the init Hand and deck
     socket.emit('initHandAndDeck');
 
@@ -280,6 +289,17 @@ export default function Page({ params }: { params: { roomId: string } }) {
     setMonster(monsterData);
     console.log("monsterData", monsterData);
   }, [allMonsters]);
+
+  // End of turn logs
+  useEffect(() => {
+    if (turn < 2)
+      return;
+    setInfo(currentInfo => {
+      const newInfo = [...currentInfo];
+      newInfo.push(`####### Turn ${turn} #######`);
+      return newInfo;
+    })
+  }, [turn]);
 
   const cleanEndOfFight = () => {
     // clean sockets
@@ -409,7 +429,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
               </div>
             </div>
           </div>
-          {monster && weapon && <EndOfFightModal isOpen={endOfFightModal.isOpen} onClose={endOfFightModal.onClose} weaponId={weapon!.id} difficulty={monster!.difficulty} isWinner={won.current} cleanEndOfFight={cleanEndOfFight}/>}
+          {monster && weapon && <EndOfFightModal isOpen={endOfFightModal.isOpen} onClose={endOfFightModal.onClose} weaponId={weapon!.id} difficulty={monster!.difficulty} isWinner={won.current} cleanEndOfFight={cleanEndOfFight} />}
           {monster && weapon && <SelectFluxesModal isOpen={fluxeModal.isOpen} onClose={fluxeModal.onClose} selectAbility={execAbilityModal} fluxesAvailables={weapon.fluxes} />}
         </>
       )}
