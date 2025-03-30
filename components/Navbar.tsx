@@ -49,6 +49,9 @@ const Navbar = () => {
   useEffect(() => {
     if (wallet) {
       console.log('Wallet connected', wallet );
+      wallet.subscribe("accountChanged", (account) => {
+        dispatch(connect(account.address));
+      });
       dispatch(connect(wallet.getAccount()?.address!));
       dispatch(socketActions.initSocket());
     } else {
