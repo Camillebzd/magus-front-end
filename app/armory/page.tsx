@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 
 export default function Page() {
   const isConnected = useAppSelector((state) => state.authReducer.isConnected);
-  const userWeapons = useUserWeapons(false);
+  const userWeapons = useUserWeapons(true);
   const requestAvailable = useRequestAvailable();
   const router = useRouter();
 

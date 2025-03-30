@@ -119,24 +119,29 @@ function createWeapon(weaponsDataNFT: WeaponNFT, abilities: Ability[]) {
   return new Weapon(data);
 }
 
+/**
+ * Custom hook to get the user's weapons
+ * @param forceFill if true, it will force retrieve the user weapons
+ * @returns An array containing the user's weapons
+ */
 export function useUserWeapons(forceFill: boolean = false) {
   const [weapons, setWeapons] = useState<Weapon[]>([]);
-  const isConnected = useAppSelector((state) => state.authReducer.isConnected);
+  const walletAddress = useAppSelector((state) => state.authReducer.address);
   const weaponsDataNFT = useAppSelector((state) => state.weaponReducer.userWeapons);
   const isLoading = useAppSelector((state) => state.weaponReducer.areUserWeaponsLoading);
   const abilities = useAbilities(false); // care to not update from monster slice or this will trigger here
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    if (!isConnected) {
+    if (!walletAddress || walletAddress.length < 42) {
       return;
     }
     if (!isLoading)
       dispatch(fillUserWeapons(forceFill));
-  }, [isConnected]);
+  }, [walletAddress]);
 
   useEffect(() => {
-    if (weaponsDataNFT.length < 1 || abilities.length < 1)
+    if (abilities.length < 1)
       return;
     let dataToSet: Weapon[] = weaponsDataNFT.map(weaponDataNFT => createWeapon(weaponDataNFT, abilities));
     dataToSet.sort((a, b) => a.id - b.id);
