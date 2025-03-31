@@ -113,8 +113,12 @@ export const fillAllWeapons = createAsyncThunk<WeaponNFT[], boolean, { state: Ro
     console.log("starting of fillAllWeapons");
     try {
       const contract = await createReadContract();
-      // TMP solution, ADD totalSupply on NFT contract
-      const totalSupply = 2;
+      const totalSupplyResponse = await readContract({
+        contract: contract,
+        method: "function totalSupply() external view returns (uint256)",
+        params: [],
+      });
+      const totalSupply = Number(totalSupplyResponse);
       let weapons: WeaponNFT[] = [];
       await Promise.all(Array.from({ length: totalSupply }, (_, index) => index).map(async (tokenId) => {
           let weaponURI = await readContract({
