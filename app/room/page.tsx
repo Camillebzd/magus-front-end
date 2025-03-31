@@ -10,12 +10,10 @@ import CreateRoomModal from '@/components/CreateRoomModal';
 import JoinRoomModal from '@/components/JoinRoomModal';
 import { socketActions } from '@/redux/features/socketSlice';
 import CopyableField from '@/components/CopyableField';
-import EntityList from '@/components/Room/EntityList';
-import MonsterList from '@/components/Room/MonsterList';
-import { useRouter } from 'next/navigation';
+import EntityList from '@/app/room/components/EntityList';
+import MonsterList from '@/app/room/components/MonsterList';
 
 export default function Page() {
-  const router = useRouter();
   const dispatch = useAppDispatch();
   const room = useAppSelector((state) => state.socketReducer.room);
   const member = useAppSelector((state) => state.socketReducer.member);

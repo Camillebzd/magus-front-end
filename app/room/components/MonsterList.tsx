@@ -1,6 +1,7 @@
 import { useAppSelector } from '@/redux/hooks';
 import { Box, Text } from '@chakra-ui/react';
 import * as Monster from '@/sockets/@types/Monster';
+import GoToButton from '@/components/GoToButton';
 
 const MonsterList = () => {
   const room = useAppSelector((state) => state.socketReducer.room);
@@ -15,9 +16,13 @@ const MonsterList = () => {
   return (
     <Box>
       <Text>Monsters</Text>
-      {room.monsters?.map((monster) => (
-        monsterSquare(monster)
-      ))}
+      {room.monsters.length > 0 ?
+        room.monsters?.map((monster) => (
+          monsterSquare(monster)
+        ))
+        :
+        <GoToButton text='Select Monster' href='/world' />
+      }
     </Box>
   );
 }
