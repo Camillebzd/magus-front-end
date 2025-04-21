@@ -39,7 +39,9 @@ export type RoomInfo = {
 
 export type MemberInfo = {
   uid: string,
-  name: string
+  name: string,
+  equipedWeaponId: string | undefined,
+  equipedDeck: RawDataAbilities | undefined,
 }
 
 export type SkillsSelected = {
@@ -62,6 +64,8 @@ const DefaultRoom: Room = {
 const DefaultMemberInformation: MemberInfo = {
   uid: "NO_ID",
   name: "NO_NAME",
+  equipedWeaponId: undefined,
+  equipedDeck: undefined,
 };
 
 export interface SocketState {
@@ -99,6 +103,14 @@ const socketSlice = createSlice({
       return;
     },
     deleteMember: (state, action: PayloadAction<string>) => {
+      // not store for the request of user creation
+      return;
+    },
+    equipWeaponAndDeck: (state, action: PayloadAction<{weaponId: string, deck: RawDataAbilities}>) => {
+      // not store for the request of user creation
+      return;
+    },
+    unequipWeaponAndDeck: (state) => {
       // not store for the request of user creation
       return;
     },
@@ -150,6 +162,14 @@ const socketSlice = createSlice({
     memberDeleted: (state) => {
       state.isCreated = false;
       state.member = DefaultMemberInformation;
+    },
+    weaponAndDeckEquipped: (state, action: PayloadAction<{weaponId: string, deck: RawDataAbilities}>) => {
+      state.member.equipedWeaponId = action.payload.weaponId;
+      state.member.equipedDeck = action.payload.deck;
+    },
+    weaponAndDeckUnequipped: (state) => {
+      state.member.equipedWeaponId = DefaultMemberInformation.equipedWeaponId;
+      state.member.equipedDeck = DefaultMemberInformation.equipedDeck;
     },
     newRoomCreated: (state, action: PayloadAction<RoomCreatedInfo>) => {
       // After the socket receive the event from the server in the middleware

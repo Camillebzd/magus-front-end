@@ -48,7 +48,7 @@ export const fillMonstersWorldData = createAsyncThunk<MonsterDataSerilizable[], 
       return thunkAPI.getState().monsterReducer.monstersWorld;
     console.log("starting of fillMonstersWorldData");
     try {
-      const monsters = fetchFromDB("monsters/");
+      const monsters = fetchFromDB("monsters", "base");
       if (!monsters) {
         Notify.failure("Failed to retreive monsters data from the server.");
         return [];

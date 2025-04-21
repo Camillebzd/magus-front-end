@@ -22,7 +22,7 @@ export const fillStoreAbilities = createAsyncThunk<AbilityData[], boolean, {stat
     if (thunkAPI.getState().abilityReducer.abilities.length > 0 && !forceReaload)
       return thunkAPI.getState().abilityReducer.abilities;
     console.log("starting of fillStoreAbilities");
-    const abilitiesData = fetchFromDB("abilities/abilities");
+    const abilitiesData = fetchFromDB("abilities", "abilities");
     if (abilitiesData == undefined) {
       console.log("Failed to fetch abilities data from db");
       return [];

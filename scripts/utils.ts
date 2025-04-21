@@ -48,7 +48,7 @@ export async function createReadContract() {
 
 export async function getWeaponStatsForLevelUp(identity: Identity) {
   // let stats = JSON.parse(JSON.stringify((await import(`@/data/weapons/statsGrowth.json`)).default.find(weapon => weapon.name == identity)));
-  const stats = (await fetchFromDB("weapons/statsGrowth"))?.find((weapon: any) => weapon.name == identity);
+  const stats = (await fetchFromDB("weapons", "statsGrowth"))?.find((weapon: any) => weapon.name == identity);
   if (!stats) {
     console.log(`Error: no level up data for: ${identity}`);
     throw new Error(`Error: no level up data for: ${identity}`);
@@ -99,7 +99,7 @@ export function multiplyStatsForLevelUp(stats: WeaponMintStats, coef: number) {
 export async function getAllAbilitiesIdForWeapon(identity: Identity, levelToSet: number) {
   // let allAbilities = (await import(`@/data/weapons/${identity.toLocaleLowerCase()}/abilities.json`));
   let allAbilities: {[key: string]: number[] | number | string}[] = [];
-  allAbilities = await fetchFromDB("weapons/abilities");
+  allAbilities = await fetchFromDB("weapons", "abilities");
   if (allAbilities === undefined)
     throw new Error("Failed to fetch abilities for weapons from db.");
   const specificAbilitiesList = allAbilities.find(obj => obj.name as string === identity);
@@ -127,13 +127,21 @@ export function getFromArrayToArray<Type>(arr1: Type[], arr2: Type[], element: T
 }
 
 // retreive data from the db, return undefined if an error occured
-export async function fetchFromDB(route: string) {
+export async function fetchFromDB(dbName: string, collectionName: string, query: object = {}) {
   try {
-    let response = await fetch(`${SERVER_URL}/${route}`);
+    const response = await fetch("/api/fetchFromDB", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ dbName, collectionName, query }),
+    });
+
     if (!response.ok) {
       console.log(`An error occurred: ${response.statusText}`);
       return undefined;
     }
+
     const data = await response.json();
     return data;
   } catch (e) {

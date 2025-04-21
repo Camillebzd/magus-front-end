@@ -18,32 +18,32 @@ let conditions: Condition[] = [];
 let orders: Order[] = [];
 
 const initData = async () => {
-  const effectsData: Effect[] | undefined = await fetchFromDB("abilities/effects");
+  const effectsData: Effect[] | undefined = await fetchFromDB("abilities", "effects");
   if (effectsData)
     effects = effectsData;
   else
     console.log("Error: can't fetch abilities' effects.");
-  const rulesData: Rule[] | undefined = await fetchFromDB("abilities/rules");
+  const rulesData: Rule[] | undefined = await fetchFromDB("abilities", "rules");
   if (rulesData)
     rules = rulesData;
   else
     console.log("Error: can't fetch rules for abilities.");
-  const modifiersData: Modifier[] | undefined = await fetchFromDB("abilities/modifiers");
+  const modifiersData: Modifier[] | undefined = await fetchFromDB("abilities", "modifiers");
   if (modifiersData)
     modifiers = modifiersData;
   else
     console.log("Error: can't fetch modifiers for abilities.");
-  const targetsData: Target[] | undefined = await fetchFromDB("abilities/targets");
+  const targetsData: Target[] | undefined = await fetchFromDB("abilities", "targets");
   if (targetsData)
     targets = targetsData;
   else
     console.log("Error: can't fetch targets for abilities.");
-  const conditionsData: Condition[] | undefined = await fetchFromDB("abilities/conditions");
+  const conditionsData: Condition[] | undefined = await fetchFromDB("abilities", "conditions");
   if (conditionsData)
     conditions = conditionsData;
   else
     console.log("Error: can't fetch conditions for abilities.");
-  const ordersData: Order[] | undefined = await fetchFromDB("abilities/orders");
+  const ordersData: Order[] | undefined = await fetchFromDB("abilities", "orders");
   if (ordersData)
     orders = ordersData;
   else

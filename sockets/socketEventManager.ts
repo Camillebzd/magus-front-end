@@ -40,6 +40,16 @@ export const socketEventManager: EventHandler = {
     console.log("Member deleted");
   },
 
+  [SocketEventsListener.WeaponAndDeckEquipped]: (data: {weaponId: string, deck: RawDataAbilities}, store) => {
+    store.dispatch(socketActions.weaponAndDeckEquipped(data));
+    console.log("Weapon and deck equipped:", data);
+  },
+
+  [SocketEventsListener.WeaponAndDeckUnequipped]: (_, store) => {
+    store.dispatch(socketActions.weaponAndDeckUnequipped());
+    console.log("Weapon and deck unequipped");
+  },
+
   [SocketEventsListener.NewRoomCreated]: (data: RoomCreatedInfo, store) => {
     store.dispatch(socketActions.newRoomCreated(data));
     console.log("Room created + joined:", data.id);
@@ -65,7 +75,6 @@ export const socketEventManager: EventHandler = {
     store.dispatch(socketActions.memberRemoved(member));
     console.log("member removed:", member.uid);
   },
-
 
   [SocketEventsListener.MonstersAdded]: (monsters: Monster.Instance[], store) => {
     store.dispatch(socketActions.monstersAdded(monsters));

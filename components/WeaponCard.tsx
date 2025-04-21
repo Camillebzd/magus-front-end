@@ -9,11 +9,12 @@ import { useEffect, useRef, useState } from "react";
 import Link from 'next/link'
 import { WeaponGeneralType } from "@/scripts/WeaponGeneralType";
 import { createContract } from "@/scripts/utils";
-import { useAppSelector } from "@/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { useRouter } from "next/navigation";
 import { Notify } from "notiflix";
 import { DEFAULT_ADMIN_ID } from "@/sockets/@types/Room";
 import CreateDeckModal from "./CreateDeckModal";
+import { socketActions } from "@/redux/features/socketSlice";
 
 const WeaponCard = ({ weapon, type }: { weapon: Weapon, type: WeaponGeneralType }) => {
   const room = useAppSelector((state) => state.socketReducer.room);
@@ -22,6 +23,8 @@ const WeaponCard = ({ weapon, type }: { weapon: Weapon, type: WeaponGeneralType 
   const address = useAppSelector((state) => state.authReducer.address);
   const router = useRouter();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const dispatch = useAppDispatch();
+  const equipedWeaponId = useAppSelector((state) => state.socketReducer.member.equipedWeaponId);
 
   useEffect(() => {
     if (isOver && imageWeapon != null)
@@ -74,6 +77,21 @@ const WeaponCard = ({ weapon, type }: { weapon: Weapon, type: WeaponGeneralType 
     }
   };
 
+  const equipWeapon = async () => {
+    console.log("equip", weapon.id.toString());
+    // call equip on server
+    dispatch(socketActions.equipWeaponAndDeck({
+      weaponId: weapon.id.toString(),
+      deck: {},
+    }));
+  }
+
+  const unequipWeapon = async () => {
+    console.log("unequip", weapon.id.toString());
+    // call unequip on server
+    dispatch(socketActions.unequipWeaponAndDeck());
+  }
+
   const cardFooter = () => {
     if (type === "starter") {
       return (
@@ -81,7 +99,20 @@ const WeaponCard = ({ weapon, type }: { weapon: Weapon, type: WeaponGeneralType 
           Choose
         </Button>
       );
+    } else if (type === "equiped") {
+      return (
+        <Button position='absolute' top='89%' right='40%' size='sm' colorScheme='red' onClick={e => { e.preventDefault(); unequipWeapon(); }}>
+          Unequip
+        </Button>
+      );
+    } else if (type === "classic" && equipedWeaponId != weapon.id.toString()) {
+      return (
+        <Button position='absolute' top='89%' right='40%' size='sm' colorScheme='green' onClick={e => { e.preventDefault(); equipWeapon(); }}>
+          Equip
+        </Button>
+      );
     }
+    // unreachable case
     if (room.id !== DEFAULT_ADMIN_ID) {
       return (
         <Button position='absolute' top='89%' right='40%' size='sm' colorScheme='green' onClick={e => { e.preventDefault(); onOpen(); }}>

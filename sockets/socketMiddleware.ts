@@ -38,6 +38,13 @@ const socketMiddleware: Middleware = (store) => (next) => (action) => {
         socket.socket.emit(SocketEventsEmitter.DeleteMember, payload);
         break;
 
+      case socketActions.equipWeaponAndDeck.type:
+        socket.socket.emit(SocketEventsEmitter.EquipWeaponAndDeck, payload);
+        break;
+      case socketActions.unequipWeaponAndDeck.type:
+        socket.socket.emit(SocketEventsEmitter.UnequipWeaponAndDeck, payload);
+        break;
+
       case socketActions.createNewRoom.type:
         socket.socket.emit(SocketEventsEmitter.CreateNewRoom, payload);
         break;

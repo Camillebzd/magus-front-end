@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, use, useEffect, useState } from "react";
 import { Monster, Weapon, WeaponData, Identity } from "./entities";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { MonsterDataSerilizable, fillMonstersWorldData } from "@/redux/features/monsterSlice";
@@ -172,6 +172,36 @@ export function useAllWeapons(forceFill: boolean = false) {
   return weapons;
 }
 
+// Create a weapon from its id
+export function useWeaponFromId(weaponId: number | undefined) {
+  const [weapon, setWeapon] = useState<Weapon | undefined>(undefined);
+  const weapons = useAllWeapons(false);
+
+  useEffect(() => {
+    if (weapons.length < 1 || (weaponId === undefined && weapon === undefined))
+      return;
+    if (weaponId === undefined && weapon !== undefined) {
+      setWeapon(undefined);
+      return;
+    }
+    let weaponDataNFT = weapons.find(weapon => weapon.id == weaponId);
+    if (!weaponDataNFT) {
+      console.log("Error: can't find weapon with id: ", weaponId);
+      return;
+    }
+    setWeapon(weaponDataNFT);
+  }, [weapons, weaponId]);
+  return weapon;
+}
+
+// Return the weapon equiped by the user, the data comes from the server
+export function useEquipedWeapon() {
+  const equipedWeaponId = useAppSelector((state) => state.socketReducer.member.equipedWeaponId);
+  const equipedWeapon = useWeaponFromId(equipedWeaponId != undefined ? Number(equipedWeaponId) : undefined);
+
+  return equipedWeapon;
+}
+
 export function useAbilities(forceFill: boolean = false) {
   const [abilities, setAbilities] = useState<Ability[]>([]);
   const abilitiesData = useAppSelector((state) => state.abilityReducer.abilities);
@@ -203,12 +233,12 @@ export function useStarter() {
       let starterDataImages: { id: number, name: string, image: string }[] = [];
       let abilitiesId: number[] = [];
 
-      starterDataBaseStats = await fetchFromDB("weapons/baseStats");
+      starterDataBaseStats = await fetchFromDB("weapons", "baseStats");
       if (starterDataBaseStats === undefined) {
         console.log("Failed to fetch baseStats from db.")
         return;
       }
-      starterDataImages = await fetchFromDB("weapons/images");
+      starterDataImages = await fetchFromDB("weapons", "images");
       if (starterDataImages === undefined) {
         console.log("Failed to fetch images of weapons from db.")
         return;
@@ -346,24 +376,31 @@ export function deckBuildingReducer(draft: Draft<AbilityData[]>, action: DeckBui
 
 // Local storage system
 
-function getStorageValue<Type>(key: string, defaultValue: Type) {
-  // getting stored value
-  const saved = localStorage.getItem(key);
-  let initial: Type = defaultValue;
-  if (saved)
-    initial = JSON.parse(saved);
-  return initial || defaultValue;
+function getStorageValue<Type>(key: string, defaultValue: Type): Type {
+  try {
+    const saved = localStorage.getItem(key);
+    if (saved === null || saved === undefined) {
+      return defaultValue;
+    }
+    return JSON.parse(saved);
+  } catch (error) {
+    console.error(`Error reading localStorage key "${key}":`, error);
+    return defaultValue;
+  }
 }
 
-export const useLocalStorage = <Type>(key: string, defaultValue: Type): [Type, Dispatch<SetStateAction<Type>>] => {
-  const [value, setValue] = useState(() => getStorageValue(key, defaultValue));
+export const useLocalStorage = <Type>(
+  key: string,
+  defaultValue: Type
+): [Type, Dispatch<SetStateAction<Type>>] => {
+  const [value, setValue] = useState<Type>(() => getStorageValue(key, defaultValue));
 
   useEffect(() => {
-    setValue(getStorageValue(key, defaultValue));
-  }, [key]);
-
-  useEffect(() => {
-    localStorage.setItem(key, JSON.stringify(value));
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (error) {
+      console.error(`Error writing localStorage key "${key}":`, error);
+    }
   }, [key, value]);
 
   return [value, setValue];

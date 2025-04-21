@@ -10,6 +10,8 @@ export enum SocketEventsListener {
   Error = "err",
   MemberCreated = "memberCreated",
   MemberDeleted = "memberDeleted",
+  WeaponAndDeckEquipped = "weaponAndDeckEquipped",
+  WeaponAndDeckUnequipped = "weaponAndDeckUnequipped",
   NewRoomCreated = "newRoomCreated",
   RoomJoined = "roomJoined",
   RoomLeft = "roomLeft",
@@ -38,6 +40,8 @@ export enum SocketEventsListener {
 export enum SocketEventsEmitter {
   CreateMember = "createMember",
   DeleteMember = "deleteMember",
+  EquipWeaponAndDeck = "equipWeaponAndDeck",
+  UnequipWeaponAndDeck = "unequipWeaponAndDeck",
   CreateNewRoom = "createNewRoom",
   JoinRoom = "joinRoom",
   LeaveRoom = "leaveRoom",

@@ -1,1 +1,1 @@
-export type WeaponGeneralType = "classic" | "starter";
+export type WeaponGeneralType = "classic" | "starter" | "equiped";
