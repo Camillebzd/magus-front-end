@@ -1,40 +1,120 @@
 'use client'
 
+import { useIsFullyConnected } from '@/scripts/customHooks';
+import { DEFAULT_ROOM_ID } from '@/sockets/@types/Room';
+import { Box, Button, Flex, Text, useDisclosure } from '@chakra-ui/react';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import CreateRoomModal from '@/components/CreateRoomModal';
+import JoinRoomModal from '@/components/JoinRoomModal';
+import { socketActions } from '@/redux/features/socketSlice';
+import CopyableField from '@/components/CopyableField';
+import EntityList from '@/app/room/components/EntityList';
+import MonsterList from '@/app/room/components/MonsterList';
+
 import styles from './page.module.css'
 
 export default function Home() {
+  const dispatch = useAppDispatch();
+  const room = useAppSelector((state) => state.socketReducer.room);
+  const member = useAppSelector((state) => state.socketReducer.member);
+  const isFullyConnected = useIsFullyConnected();
+  const { isOpen: isOpenCreate, onOpen: onOpenCreate, onClose: onCloseCreate } = useDisclosure();
+  const { isOpen: isOpenJoin, onOpen: onOpenJoin, onClose: onCloseJoin } = useDisclosure();
+
+  const leaveRoom = () => {
+    if (room.id != DEFAULT_ROOM_ID)
+      dispatch(socketActions.leaveRoom(room.id));
+  };
+
+  const startFight = () => {
+    dispatch(socketActions.startFigh());
+  };
+
+  // check if memberUID selected a weapon and a deck
+  const isMemberReady = (memberUID: string): boolean => (memberUID in room.weapons && memberUID in room.decks);
+
+  // Check if all members in the room are ready
+  const isEveryoneReady = (): boolean => (room.members.filter((member) => isMemberReady(member.uid)).length === room.members.length);
+
+  const startFightButton = () => {
+    // This is the admin
+    if (room.adminId === member.uid) {
+      let isReady = false;
+      // check everyone is ready
+      if (member.uid in room.weapons && member.uid in room.decks && isEveryoneReady() && room.monsters.length > 0)
+        isReady = true;
+      return <Button mt={10} colorScheme='green' isDisabled={!isReady} onClick={startFight}>Start fight</Button>
+    }
+  };
+
+  const roomDetails = () => (
+    <Box>
+      <Flex mb={5} alignItems='center' flexDirection="row" gap={5}>
+        <Box>
+          <Text>Room id</Text>
+          <CopyableField text={room.id} />
+        </Box>
+        <Box>
+          <Text>Admin id</Text>
+          <CopyableField text={room.adminId} />
+        </Box>
+      </Flex>
+      {room.password.length === 0 ?
+        <Box mb={5}>
+          <Text>Password</Text>
+          <Text>no password</Text>
+        </Box>
+        :
+        <Box mb={5}>
+          <Text>Password</Text>
+          <CopyableField text={room.password} />
+        </Box>
+      }
+      <EntityList />
+      <MonsterList />
+      <Flex gap={5}>
+        <Button mt={10} colorScheme='red' onClick={leaveRoom}>Leave room</Button>
+        {startFightButton()}
+      </Flex>
+    </Box>
+  );
 
   return (
-    <main className={styles.main}>
-      <h1 className={styles.pageTitle}>Home</h1>
-      <h2 className={styles.pageSubtitle}>Presentation</h2>
-      <p className={styles.paragraphe}>Welcome on the magus project!</p>
-      <p className={styles.paragraphe}>The objective of this little project is to create &quot;on-chain metadata&quot; NFTs and an environment around them to play (because own an &quot;on-chain metadata&quot; NFT it&apos;s cool but if you can do something with it, it&apos;s better! 😉).</p>
-      <p className={styles.paragraphe}>
-        All the Gears you will use are NFTs! That means you will really own them. You can navigate through the site without connecting your wallet but if you want to play you will have to.
-        <b>The site is actually in development so there could be some bugs, please protect your funds and wallet, create or use a wallet you normally use for testing purpose.</b>
-      </p>
-      <h2 className={styles.pageSubtitle}>Manual (please read this before using the site)</h2>
-      <p className={styles.paragraphe}>
-        <b>Attention:</b> only metamask was tested so I recommend you to use this wallet, some unpredicted errors could happen otherwise.
-      </p>
-      <p className={styles.paragraphe}><b>All the interactions should be on the Etherlink testnet network, check on your wallet that you&apos;re on this network.</b></p>
-      <p className={styles.paragraphe}>
-        Ok now lets talk about the game itself. &quot;Oh no another weird NFT farming game in which I have to spend 200 eth to try it&quot;. Nah don&apos;t worry, the goal of the project is to 
-        be easy and as free as it can be (you will still have to pay the gas fees, I love you but not that much).
-      </p>
-      <p className={styles.pageSubtitle}>Start to play</p>
-      <ol type="1" >
-        <li>Connect your wallet</li>
-        <li>Go on a Etherlink testnet faucet and get some free tokens</li>
-        <li>Go in the Armory section</li>
-        <li>Click on the button to go and select a starter weapon to mint</li>
-        <li>Go in the Room section to create a room</li>
-        <li>Once the room is ready (weapon + deck + monster selected), you can launch the fight</li>
-      </ol>
-      <p className={styles.paragraphe}>
-        <b>Note:</b> Only one weapon and one monster are supported per fight for now. Multiplayer is coming soon.
-      </p>
-    </main>
+    <Box className={styles.main}>
+      {/* Room box */}
+      <Flex 
+        borderRadius={10} 
+        padding={5} 
+        flexDirection={'column'}
+        gap={5}
+        width={'100%'}
+        borderColor={'profoundgrey.800'}
+        borderWidth={1}
+        backgroundColor={'profoundgrey.900'}
+      >
+        {room.id == DEFAULT_ROOM_ID ?
+          <Flex gap={'5px'} alignItems='center' justifyContent={'center'}>
+            {
+              isFullyConnected ?
+                <>
+                  <Button onClick={onOpenCreate}>Create room</Button>
+                  <Button onClick={onOpenJoin}>Join room</Button>
+                </>
+                :
+                <Text>Connect if you want to create a room and play.</Text>
+            }
+          </Flex>
+          :
+          <Flex gap={'5px'} alignItems='center' justifyContent={'center'} flexDirection={'column'}>
+            {roomDetails()}
+          </Flex>
+        }
+
+      </Flex>
+      {/* Monsters & events availables */}
+
+      <CreateRoomModal isOpen={isOpenCreate} onClose={onCloseCreate} />
+      <JoinRoomModal isOpen={isOpenJoin} onClose={onCloseJoin} />
+    </Box>
   )
 }

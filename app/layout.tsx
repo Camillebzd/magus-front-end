@@ -2,7 +2,8 @@ import './globals.css'
 import '@rainbow-me/rainbowkit/styles.css';
 import { Inter } from 'next/font/google'
 import { ThirdwebProvider } from "./thirdwebProvider";
-import Navbar from '@/components/Navbar'
+import Topbar from '@/components/Topbar'
+import Navbar from '@/components/Navigation/Navbar';
 import { ReduxProvider } from "@/redux/provider";
 import { ChakraProviders } from './chakraProviders';
 import { SocketProvider } from '@/sockets/socketContext';
@@ -26,8 +27,9 @@ export default function RootLayout({
           <ChakraProviders>
             <ThirdwebProvider>
               <SocketProvider>
-                <Navbar />
+                <Topbar />
                 {children}
+                <Navbar />
               </SocketProvider>
             </ThirdwebProvider>
           </ChakraProviders>

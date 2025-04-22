@@ -1,8 +1,8 @@
 .main {
   padding-left: 6rem;
   padding-right: 6rem;
-  padding-top: 1rem;
-  /* height: 100%; */
+  padding-top: calc(var(--top-bar-height) + 1rem);
+  padding-bottom: calc(var(--bottom-navbar-height) + 1rem);
 }
 
 .logo {
@@ -245,10 +245,16 @@
   }
 }
 
-/* Navbar */
+/* Main */
+
+/* Topbar & Navbar */
+
+.topbarContainer {
+  height: var(--top-bar-height);
+}
 
 .navbarContainer {
-  height: var(--navbar-height);
+  height: var(--bottom-navbar-height);
 }
 
 /* Fight local page */
@@ -257,7 +263,7 @@
   padding-left: 6rem;
   padding-right: 6rem;
   padding-top: 1rem;
-  height: calc(100% - var(--navbar-height));
+  height: calc(100vh - var(--top-navbar-height) - var(--bottom-navbar-height));
   display: flex;
   flex-direction: column;
 }

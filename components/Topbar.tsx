@@ -34,7 +34,7 @@ const wallets = [
   createWallet("me.rainbow"),
 ];
 
-const Navbar = () => {
+const Topbar = () => {
   const [display, changeDisplay] = useState('none')
   const [activeSection, setActiveSection] = useState(window.location.pathname);
   const wallet = useActiveWallet();
@@ -48,7 +48,7 @@ const Navbar = () => {
   // connect wallet user + create socket
   useEffect(() => {
     if (wallet) {
-      console.log('Wallet connected', wallet );
+      console.log('Wallet connected', wallet);
       wallet.subscribe("accountChanged", (account) => {
         dispatch(connect(account.address));
       });
@@ -80,21 +80,30 @@ const Navbar = () => {
 
   return (
     <Flex
-      align="center"
-      justifyContent="space-between"
-      width="100%"
-      paddingLeft="6%"
-      paddingRight="6%"
-      className={styles.navbarContainer}
+      position="fixed"
+      justifyContent="flex-end"
+      top="0"
+      left="0"
+      right="0"
+      zIndex="1"
+      bgGradient="linear(to-r, profoundgrey.900, profoundgrey.800, profoundgrey.900)"
+      backdropFilter="blur(8px)"
+      borderTop="1px"
+      borderColor="profoundgrey.800"
+      boxShadow="lg"
+      paddingTop="2px"
+      paddingBottom="2px"
+      paddingRight="30px"
+      className={styles.topbarContainer}
     >
-      <Text fontSize={"large"} fontWeight={"bold"}>Magus</Text>
+      {/* <Text fontSize={"large"} fontWeight={"bold"}>Magus</Text> */}
       {/* Desktop */}
-      <Flex
+      {/* <Flex
         display={['none', 'none', 'flex', 'flex']}
         gap={'10px'}
       >
         {MENU_LIST.map(elem => <NavItem key={elem.text} text={elem.text} href={elem.href} isActive={activeSection === elem.href} setActiveSection={setActiveSection} />)}
-      </Flex>
+      </Flex> */}
 
       {/* <ConnectButton showBalance={{ smallScreen: false, largeScreen: false }} /> */}
 
@@ -108,7 +117,7 @@ const Navbar = () => {
       </Flex>
 
       {/* Mobile */}
-      <IconButton
+      {/* <IconButton
         aria-label="Open Menu"
         size="lg"
         mr={2}
@@ -118,10 +127,10 @@ const Navbar = () => {
         }
         onClick={() => changeDisplay('flex')}
         display={['flex', 'flex', 'none', 'none']}
-      />
+      /> */}
 
       {/* Mobile Content */}
-      <Flex
+      {/* <Flex
         w='100vw'
         display={display}
         bgColor="gray.50"
@@ -152,10 +161,10 @@ const Navbar = () => {
         >
           {MENU_LIST.map(elem => <NavItem key={elem.text} text={elem.text} href={elem.href} isActive={activeSection === elem.href} setActiveSection={setActiveSection} />)}
         </Flex>
-      </Flex>
+      </Flex> */}
       <AcceptFightListener />
     </Flex>
   );
 };
 
-export default Navbar;
+export default Topbar;

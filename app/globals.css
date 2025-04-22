@@ -39,7 +39,8 @@
   --card-rgb: 180, 185, 188;
   --card-border-rgb: 131, 134, 135;
 
-  --navbar-height: 4em;
+  --top-bar-height: 70px;
+  --bottom-navbar-height: 70px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -91,6 +92,7 @@ body {
 }
 
 body {
+  z-index: 60;
   color: rgb(var(--foreground-rgb));
   background: linear-gradient(
       to bottom,
