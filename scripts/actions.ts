@@ -17,39 +17,55 @@ let targets: Target[] = [];
 let conditions: Condition[] = [];
 let orders: Order[] = [];
 
+// Flag to track if the data has been initialized
+let isDataInitialized = false;
+
 const initData = async () => {
-  const effectsData: Effect[] | undefined = await fetchFromDB("abilities", "effects");
-  if (effectsData)
-    effects = effectsData;
-  else
-    console.log("Error: can't fetch abilities' effects.");
-  const rulesData: Rule[] | undefined = await fetchFromDB("abilities", "rules");
-  if (rulesData)
-    rules = rulesData;
-  else
-    console.log("Error: can't fetch rules for abilities.");
-  const modifiersData: Modifier[] | undefined = await fetchFromDB("abilities", "modifiers");
-  if (modifiersData)
-    modifiers = modifiersData;
-  else
-    console.log("Error: can't fetch modifiers for abilities.");
-  const targetsData: Target[] | undefined = await fetchFromDB("abilities", "targets");
-  if (targetsData)
-    targets = targetsData;
-  else
-    console.log("Error: can't fetch targets for abilities.");
-  const conditionsData: Condition[] | undefined = await fetchFromDB("abilities", "conditions");
-  if (conditionsData)
-    conditions = conditionsData;
-  else
-    console.log("Error: can't fetch conditions for abilities.");
-  const ordersData: Order[] | undefined = await fetchFromDB("abilities", "orders");
-  if (ordersData)
-    orders = ordersData;
-  else
-    console.log("Error: can't fetch orders for abilities.");
+  try {
+    const effectsData: Effect[] | undefined = await fetchFromDB("abilities", "effects");
+    if (effectsData)
+      effects = effectsData;
+    else
+      console.log("Error: can't fetch abilities' effects.");
+    const rulesData: Rule[] | undefined = await fetchFromDB("abilities", "rules");
+    if (rulesData)
+      rules = rulesData;
+    else
+      console.log("Error: can't fetch rules for abilities.");
+    const modifiersData: Modifier[] | undefined = await fetchFromDB("abilities", "modifiers");
+    if (modifiersData)
+      modifiers = modifiersData;
+    else
+      console.log("Error: can't fetch modifiers for abilities.");
+    const targetsData: Target[] | undefined = await fetchFromDB("abilities", "targets");
+    if (targetsData)
+      targets = targetsData;
+    else
+      console.log("Error: can't fetch targets for abilities.");
+    const conditionsData: Condition[] | undefined = await fetchFromDB("abilities", "conditions");
+    if (conditionsData)
+      conditions = conditionsData;
+    else
+      console.log("Error: can't fetch conditions for abilities.");
+    const ordersData: Order[] | undefined = await fetchFromDB("abilities", "orders");
+    if (ordersData)
+      orders = ordersData;
+    else
+      console.log("Error: can't fetch orders for abilities.");
+    isDataInitialized = true;
+  } catch (error) {
+    console.error("Error initializing data:", error);
+    isDataInitialized = false;
+  }
 }
-initData();
+
+// Export a function to ensure data is loaded before using any of the actions
+export async function ensureDataLoaded() {
+  if (!isDataInitialized) {
+    await initData();
+  }
+  return isDataInitialized;
+}
 
 export enum END_OF_TURN { NORMAL, TARGET_BLOCKED, PLAYER_COMBO, MONSTER_COMBO, PLAYER_DIED, MONSTER_DIED };
 
@@ -127,6 +143,9 @@ export class Action {
     this.fluxesUsed = data.fluxesUsed || 0;
     this.info = data.info || undefined;
     this.currentTurn = data.currentTurn || 0;
+
+    // Check if the data is loaded
+    ensureDataLoaded().catch(err => console.error("Failed to load action data:", err));
   }
 
   // set hystoric system, carefule to not circulare link or too deep copy
