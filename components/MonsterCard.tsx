@@ -33,6 +33,8 @@ const MonsterCard = ({monster}: {monster: Monster}) => {
               borderRadius='lg'
               className={styles.cardImage}
               ref={imageMonster}
+              height={"200px"}
+              width={"200px"}  
             />
             <Stack mt='6' spacing='3' >
               <Heading size='md'>{monster.name}</Heading>

@@ -132,6 +132,8 @@ const WeaponCard = ({ weapon, type }: { weapon: Weapon, type: WeaponGeneralType 
             borderRadius='lg'
             className={styles.cardImage}
             ref={imageWeapon}
+            height={"200px"}
+            width={"200px"}
           />
           <Stack mt='6' spacing='3' >
             <Heading size='md'>{weapon.name}</Heading>
