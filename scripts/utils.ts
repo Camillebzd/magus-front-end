@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 import contractABI from "@/abi/GearFight.json";
 
-import { Ability } from './abilities';
+import { Ability, RawDataAbilities } from './abilities';
 import { Identity, WeaponMintStats } from './entities';
 import { getContract } from 'thirdweb';
 import { client, etherlinkTestnet } from '@/app/thirdwebInfo'
@@ -22,13 +22,13 @@ export function getRandomInt(max: number) {
 }
 
 // min and max included 
-export function randomIntFromInterval(min: number, max: number) { 
+export function randomIntFromInterval(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1) + min)
 }
 
 // function to create a contract ethers.js of gearFactory
 export async function createContract(walletAddress: string) {
-  const ethereum: any  = window.ethereum; // dangerous because if network on Rabby different things explode
+  const ethereum: any = window.ethereum; // dangerous because if network on Rabby different things explode
   const provider = new ethers.providers.Web3Provider(ethereum) // new ethers.BrowserProvider(ethereum); // V6
   const signer = await provider.getSigner(walletAddress);
   const contract = new ethers.Contract(CONTRACT_ADDRESS, contractABI.abi, signer);
@@ -98,7 +98,7 @@ export function multiplyStatsForLevelUp(stats: WeaponMintStats, coef: number) {
 // get the list of abilities for a weapon for a specific level, throw an error if an error is encoutered
 export async function getAllAbilitiesIdForWeapon(identity: Identity, levelToSet: number) {
   // let allAbilities = (await import(`@/data/weapons/${identity.toLocaleLowerCase()}/abilities.json`));
-  let allAbilities: {[key: string]: number[] | number | string}[] = [];
+  let allAbilities: { [key: string]: number[] | number | string }[] = [];
   allAbilities = await fetchFromDB("weapons", "abilities");
   if (allAbilities === undefined)
     throw new Error("Failed to fetch abilities for weapons from db.");
@@ -148,4 +148,52 @@ export async function fetchFromDB(dbName: string, collectionName: string, query:
     console.log(e);
     return undefined;
   }
+}
+
+/**
+ * Create a list of abilities from raw data. If the list is empty it means
+ * something wrong happened.
+ * @param rawDataAbilities Raw data of the abilities
+ * @param abilityList List of abilities to retrieve the data from
+ * @returns An array of ability or an empty array.
+ */
+export function createAbilityListFromRawData(rawDataAbilities: RawDataAbilities, abilityList: Ability[]): Ability[] {
+  let abilities: Ability[] = [];
+
+  for (const abilityId in rawDataAbilities) {
+    const uidList = rawDataAbilities[abilityId];
+    const numberOfAbility = uidList.length;
+    // const ability = this.getAbility(Number(abilityId));
+    const ability = abilityList.find(ability => ability.id === Number(abilityId));
+
+    if (!ability) {
+      console.log(`Error: ability with id ${abilityId} doesn't exist.`);
+      break;
+    }
+    for (let i = 0; i < numberOfAbility; i++) {
+      const newAbility = ability.clone();
+      newAbility.uid = uidList[i];
+      abilities.push(newAbility);
+    }
+  }
+  return abilities;
+}
+
+/**
+ * Create raw data from a list of abilities. If the object, is empty it means
+ * something wrong happened.
+ * @param abilities Ability array to convert
+ * @returns An object containing the raw data of the deck with key the id of the ability and value the number of time it is in the deck.
+ */
+export function createFromRawDataAbilityList(abilities: Ability[]): RawDataAbilities {
+  let rawDataAbilities: RawDataAbilities = {};
+
+  abilities.forEach(ability => {
+    const abilityId = ability.id;
+    if (!rawDataAbilities[abilityId]) {
+      rawDataAbilities[abilityId] = [];
+    }
+    rawDataAbilities[abilityId].push(ability.uid);
+  });
+  return rawDataAbilities;
 }

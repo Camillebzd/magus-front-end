@@ -95,7 +95,11 @@ const CreateDeckModal = ({ weapon, isOpen, onClose }: { weapon: Weapon, isOpen: 
         }
       });
       console.log("deck:", rawDataDeck);
-      dispatch(socketActions.selectWeaponAndDeck({ weaponId: weapon.id.toString(), deck: rawDataDeck }));
+      dispatch(socketActions.equipWeaponAndDeck({
+        weaponId: weapon.id.toString(),
+        deck: rawDataDeck,
+      }));
+      // dispatch(socketActions.selectWeaponAndDeck({ weaponId: weapon.id.toString(), deck: rawDataDeck }));
       onClose();
     }
   }

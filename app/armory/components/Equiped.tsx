@@ -1,13 +1,13 @@
 import WeaponCard from "@/components/WeaponCard";
 import DeckEquiped from "./DeckEquiped";
-import { Box, Text } from "@chakra-ui/react";
+import { Flex, Text } from "@chakra-ui/react";
 import { useEquipedWeapon } from "@/scripts/customHooks";
 
 const Equiped = () => {
   const equipedWeapon = useEquipedWeapon();
 
   return (
-    <Box>
+    <Flex alignItems="center" flexDirection={"column"} gap={4}>
       {equipedWeapon ?
         <>
           <WeaponCard weapon={equipedWeapon} type="equiped" />
@@ -18,7 +18,7 @@ const Equiped = () => {
           You don't have any equiped weapon.
         </Text>
       }
-    </Box>
+    </Flex>
   );
 }
 

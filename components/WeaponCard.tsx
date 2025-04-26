@@ -12,7 +12,6 @@ import { createContract } from "@/scripts/utils";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { useRouter } from "next/navigation";
 import { Notify } from "notiflix";
-import { DEFAULT_ADMIN_ID } from "@/sockets/@types/Room";
 import CreateDeckModal from "./CreateDeckModal";
 import { socketActions } from "@/redux/features/socketSlice";
 
@@ -77,15 +76,6 @@ const WeaponCard = ({ weapon, type }: { weapon: Weapon, type: WeaponGeneralType 
     }
   };
 
-  const equipWeapon = async () => {
-    console.log("equip", weapon.id.toString());
-    // call equip on server
-    dispatch(socketActions.equipWeaponAndDeck({
-      weaponId: weapon.id.toString(),
-      deck: {},
-    }));
-  }
-
   const unequipWeapon = async () => {
     console.log("unequip", weapon.id.toString());
     // call unequip on server
@@ -95,31 +85,28 @@ const WeaponCard = ({ weapon, type }: { weapon: Weapon, type: WeaponGeneralType 
   const cardFooter = () => {
     if (type === "starter") {
       return (
-        <Button position='absolute' top='89%' right='40%' size='sm' colorScheme='blue' onClick={e => { e.preventDefault(); craftStarter(); }}>
+        <Button size='sm' colorScheme='blue' onClick={e => { e.preventDefault(); craftStarter(); }}>
           Choose
         </Button>
       );
     } else if (type === "equiped") {
       return (
-        <Button position='absolute' top='89%' right='40%' size='sm' colorScheme='red' onClick={e => { e.preventDefault(); unequipWeapon(); }}>
+        <Button size='sm' colorScheme='red' onClick={e => { e.preventDefault(); unequipWeapon(); }}>
           Unequip
         </Button>
       );
     } else if (type === "classic" && equipedWeaponId != weapon.id.toString()) {
       return (
-        <Button position='absolute' top='89%' right='40%' size='sm' colorScheme='green' onClick={e => { e.preventDefault(); equipWeapon(); }}>
+        <Button size='sm' colorScheme='green' onClick={e => { e.preventDefault(); onOpen(); }}>
           Equip
         </Button>
       );
     }
-    // unreachable case
-    if (room.id !== DEFAULT_ADMIN_ID) {
-      return (
-        <Button position='absolute' top='89%' right='40%' size='sm' colorScheme='green' onClick={e => { e.preventDefault(); onOpen(); }}>
-          Choose
-        </Button>
-      );
-    }
+    return (
+      <Button size='sm' colorScheme='green' isActive={false} isDisabled={true} onClick={e => { e.preventDefault();}}>
+        Equiped
+      </Button>
+    );
   };
 
   return (
@@ -140,7 +127,7 @@ const WeaponCard = ({ weapon, type }: { weapon: Weapon, type: WeaponGeneralType 
             <p>{weapon.description}</p>
           </Stack>
         </CardBody>
-        <CardFooter >
+        <CardFooter marginBottom={2} padding={0}>
           {cardFooter()}
         </CardFooter>
       </Card>

@@ -5,7 +5,7 @@ import { MonsterDataSerilizable, fillMonstersWorldData } from "@/redux/features/
 import { fillStoreAbilities } from "@/redux/features/abilitySlice";
 import { Ability, AbilityData } from "./abilities";
 import { AttributeOnNFT, WeaponNFT, fillAllWeapons, fillUserWeapons, weapons } from "@/redux/features/weaponSlice";
-import { createContract, createReadContract, fetchFromDB, getAllAbilitiesIdForWeapon } from "./utils";
+import { createAbilityListFromRawData, createContract, createReadContract, fetchFromDB, getAllAbilitiesIdForWeapon } from "./utils";
 import { Draft } from "immer";
 import { Notify } from "notiflix";
 import { STARTERS_NAME } from "./systemValues";
@@ -200,6 +200,32 @@ export function useEquipedWeapon() {
   const equipedWeapon = useWeaponFromId(equipedWeaponId != undefined ? Number(equipedWeaponId) : undefined);
 
   return equipedWeapon;
+}
+
+// Return the deck equiped by the user, the data comes from the server
+export function useEquipedDeck() {
+  const equipedDeckRawData = useAppSelector((state) => state.socketReducer.member.equipedDeck);
+  const abilities = useAbilities(false);
+  const [equipedDeck, setEquipedDeck] = useState<Ability[]>([]);
+
+  useEffect(() => {
+    // unequip deck
+    if ((equipedDeckRawData === undefined || equipedDeckRawData === null) && equipedDeck.length > 1) {
+      setEquipedDeck([]);
+      return;
+    }
+    if (abilities.length < 1 || equipedDeckRawData === undefined)
+      return;
+    let dataToSet = createAbilityListFromRawData(equipedDeckRawData, abilities);
+    if (dataToSet.length < 1) {
+      console.log("Error: equiped deck is empty.");
+      return;
+    }
+    dataToSet.sort((a, b) => a.id - b.id);
+    setEquipedDeck(dataToSet);
+  }, [equipedDeckRawData, abilities]);
+
+  return equipedDeck;
 }
 
 export function useAbilities(forceFill: boolean = false) {
