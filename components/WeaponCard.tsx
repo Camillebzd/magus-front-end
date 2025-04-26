@@ -1,7 +1,18 @@
 'use client'
 
 import { Weapon, WeaponMint } from "@/scripts/entities";
-import { Card, CardBody, CardFooter, Heading, Stack, Button, Image, useDisclosure } from '@chakra-ui/react'
+import { 
+  Card,
+  CardBody,
+  CardFooter,
+  Heading,
+  Stack,
+  Button,
+  Image,
+  useDisclosure,
+  Flex,
+  Text
+} from '@chakra-ui/react'
 
 import styles from './Card.module.css'
 import { useEffect, useRef, useState } from "react";
@@ -111,7 +122,14 @@ const WeaponCard = ({ weapon, type }: { weapon: Weapon, type: WeaponGeneralType 
 
   return (
     <Link href={`/weapon/${type}/${weapon.id}`}>
-      <Card className={styles.card} onMouseEnter={() => setIsOver(true)} onMouseLeave={() => setIsOver(false)}>
+      <Card 
+        backgroundColor={"profoundgrey.400"}
+        borderColor={"profoundgrey.200"}
+        borderWidth={"1px"}
+        className={styles.card}
+        onMouseEnter={() => setIsOver(true)}
+        onMouseLeave={() => setIsOver(false)}
+      >
         <CardBody className={styles.cardBody}>
           <Image
             src={weapon.image}
@@ -122,9 +140,12 @@ const WeaponCard = ({ weapon, type }: { weapon: Weapon, type: WeaponGeneralType 
             height={"200px"}
             width={"200px"}
           />
-          <Stack mt='6' spacing='3' >
-            <Heading size='md'>{weapon.name}</Heading>
-            <p>{weapon.description}</p>
+          <Stack mt='6' spacing='2'>
+            <Flex direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
+              <Heading size='md'>{weapon.name}</Heading>
+              <Heading size='sm'>LV.{weapon.level}</Heading>
+            </Flex>
+            <Text>{weapon.description}</Text>
           </Stack>
         </CardBody>
         <CardFooter marginBottom={2} padding={0}>
