@@ -1,6 +1,6 @@
 'use client'
 
-import { useIsFullyConnected } from '@/scripts/customHooks';
+import { useIsFullyConnected, useMonstersWorld } from '@/scripts/customHooks';
 import { DEFAULT_ROOM_ID } from '@/sockets/@types/Room';
 import { Box, Button, Flex, Text, useDisclosure } from '@chakra-ui/react';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
@@ -9,14 +9,17 @@ import JoinRoomModal from '@/components/JoinRoomModal';
 import { socketActions } from '@/redux/features/socketSlice';
 import CopyableField from '@/components/CopyableField';
 import EntityList from '@/app/room/components/EntityList';
-import MonsterList from '@/app/room/components/MonsterList';
+import MonsterListInRoom from '@/app/room/components/MonsterListInRoom';
 
 import styles from './page.module.css'
+import MonsterList from '@/components/MonsterList';
 
 export default function Home() {
   const dispatch = useAppDispatch();
   const room = useAppSelector((state) => state.socketReducer.room);
   const member = useAppSelector((state) => state.socketReducer.member);
+  const monsters = useMonstersWorld(true);
+  const areMonstersLoading = useAppSelector((state) => state.monsterReducer.isLoading);
   const isFullyConnected = useIsFullyConnected();
   const { isOpen: isOpenCreate, onOpen: onOpenCreate, onClose: onCloseCreate } = useDisclosure();
   const { isOpen: isOpenJoin, onOpen: onOpenJoin, onClose: onCloseJoin } = useDisclosure();
@@ -71,7 +74,7 @@ export default function Home() {
         </Box>
       }
       <EntityList />
-      <MonsterList />
+      <MonsterListInRoom />
       <Flex gap={5}>
         <Button mt={10} colorScheme='red' onClick={leaveRoom}>Leave room</Button>
         {startFightButton()}
@@ -82,9 +85,9 @@ export default function Home() {
   return (
     <Box className={styles.main}>
       {/* Room box */}
-      <Flex 
-        borderRadius={10} 
-        padding={5} 
+      <Flex
+        borderRadius={10}
+        padding={5}
         flexDirection={'column'}
         gap={5}
         width={'100%'}
@@ -112,7 +115,18 @@ export default function Home() {
 
       </Flex>
       {/* Monsters & events availables */}
-
+      <Flex direction={'column'}>
+        <Text fontSize='xl' mt={5} fontWeight={'bold'}>
+          Monsters & events availables
+        </Text>
+        <Text fontSize='sm' mb={4} color={'lightgrey'}>
+          Click on the monster to see its details
+        </Text>
+        {areMonstersLoading ?
+          <Text>Monsters loading...</Text> :
+          <MonsterList monsters={monsters} />
+        }
+      </Flex>
       <CreateRoomModal isOpen={isOpenCreate} onClose={onCloseCreate} />
       <JoinRoomModal isOpen={isOpenJoin} onClose={onCloseJoin} />
     </Box>

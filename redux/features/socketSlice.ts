@@ -48,7 +48,7 @@ export type SkillsSelected = {
   [id: Member.ID]: Skill
 };
 
-const DefaultRoom: Room = {
+export const DefaultRoom: Room = {
   id: DEFAULT_ROOM_ID,
   password: "",
   adminId: DEFAULT_ADMIN_ID,
@@ -61,7 +61,7 @@ const DefaultRoom: Room = {
   goToRoomId: DEFAULT_ROOM_ID
 };
 
-const DefaultMemberInformation: MemberInfo = {
+export const DefaultMemberInformation: MemberInfo = {
   uid: "NO_ID",
   name: "NO_NAME",
   equipedWeaponId: undefined,

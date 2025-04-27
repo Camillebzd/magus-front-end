@@ -11,7 +11,7 @@ import JoinRoomModal from '@/components/JoinRoomModal';
 import { socketActions } from '@/redux/features/socketSlice';
 import CopyableField from '@/components/CopyableField';
 import EntityList from '@/app/room/components/EntityList';
-import MonsterList from '@/app/room/components/MonsterList';
+import MonsterList from '@/app/room/components/MonsterListInRoom';
 
 export default function Page() {
   const dispatch = useAppDispatch();

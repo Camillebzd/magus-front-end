@@ -3,7 +3,7 @@ import { Box, Text } from '@chakra-ui/react';
 import * as Monster from '@/sockets/@types/Monster';
 import GoToButton from '@/components/GoToButton';
 
-const MonsterList = () => {
+const MonsterListInRoom = () => {
   const room = useAppSelector((state) => state.socketReducer.room);
 
   const monsterSquare = (member: Monster.Instance) => (
@@ -27,4 +27,4 @@ const MonsterList = () => {
   );
 }
 
-export default MonsterList;
+export default MonsterListInRoom;
