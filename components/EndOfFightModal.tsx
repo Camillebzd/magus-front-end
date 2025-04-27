@@ -13,17 +13,17 @@ const EndOfFightModal = ({isOpen, onClose, weaponId, difficulty, isWinner, goToW
   const [xpReward, setXpReward] = useState(0);
 
   useEffect(() => {
-    const getXpRewardData = async () => {
-      const response = await fetchFromDB("general/experiences");
+    // const getXpRewardData = async () => {
+    //   const response = await fetchFromDB("general/experiences");
 
-      if (response === undefined) {
-        console.log("An error occured during the fetch of experiences from db.");
-        Notify.failure('An error happened during the retrieve of xp data...');
-        return;
-      }
-      setXpReward(response[0][difficulty.toString()]);
-    }
-    getXpRewardData();
+    //   if (response === undefined) {
+    //     console.log("An error occured during the fetch of experiences from db.");
+    //     Notify.failure('An error happened during the retrieve of xp data...');
+    //     return;
+    //   }
+    //   setXpReward(response[0][difficulty.toString()]);
+    // }
+    // getXpRewardData();
   }, []);
 
   const gainXP = async () => {
@@ -70,10 +70,11 @@ const EndOfFightModal = ({isOpen, onClose, weaponId, difficulty, isWinner, goToW
         </ModalBody>
         <ModalFooter>
           <Button mr={3} onClick={goToWorld}>
-            World
+            Finish
           </Button>
           {/* {isWinner && <Button colorScheme='blue' onClick={gainXP}>Gain XP</Button>} */}
-          {isWinner && <Button colorScheme='blue'>Retry</Button>}
+          {/* disabled for the moment */}
+          {isWinner && <Button isActive={false} isDisabled={true} colorScheme='blue'>Retry</Button>}
         </ModalFooter>
       </ModalContent>
     </Modal>

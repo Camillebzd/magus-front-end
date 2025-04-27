@@ -321,7 +321,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
       dispatch(socketActions.removeMonsters(room.monsters));
     }
 
-    router.push('/world');
+    router.push('/');
   };
 
   const selectAbility = (ability: Ability, fluxesUsed: number = 0) => {
