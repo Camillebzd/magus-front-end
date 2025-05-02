@@ -1,30 +1,26 @@
 'use client'
 
-import { act, MutableRefObject, use, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styles from '@/app/page.module.css';
 
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import Entity from '@/components/Entity';
 import Chat from '@/components/Chat';
 import AbilityCard from '@/components/AbilityCard';
 import { Ability, fromRawAbilitiesToAbilities, RawDataAbilities } from '@/scripts/abilities';
 import { Monster, Weapon } from '@/scripts/entities';
-import { Action, ActionInstructions, END_OF_TURN } from '@/scripts/actions';
-import { resolveActions } from '@/scripts/fight';
-import { Button, Text, useDisclosure } from '@chakra-ui/react';
+import { Action, ActionInstructions } from '@/scripts/actions';
+import { Box, Button, Flex, Text, useDisclosure } from '@chakra-ui/react';
 import EndOfFightModal from '@/components/EndOfFightModal';
-import { useAbilities, useAllWeapons, useMonstersWorld, useUserWeapons, useWeaponDeck } from '@/scripts/customHooks';
+import { useAllWeapons, useMonstersWorld } from '@/scripts/customHooks';
 import SelectFluxesModal from '@/components/SelectFluxesModal';
-import { HAND_SIZE } from '@/scripts/systemValues';
-import { usePathname, useSearchParams } from 'next/navigation'
-import { HistoricSystem, Turn } from '@/scripts/historic';
+import { usePathname } from 'next/navigation'
+import { HistoricSystem } from '@/scripts/historic';
 import { socketActions } from '@/redux/features/socketSlice';
-import SocketFactory from '@/sockets/SocketFactory';
-import { Socket } from 'socket.io-client';
 import ActionManager, { RawDataAction } from '@/scripts/ActionManager';
 import UniqueIdGenerator from '@/scripts/UniqueIdGenerator';
 import { useSocket } from '@/sockets/socketContext';
 import { useRouter } from "next/navigation";
+import EntityList from './components/EntityList';
 
 enum GAME_PHASES {
   WAIT_BEFORE_START,
@@ -384,49 +380,61 @@ export default function Page({ params }: { params: { roomId: string } }) {
 
   return (
     <main className={styles.mainFightContainer}>
-      <h1 className={styles.pageTitle}>Fight</h1>
       {!isInTheRoom ? (
-        <div>
+        <>
           <Text>Not in the room.</Text>
-        </div>
+        </>
       ) : (
         <>
-          <div className={styles.principalFightContainer}>
-            <div className={styles.fightersContainer}>
-              <div>
-                <Entity
-                  entity={weapon}
-                  isModifiersOnRight={true}
-                />
-              </div>
-              <div>
+          <Flex
+            direction={"column"}
+            justify={"space-between"}
+            grow={1}
+            gap={5}
+          >
+            <Flex
+              direction={"row"}
+              justify={"space-around"}
+              align={"center"}
+              grow={1}
+            >
+              <EntityList entities={[weapon!]} isModifiersOnRight={true} />
+              <Box>
                 {actions.length > 0 ?
                   actions?.map(action => (
-                    <div key={action.uid}>
-                      <p>{action?.caster.name}: {action?.ability.name} {"->"} {action?.target.name} {action?.hasBeenValidated ? '✓' : 'x'}</p>
-                    </div>
+                    <Box key={action.uid}>
+                      <Text>{action?.caster.name}: {action?.ability.name} {"->"} {action?.target.name} {action?.hasBeenValidated ? '✓' : 'x'}</Text>
+                    </Box>
                   ))
-                  : <p>No actions</p>
+                  : <Text>No actions</Text>
                 }
-              </div>
-              <div>
-                <Entity
-                  entity={monster}
-                  isModifiersOnRight={false}
-                />
-              </div>
-            </div>
-            <div className={styles.bottomFightContainer}>
-              <div className={styles.infoChatContainer}>
+              </Box>
+              <EntityList entities={[monster!]} isModifiersOnRight={false} />
+            </Flex>
+            <Flex
+              height={"10rem"}
+              direction={"row"}
+              justify={"space-between"}
+              border={"2px solid"}
+              borderColor={'profoundgrey.400'}
+              borderRadius={"5px"}
+              p='1'
+            >
+              <Flex height={"100%"} width={"20rem"}>
                 <Chat lignes={info} />
-              </div>
-              <div className={styles.phasePrinter}>
-                <p>{phasePrinter()}</p>
-                <p>Actual turn: {turn}</p>
-                <p>deck: {weapon?.deck.length}</p>
-                <p>discard: {weapon?.discard.length}</p>
-              </div>
-              <div className={styles.abilitiesCointainer}>
+              </Flex>
+              <Flex direction={"column"} justifyContent={"center"} alignItems={"center"} >
+                <Text>{phasePrinter()}</Text>
+                <Text>Actual turn: {turn}</Text>
+                <Text>deck: {weapon?.deck.length}</Text>
+                <Text>discard: {weapon?.discard.length}</Text>
+              </Flex>
+              <Flex
+                direction={"row"}
+                justifyContent={"space-between"}
+                alignItems={"center"}
+                gap={"1rem"}
+              >
                 <Button onClick={() => {
                   if (phase === GAME_PHASES.PLAYER_CHOOSE_ABILITY) {
                     socket.emit('validateAbility');
@@ -435,9 +443,9 @@ export default function Page({ params }: { params: { roomId: string } }) {
                   Validate
                 </Button>
                 {weapon?.hand.map((ability) => <AbilityCard key={ability.uid} onClick={() => onAbilityClick(ability)} ability={ability} />)}
-              </div>
-            </div>
-          </div>
+              </Flex>
+            </Flex>
+          </Flex>
           {monster && weapon && <EndOfFightModal isOpen={endOfFightModal.isOpen} onClose={endOfFightModal.onClose} weaponId={weapon!.id} difficulty={monster!.difficulty} isWinner={won.current} goToWorld={goToWorld} />}
           {monster && weapon && <SelectFluxesModal isOpen={fluxeModal.isOpen} onClose={fluxeModal.onClose} selectAbility={execAbilityModal} fluxesAvailables={weapon.fluxes} />}
         </>

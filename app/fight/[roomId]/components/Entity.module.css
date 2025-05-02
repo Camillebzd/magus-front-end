@@ -1,0 +1,132 @@
+.entityContainer {
+  cursor: pointer;
+  /* background-color: red; */
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+}
+.arrow {
+  position: absolute;
+  border: solid black;
+  border-width: 0 3px 3px 0;
+  display: inline-block;
+  padding: 8px;
+}
+.down {
+  transform: rotate(45deg);
+  /* -webkit-transform: rotate(45deg); */
+}
+.mooveUpDown {
+  animation: MoveUpDown 1s linear infinite;
+}
+@keyframes MoveUpDown {
+  0%, 100% {
+    transform: translateY(0) rotate(45deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(45deg);
+  }
+}
+
+/* Legacy code css */
+
+.modifiersContainer {
+  /* margin-top: 75px; */
+  height: fit-content;
+  /* margin-left: 10px; */
+  /* margin-right: 5px; */
+  /* background-color: red; */
+  display: flex;
+  flex-direction: column;
+}
+.modifierContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.buffContainer {
+  min-height: 1.65em;
+}
+.mainInfoContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.imageEntity {  
+  max-width: 150px;
+  max-height: 150px;
+}
+.nameContainer {
+  /* background-color: blue; */
+  /* align-items: center; */
+  /* width: 100%; */
+  justify-content: space-between;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  align-items: center;
+  padding: 2px;
+}
+.mainContainer {
+  display: flex;
+  flex-direction: row;
+}
+.healthContainer {
+  /* background-color: red; */
+  /* width: 100%; */
+  /* align-items: center; */
+  display: flex;
+  /* flex-wrap: wrap; */
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 2px;
+}
+.healthBar {
+  color: green;
+}
+.fluxesContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 5px;
+}
+.fluxesCirclesContainer {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  /* background-color: red; */
+  justify-content: space-around;
+  /* align-items: center; */
+
+}
+.fluxeCircle {
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  margin-right: 2px;
+}
+.fluxeFull {
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  margin-right: 2px;
+  background-color: #d518db;
+}
+.fluxeEmpty {
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  margin-right: 2px;
+  background-color: #525252;
+}
+.topContainer {
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 5px;
+  margin-bottom: 5px;
+  /* max-width: 170px; */
+  /* background-color: white; */
+}
