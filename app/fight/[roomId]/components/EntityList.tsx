@@ -2,7 +2,17 @@ import { Monster, Weapon } from "@/scripts/entities";
 import { Box } from "@chakra-ui/react";
 import Entity from "./Entity";
 
-const EntityList = ({ entities, isModifiersOnRight, selected }: { entities: Weapon[] | Monster[] | undefined, isModifiersOnRight: boolean, selected: string[] }) => {
+const EntityList = ({
+  entities,
+  isModifiersOnRight,
+  selected,
+  selectTarget
+}: {
+  entities: Weapon[] | Monster[] | undefined,
+  isModifiersOnRight: boolean,
+  selected: string[],
+  selectTarget: (target: string) => void
+}) => {
   if (!entities || entities.length === 0) return null;
 
   const isSingleEntity = entities.length === 1;
@@ -29,6 +39,7 @@ const EntityList = ({ entities, isModifiersOnRight, selected }: { entities: Weap
             entity={entity}
             isModifiersOnRight={isModifiersOnRight}
             isSelected={selected?.includes(entity.uid)}
+            selectTarget={selectTarget}
           />
         </Box>
       ))}

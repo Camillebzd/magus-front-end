@@ -324,11 +324,21 @@ export default function Page({ params }: { params: { roomId: string } }) {
     //   return;
     if (!socket || !weapon || !monsters)
       return;
+    // handle mono target for the moment
+    // TODO implement multi target
+    let targets: string[] = [];
+    if (entitiesSelected.length > 0) {
+      targets = entitiesSelected;
+    } else {
+      // select the first monster by default
+      targets = [monsters[0].uid];
+      setEntitiesSelected([monsters[0].uid]);
+    }
     // Create the raw data of an action and send it to the server
     const actionData: RawDataAction = {
       uid: UniqueIdGenerator.getInstance().generateSnowflakeId(2),
       caster: weapon.uid,
-      target: monsters[0].uid, // TODO implement target selection
+      target: targets[0], // TODO multi target
       ability: ability.uid,
       fluxesUsed: fluxesUsed,
       currentTurn: turn,
@@ -336,6 +346,33 @@ export default function Page({ params }: { params: { roomId: string } }) {
     };
     console.log('actionData', actionData);
     socket.emit('selectAbility', actionData);
+  };
+
+  const selectTarget = (target: string) => {
+    if (entitiesSelected.includes(target))
+      return;
+
+    setEntitiesSelected([target]);
+
+    // if an ability is selected and during choose phase, select the target and emit the action
+    if (phase !== GAME_PHASES.PLAYER_CHOOSE_ABILITY || !weapon || !monsters)
+      return;
+    if (actionsRef.current && actionsRef.current.length > 0) {
+      const userAction = actionsRef.current.find(action => action.caster.uid === weapon.uid);
+      if (userAction) {
+        const actionData: RawDataAction = {
+          uid: UniqueIdGenerator.getInstance().generateSnowflakeId(2),
+          caster: weapon.uid,
+          target: target,
+          ability: userAction.ability.uid,
+          fluxesUsed: 0,
+          currentTurn: turn,
+          hasBeenValidated: false,
+        };
+        console.log('new target selected, actionData', actionData);
+        socket.emit('selectAbility', actionData);
+      }
+    }
   };
 
   const execAbilityModal = (fluxeSelected: number) => {
@@ -397,7 +434,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
               align={"center"}
               grow={1}
             >
-              {weapon && <EntityList entities={[weapon]} isModifiersOnRight={true} selected={entitiesSelected} />}
+              {weapon && <EntityList entities={[weapon]} isModifiersOnRight={true} selected={entitiesSelected} selectTarget={selectTarget} />}
               <Box>
                 {actions.length > 0 ?
                   actions?.map(action => (
@@ -408,7 +445,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
                   : <Text>No actions</Text>
                 }
               </Box>
-              {monsters && <EntityList entities={monsters} isModifiersOnRight={false} selected={entitiesSelected} />}
+              {monsters && <EntityList entities={monsters} isModifiersOnRight={false} selected={entitiesSelected} selectTarget={selectTarget} />}
             </Flex>
             <Flex
               height={"10rem"}
