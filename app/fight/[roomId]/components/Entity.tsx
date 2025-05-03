@@ -3,7 +3,7 @@ import styles from "./Entity.module.css";
 import { Badge, Flex, Image, Text } from "@chakra-ui/react";
 
 // Flux system is not implemented yet, so we will not use it for now
-const Entity = ({ entity, isModifiersOnRight }: { entity: Weapon | Monster | undefined, isModifiersOnRight: boolean }) => {
+const Entity = ({ entity, isModifiersOnRight, isSelected }: { entity: Weapon | Monster | undefined, isModifiersOnRight: boolean, isSelected: boolean }) => {
   if (!entity)
     return <div>Entity is empty...</div>;
 
@@ -34,7 +34,8 @@ const Entity = ({ entity, isModifiersOnRight }: { entity: Weapon | Monster | und
   };
 
   return (
-    <Flex cursor={"pointer"} direction={"row"}>
+    <Flex cursor={"pointer"} direction={"row"} position={"relative"}>
+      {isSelected && <div className={`${styles.arrow} ${styles.mooveUpDown}`}></div>}
       {!isModifiersOnRight && displayModifiers()}
       <Flex direction={"column"} align={"center"}>
         <Flex

@@ -5,17 +5,19 @@
   flex-wrap: wrap;
   flex-direction: row;
 }
+
 .arrow {
   position: absolute;
-  border: solid black;
+  border: solid white;
   border-width: 0 3px 3px 0;
   display: inline-block;
   padding: 8px;
-}
-.down {
   transform: rotate(45deg);
-  /* -webkit-transform: rotate(45deg); */
+  bottom: 100%; /* Position above the element */
+  left: 50%; /* Center horizontally */
+  transform: translateX(-50%) rotate(45deg); /* Adjust alignment and rotation */
 }
+
 .mooveUpDown {
   animation: MoveUpDown 1s linear infinite;
 }

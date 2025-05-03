@@ -65,6 +65,8 @@ export default function Page({ params }: { params: { roomId: string } }) {
   let [actions, setActions] = useState<Action[]>([]);
   const actionsRef = useRef<Action[] | undefined>(undefined);
 
+  const [entitiesSelected, setEntitiesSelected] = useState<string[]>([]);
+
   // First useEffect remains the same - just for socket initialization
   useEffect(() => {
     if (!socket || isSocketInitialized.current) return;
@@ -398,7 +400,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
               align={"center"}
               grow={1}
             >
-              <EntityList entities={[weapon!]} isModifiersOnRight={true} />
+              {weapon && <EntityList entities={[weapon]} isModifiersOnRight={true} selected={entitiesSelected}/>}
               <Box>
                 {actions.length > 0 ?
                   actions?.map(action => (
@@ -409,7 +411,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
                   : <Text>No actions</Text>
                 }
               </Box>
-              <EntityList entities={[monster!]} isModifiersOnRight={false} />
+              {monster && <EntityList entities={[monster]} isModifiersOnRight={false} selected={entitiesSelected}/>}
             </Flex>
             <Flex
               height={"10rem"}
