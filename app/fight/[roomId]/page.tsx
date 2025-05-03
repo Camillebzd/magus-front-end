@@ -43,9 +43,10 @@ export default function Page({ params }: { params: { roomId: string } }) {
   const allWeapons = useAllWeapons(false);
   const allMonsters = useMonstersWorld(false);
   const [weapon, setWeapon] = useState<Weapon | undefined>(undefined);
-  const [monster, setMonster] = useState<Monster | undefined>(undefined);
+  const [monsters, setMonsters] = useState<Monster[] | undefined>(undefined);
+  // Refs used in actions to avoid re-renders and multiple triggring
   const weaponRef = useRef<Weapon | undefined>(undefined);
-  const monsterRef = useRef<Monster | undefined>(undefined);
+  const monstersRef = useRef<Monster[] | undefined>(undefined);
   // const monster = useMonstersWorld(false).find(monster => monster.id === room.monsters[0]?.id)?.clone(); // only taking the first one atm
   const actionManager = useRef<ActionManager>(new ActionManager());
 
@@ -95,8 +96,8 @@ export default function Page({ params }: { params: { roomId: string } }) {
   }, [weapon]);
 
   useEffect(() => {
-    monsterRef.current = monster;
-  }, [monster]);
+    monstersRef.current = monsters;
+  }, [monsters]);
 
   useEffect(() => {
     actionsRef.current = actions;
@@ -104,7 +105,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
 
   // Socket init
   useEffect(() => {
-    if (!socket || !weapon || !monster || !isSocketInitialized.current || listenersInitialized.current)
+    if (!socket || !weapon || !monsters || !isSocketInitialized.current || listenersInitialized.current)
       return;
 
     listenersInitialized.current = true;
@@ -174,16 +175,17 @@ export default function Page({ params }: { params: { roomId: string } }) {
     socket.on('actionUpdated', (rawDataActions: RawDataAction[]) => {
       // Get the latest weapon and monster for the maps
       const currentWeapon = weaponRef.current;
-      const currentMonster = monsterRef.current;
+      const currentMonsters = monstersRef.current;
 
-      if (!currentWeapon || !currentMonster) return;
+      if (!currentWeapon || !currentMonsters) return;
 
       const weaponMap = new Map<string, Weapon>();
       weaponMap.set(currentWeapon.uid, currentWeapon);
 
       const monsterMap = new Map<string, Monster>();
-      monsterMap.set(currentMonster.uid, currentMonster);
-
+      currentMonsters.forEach(monster => {
+        monsterMap.set(monster.uid, monster);
+      });
       console.log('weaponMap', weaponMap);
       console.log('monsterMap', monsterMap);
       console.log('receivedActions raw', rawDataActions);
@@ -231,7 +233,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
         action.info = setInfo;
         action.resolve(instruction);
       });
-      console.log('monster after resolve', monsterRef.current);
+      console.log('monsters after resolve', monstersRef.current);
       console.log('weapon after resolve', weaponRef.current);
       setActions([]);
       setTurn((currentTurn) => currentTurn + 1);
@@ -250,23 +252,14 @@ export default function Page({ params }: { params: { roomId: string } }) {
     // Cleanup on unmount
     return () => {
     };
-  }, [weapon, monster, socket]);
+  }, [weapon, monsters, socket]);
 
   // Set the Weapon at begining (only user itself supported for the moment)
-  // is the deck part needed on the weapon client side?
   useEffect(() => {
     if (!allWeapons || weapon)
       return;
     const weaponData = allWeapons.find(weapon => weapon.id === parseInt(room.weapons[userId]))?.clone();
     if (weaponData) {
-      // weaponData.setLogger(setInfo);
-      // const userDeck = room.decks[userId];
-      // const deckToAttach: Ability[] = []
-      // weaponData.abilities.forEach(ability => {
-      //   for (let i = 0; i < userDeck[ability.id]; i++)
-      //     deckToAttach.push(ability);
-      // });
-      // weaponData.fillDeck(deckToAttach);
       weaponData.uid = userId;
       setWeapon(weaponData);
     }
@@ -274,20 +267,24 @@ export default function Page({ params }: { params: { roomId: string } }) {
 
   // Set monster at begining (only one supported for the moment)
   useEffect(() => {
-    if (!allMonsters || allMonsters.length === 0 || monster)
+    if (!allMonsters || allMonsters.length === 0 || monsters)
       return;
-    let monsterData = allMonsters.find(monster => monster.id === room.monsters[0]?.id)?.clone();
-    if (!monsterData) {
-      console.error("Monster not found");
-      return;
-    }
-    monsterData.uid = room.monsters[0]?.uid;
-    monsterData.abilities.forEach(ability => {
-      ability.uid = room.monsters[0]?.abilities[ability.id][0];
-    });
-    monsterData.deck = monsterData.abilities; // for the moment the deck is the same as the abilities
-    setMonster(monsterData);
-    console.log("monsterData", monsterData);
+
+    const monstersData = room.monsters.map(monster => {
+      const monsterData = allMonsters.find(monsterData => monsterData.id === monster.id)?.clone();
+      if (!monsterData) {
+        console.error("Monster not found with id:", monster.id);
+        return null;
+      }
+      monsterData.uid = monster.uid;
+      monsterData.abilities.forEach(ability => {
+        ability.uid = monster.abilities[ability.id][0];
+      });
+      monsterData.deck = monsterData.abilities; // for the moment the deck is the same as the abilities
+      return monsterData;
+    }).filter(monsterData => monsterData !== null) as Monster[];
+    setMonsters(monstersData);
+    console.log("monstersData", monstersData);
   }, [allMonsters]);
 
   // End of turn logs
@@ -325,13 +322,13 @@ export default function Page({ params }: { params: { roomId: string } }) {
   const selectAbility = (ability: Ability, fluxesUsed: number = 0) => {
     // if (phase !== GAME_PHASES.PLAYER_CHOOSE_ABILITY && !weapon?.isEntityAbleToPlay())
     //   return;
-    if (!socket || !weapon || !monster)
+    if (!socket || !weapon || !monsters)
       return;
     // Create the raw data of an action and send it to the server
     const actionData: RawDataAction = {
       uid: UniqueIdGenerator.getInstance().generateSnowflakeId(2),
       caster: weapon.uid,
-      target: monster.uid,
+      target: monsters[0].uid, // TODO implement target selection
       ability: ability.uid,
       fluxesUsed: fluxesUsed,
       currentTurn: turn,
@@ -400,7 +397,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
               align={"center"}
               grow={1}
             >
-              {weapon && <EntityList entities={[weapon]} isModifiersOnRight={true} selected={entitiesSelected}/>}
+              {weapon && <EntityList entities={[weapon]} isModifiersOnRight={true} selected={entitiesSelected} />}
               <Box>
                 {actions.length > 0 ?
                   actions?.map(action => (
@@ -411,7 +408,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
                   : <Text>No actions</Text>
                 }
               </Box>
-              {monster && <EntityList entities={[monster]} isModifiersOnRight={false} selected={entitiesSelected}/>}
+              {monsters && <EntityList entities={monsters} isModifiersOnRight={false} selected={entitiesSelected} />}
             </Flex>
             <Flex
               height={"10rem"}
@@ -448,8 +445,8 @@ export default function Page({ params }: { params: { roomId: string } }) {
               </Flex>
             </Flex>
           </Flex>
-          {monster && weapon && <EndOfFightModal isOpen={endOfFightModal.isOpen} onClose={endOfFightModal.onClose} weaponId={weapon!.id} difficulty={monster!.difficulty} isWinner={won.current} goToWorld={goToWorld} />}
-          {monster && weapon && <SelectFluxesModal isOpen={fluxeModal.isOpen} onClose={fluxeModal.onClose} selectAbility={execAbilityModal} fluxesAvailables={weapon.fluxes} />}
+          {monsters && weapon && <EndOfFightModal isOpen={endOfFightModal.isOpen} onClose={endOfFightModal.onClose} weaponId={weapon!.id} difficulty={monsters[0]!.difficulty} isWinner={won.current} goToWorld={goToWorld} />}
+          {monsters && weapon && <SelectFluxesModal isOpen={fluxeModal.isOpen} onClose={fluxeModal.onClose} selectAbility={execAbilityModal} fluxesAvailables={weapon.fluxes} />}
         </>
       )}
     </main>
