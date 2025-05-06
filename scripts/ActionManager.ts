@@ -10,7 +10,7 @@ import { getRandomInt } from "./utils";
 export type RawDataAction = {
   uid: string;
   caster: string; // uid of the caster
-  target: string; // uid of the target
+  targets: string[]; // uids of the targets
   ability: string; // uid of the ability
   fluxesUsed: number;
   currentTurn: number;
@@ -38,23 +38,16 @@ class ActionManager {
       return null;
     }
     // find the target in the weapons or monsters
-    // const targets: (Weapon | Monster | null)[] = rawDataAction.target.map(targetUid => {
-    //   const target = weapons.get(targetUid) || monsters.get(targetUid);
-    //   if (!target) {
-    //     console.error("Error: couldn't find the target for the action from the raw data, uid: " + targetUid);
-    //     return null;
-    //   }
-    //   return target;
-    // });
-    // if (targets.includes(null)) {
-    //   return null;
-    // }
-    const target = weapons.get(rawDataAction.target) || monsters.get(rawDataAction.target);
-    if (!target) {
-      console.error("Error: couldn't find the target for the action from the raw data, uid: " + rawDataAction.target);
-      return null;
-    }
-    // // find the ability in the caster's abilities
+    const targets: (Weapon | Monster)[] = rawDataAction.targets.map(targetUid => {
+      const target = weapons.get(targetUid) || monsters.get(targetUid);
+      if (!target) {
+        // just log the error, we don't want to stop the game if a target is not found
+        console.error("Error: couldn't find the target for the action from the raw data, uid: " + targetUid);
+        return null;
+      }
+      return target;
+    }).filter((target): target is Weapon | Monster => target !== null);
+    // find the ability in the caster's abilities
     const ability = caster.getAbilityByUID(rawDataAction.ability);
     if (!ability) {
       console.error("Error: couldn't find the ability for the action from the raw data, uid: " + rawDataAction.ability);
@@ -65,7 +58,7 @@ class ActionManager {
       uid: rawDataAction.uid,
       caster: caster,
       ability: ability,
-      target: target,
+      targets: targets,
       fluxesUsed: rawDataAction.fluxesUsed,
       currentTurn: rawDataAction.currentTurn,
       hasBeenValidated: rawDataAction.hasBeenValidated
@@ -81,7 +74,7 @@ class ActionManager {
     return {
       uid: action.uid,
       caster: action.caster.uid,
-      target: action.target.uid,
+      targets: action.targets.map(target => target.uid),
       ability: action.ability.uid,
       fluxesUsed: action.fluxesUsed,
       currentTurn: action.currentTurn,

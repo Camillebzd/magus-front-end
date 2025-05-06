@@ -982,7 +982,7 @@ export class Monster extends Entity {
       uid: UniqueIdGenerator.getInstance().generateSnowflakeId(2),
       caster: this,
       ability: monsterAbility,
-      target: target,
+      targets: [target], // TODO: handle multiple targets if random ability is aoe
       hasBeenDone: false,
       isCombo: isCombo,
       fluxesUsed: fluxesUsed,/* info: this.info,*/

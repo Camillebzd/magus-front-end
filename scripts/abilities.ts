@@ -5,6 +5,8 @@ export type EffectValue = {
   value: number;
 };
 
+export type AbilityTarget = "SELF" | "ENEMY" | "ALLY" | "ENEMY_TEAM" | "ALLY_TEAM" | "ALL" | "NONE";
+
 export type AbilityType = "SHARP" | "BLUNT" | "BURN" | "SPECIAL";
 
 // Env var for the TIER_ONE_COPIES, TIER_TWO_COPIES, TIER_THREE_COPIES
@@ -15,6 +17,7 @@ export type AbilityData = {
   name: string,
   damage: number,
   initiative: number,
+  target: AbilityTarget,
   type: AbilityType,
   isMagical: boolean,
   effects: number[],
@@ -22,25 +25,26 @@ export type AbilityData = {
   tier: Tier,
 };
 
-// export type AbilityFromDB = AbilityData & {_id: string};
-export type AbilityFromDB = {
-  _id: string
-  id: number,
-  name: string,
-  damage: number,
-  initiative: number,
-  type: AbilityType,
-  isMagical: boolean,
-  effects: number[],
-  effectsValue: EffectValue[],
-  tier: Tier,
-}
+export type AbilityFromDB = AbilityData & {_id: string};
+// export type AbilityFromDB = {
+//   _id: string
+//   id: number,
+//   name: string,
+//   damage: number,
+//   initiative: number,
+//   type: AbilityType,
+//   isMagical: boolean,
+//   effects: number[],
+//   effectsValue: EffectValue[],
+//   tier: Tier,
+// }
 
 export class Ability {
   id: number = 0;
   name: string = "Unknown";
   damage: number = 0;
   initiative: number = 0;
+  target: AbilityTarget = "NONE";
   type: AbilityType = "SHARP";
   isMagical: boolean = false;
   effects: number[] = [];
@@ -55,6 +59,7 @@ export class Ability {
     this.name = data.name;
     this.damage = data.damage;
     this.initiative = data.initiative;
+    this.target = data.target;
     this.type = data.type;
     this.isMagical = data.isMagical;
     this.effects = data.effects;
@@ -68,6 +73,7 @@ export class Ability {
       name: this.name,
       damage: this.damage,
       initiative: this.initiative,
+      target: this.target,
       type: this.type,
       isMagical: this.isMagical,
       effects: this.effects,
@@ -83,6 +89,7 @@ export class Ability {
       name: this.name,
       damage: this.damage,
       initiative: this.initiative,
+      target: this.target,
       type: this.type,
       isMagical: this.isMagical,
       effects: this.effects,
@@ -135,7 +142,7 @@ export type Rule = {
   orderId: number;
 };
 
-export type Target = {
+export type EffectTarget = {
   id: number;
   description: string;
 }

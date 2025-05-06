@@ -4,7 +4,7 @@ import {
   CONDITIONS
 } from "./systemValues";
 import { Monster, Weapon } from "./entities";
-import { Ability, AftermathType, Rule, Modifier, Condition, EffectValue, Effect, Target, Order } from "./abilities";
+import { Ability, AftermathType, Rule, Modifier, Condition, EffectValue, Effect, EffectTarget, Order } from "./abilities";
 import { SetStateAction, Dispatch } from "react";
 
 import { HistoricSystem } from "./historic";
@@ -13,7 +13,7 @@ import { HistoricSystem } from "./historic";
 let effects: Effect[] = [];
 let rules: Rule[] = [];
 let modifiers: Modifier[] = [];
-let targets: Target[] = [];
+let effectTargets: EffectTarget[] = [];
 let conditions: Condition[] = [];
 let orders: Order[] = [];
 
@@ -37,11 +37,11 @@ const initData = async () => {
       modifiers = modifiersData;
     else
       console.log("Error: can't fetch modifiers for abilities.");
-    const targetsData: Target[] | undefined = await fetchFromDB("abilities", "targets");
+    const targetsData: EffectTarget[] | undefined = await fetchFromDB("abilities", "targets");
     if (targetsData)
-      targets = targetsData;
+      effectTargets = targetsData;
     else
-      console.log("Error: can't fetch targets for abilities.");
+      console.log("Error: can't fetch effectTargets for abilities.");
     const conditionsData: Condition[] | undefined = await fetchFromDB("abilities", "conditions");
     if (conditionsData)
       conditions = conditionsData;
@@ -67,7 +67,7 @@ export async function ensureDataLoaded() {
   return isDataInitialized;
 }
 
-export enum END_OF_TURN { NORMAL, TARGET_BLOCKED, PLAYER_COMBO, MONSTER_COMBO, PLAYER_DIED, MONSTER_DIED };
+// export enum END_OF_TURN { NORMAL, TARGET_BLOCKED, PLAYER_COMBO, MONSTER_COMBO, PLAYER_DIED, MONSTER_DIED };
 
 export enum RULE_ORDER {
   VERY_BEGINNING = 1,
@@ -86,7 +86,7 @@ export enum RULE_ORDER {
 export type ActionData = {
   uid: string;
   caster: Weapon | Monster;
-  target: Weapon | Monster;
+  targets: (Weapon | Monster)[];
   ability: Ability;
   isCombo?: boolean;
   hasBeenDone?: boolean;
@@ -103,29 +103,29 @@ export type ActionData = {
  */
 export type ActionInstructions = {
   actionUid: string;
-  damageCalculated: number;
-  effectsTriggered: number[];
-  abilityWasCrit: boolean;
-  abilityWasBlocked: boolean;
+  damageCalculated: { [uid: string]: number }; // uid of the target and the damage calculated
+  effectsTriggered: { [uid: string]: number[] }; // uid of the target and the effects triggered
+  abilityWasCrit: { [uid: string]: boolean }; // uid of the target and if the ability was crit
+  abilityWasBlocked: { [uid: string]: boolean }; // uid of the target and if the ability was blocked
   triggeredCombo: boolean;
 };
 
 export class Action {
   uid: string;
   caster: Weapon | Monster;
-  target: Weapon | Monster;
+  targets: (Weapon | Monster)[];
   ability: Ability;
   isCombo = false;
   hasBeenDone = false;
   hasBeenValidated = false;
   fluxesUsed = 0;
   info: Dispatch<SetStateAction<string[]>> | undefined = undefined;
-  effectsTriggered: number[] = []; // ids of the effects triggered
-  damageCalculated = 0;
-  abilityWasCrit = false;
-  abilityWasBlocked = false;
+  damageCalculated: { [uid: string]: number };
+  effectsTriggered: { [uid: string]: number[] }; // ids of the effects triggered by the action to send to the client
+  abilityWasCrit: { [uid: string]: boolean };
+  abilityWasBlocked: { [uid: string]: boolean };
   triggeredCombo = false;
-  finalDamage = 0;
+  finalDamage: { [uid: string]: number };
   damageInflicted = 0;
   modifiersCleansed = 0;
   modifiersPurged = 0;
@@ -135,7 +135,7 @@ export class Action {
   constructor(data: ActionData) {
     this.uid = data.uid;
     this.caster = data.caster;
-    this.target = data.target;
+    this.targets = data.targets;
     this.ability = data.ability;
     this.isCombo = data.isCombo || false;
     this.hasBeenDone = data.hasBeenDone || false;
@@ -144,9 +144,26 @@ export class Action {
     this.info = data.info || undefined;
     this.currentTurn = data.currentTurn || 0;
 
+    // will be initialized in the resolve function
+    this.damageCalculated = {};
+    this.effectsTriggered = {};
+    this.abilityWasCrit = {};
+    this.abilityWasBlocked = {};
+
+    this.finalDamage = data.targets.reduce((acc, target) => {
+      acc[target.uid] = 0;
+      return acc;
+    }, {} as { [uid: string]: number });
+
+
     // Check if the data is loaded
     ensureDataLoaded().catch(err => console.error("Failed to load action data:", err));
   }
+
+  // static async create(data: ActionData): Promise<Action> {
+  //   await ensureDataLoaded(); // Ensure data is loaded before creating the instance
+  //   return new Action(data);
+  // }
 
   // set hystoric system, carefule to not circulare link or too deep copy
   setHistoricSystem(historicSystem: HistoricSystem) {
@@ -174,59 +191,56 @@ export class Action {
     if (this.caster.isConfused()) {
       this.endOfResolve();
       this.log(`${this.caster.name} is confused!`);
-      return END_OF_TURN.NORMAL;
+      return;
     }
     this.applyRule(RULE_ORDER.BEFORE_SPECIAL_CHECK);
     if (this.ability.type != "SPECIAL") {
       this.applyRule(RULE_ORDER.BEFORE_PARRY_CHECK);
-      // 3. & 4. Parry
-      // if (this.target.isBlocking() && this.caster.allowTargetToBlock()) {
-      if (this.abilityWasBlocked) {
-        this.log(`The ability has been blocked.`);
-        // this.abilityWasBlocked = true;
-        this.endOfResolve();
-        return END_OF_TURN.TARGET_BLOCKED;
+      for (let target of this.targets) {
+        // 3. & 4. Parry
+        if (this.abilityWasBlocked[target.uid]) {
+          this.log(`The ability has been blocked by ${target.name}.`);
+          continue;
+        }
+        this.applyRule(RULE_ORDER.BEFORE_DAMAGE_CALCULATION);
+        // 5., 6., 7. & 8. Calc dmg + crit + modifiers
+        this.finalDamage[target.uid] = this.damageCalculated[target.uid];
+        console.log("1 finalDamage: ", this.finalDamage[target.uid]);
+        this.applyRule(RULE_ORDER.BEFORE_CRIT_CALCULATION);
+        if (this.abilityWasCrit[target.uid]) {
+          this.log(`The ability was a crit!`);
+          this.finalDamage[target.uid] = this.caster.addCritOnDamage(this.finalDamage[target.uid]);
+        }
+        this.finalDamage[target.uid] = this.caster.addModifiersOnDamage(this.finalDamage[target.uid]);
+        this.applyRule(RULE_ORDER.BEFORE_DAMAGE_APPLICATION);
+        // 9. Apply dmg & buff / debuff
+        this.damageInflicted = target.applyDamage(this.finalDamage[target.uid]);
+        this.log(`${target.name} takes ${this.damageInflicted} damage.`);
+        console.log("2 damageInflicted: ", this.damageInflicted);
       }
-      this.applyRule(RULE_ORDER.BEFORE_DAMAGE_CALCULATION);
-      // 5., 6., 7. & 8. Calc dmg + crit + modifiers
-      // this.finalDamage = this.caster.calculateFinalDamage(this.ability.id, this.target);
-      this.finalDamage = this.damageCalculated;
-      console.log("1 finalDamage: ", this.finalDamage);
-      this.applyRule(RULE_ORDER.BEFORE_CRIT_CALCULATION);
-      // if (this.caster.isAddingCrit()) {
-      if (this.abilityWasCrit) {
-        this.log(`The ability was a crit!`);
-        this.finalDamage = this.caster.addCritOnDamage(this.finalDamage);
-      }
-      this.finalDamage = this.caster.addModifiersOnDamage(this.finalDamage);
-      this.applyRule(RULE_ORDER.BEFORE_DAMAGE_APPLICATION);
-      // 9. Apply dmg & buff / debuff
-      this.damageInflicted = this.target.applyDamage(this.finalDamage);
-      this.log(`${this.target.name} takes ${this.damageInflicted} damage.`);
-      console.log("2 damageInflicted: ", this.damageInflicted);
     }
     this.applyRule(RULE_ORDER.BEFORE_MODIFIER_APPLICATION);
     this.addModifiers();
     this.applyRule(RULE_ORDER.BEFORE_DEATHS_CHECK);
     // check health
-    if (this.target.isDead()) {
-      this.endOfResolve();
-      return this.target.isNPC == false ? END_OF_TURN.PLAYER_DIED : END_OF_TURN.MONSTER_DIED;
-    }
-    if (this.caster.isDead()) {
-      this.endOfResolve();
-      return this.caster.isNPC == false ? END_OF_TURN.MONSTER_DIED : END_OF_TURN.PLAYER_DIED;
-    }
-    this.applyRule(RULE_ORDER.BEFORE_COMBO_CHECK);
-    // 10. Combo
-    if (this.caster.isDoingCombo() && !this.isCombo) {
-      this.triggeredCombo = true;
-      this.endOfResolve();
-      return this.caster.isNPC == false ? END_OF_TURN.PLAYER_COMBO : END_OF_TURN.MONSTER_COMBO;
-    }
+    // if (this.target.isDead()) {
+    //   this.endOfResolve();
+    //   return this.target.isNPC == false ? END_OF_TURN.PLAYER_DIED : END_OF_TURN.MONSTER_DIED;
+    // }
+    // if (this.caster.isDead()) {
+    //   this.endOfResolve();
+    //   return this.caster.isNPC == false ? END_OF_TURN.MONSTER_DIED : END_OF_TURN.PLAYER_DIED;
+    // }
+    // this.applyRule(RULE_ORDER.BEFORE_COMBO_CHECK);
+    // // 10. Combo
+    // if (this.caster.isDoingCombo() && !this.isCombo) {
+    //   this.triggeredCombo = true;
+    //   this.endOfResolve();
+    //   return this.caster.isNPC == false ? END_OF_TURN.PLAYER_COMBO : END_OF_TURN.MONSTER_COMBO;
+    // }
     this.applyRule(RULE_ORDER.VERY_END);
     this.endOfResolve();
-    return END_OF_TURN.NORMAL;
+    return;
   }
 
   // Call at the end of the resolve 
@@ -243,38 +257,8 @@ export class Action {
         console.log("Error: this effect is not supported");
         return;
       }
-      // Modifier
+      // Check if it is a modifier
       if (effect.aftermathType != "MODIFIER") {
-        return;
-      }
-      // ApplyChance
-      // if (getRandomInt(100) >= effect.applyChance) {
-      //   console.log("failed to apply modifier");
-      //   return;
-      // }
-      if (this.effectsTriggered.indexOf(effect.id) == -1) {
-        console.log("failed to apply modifier");
-        return;
-      }
-      // Target
-      let targetObj = targets.find((target) => target.id === effect!.targetId);
-      if (targetObj == undefined) {
-        console.log("Error: this target is not supported");
-        return;
-      }
-      let target = this.getTarget(targetObj);
-      if (target == undefined) {
-        console.log("Error: this target type is not supported: ", targetObj.id);
-        return;
-      }
-      // Condition
-      let condition = conditions.find((condition) => condition.id === effect!.conditionId);
-      if (condition == undefined) {
-        console.log("Error: this condition is not supported");
-        return;
-      }
-      if (!this.checkCondition(condition, target)) {
-        console.log("Condition not met");
         return;
       }
       // Modifier Info
@@ -283,18 +267,47 @@ export class Action {
         console.log("Error: modifier empty or not supported");
         return;
       }
+      // Condition data
+      let condition = conditions.find((condition) => condition.id === effect.conditionId);
+      if (condition == undefined) {
+        console.log("Error: this condition is not supported:", effect.conditionId);
+        return;
+      }
       // Modifier stack
       let modifierStack = this.getAftermathValue(effect.id, this.ability.effectsValue);
       if (modifierStack == -1) {
         console.log("Error: modifier stack is not set on effect");
         return;
       }
-      // Flux quantity
-      let fluxQuantity = this.ability.isMagical ? this.fluxesUsed : 1;
-      for (let i = 0; i < fluxQuantity; i++) {
-        target.addModifier(modifier, modifierStack, this.caster);
+      // Target
+      let targetObj = effectTargets.find((target) => target.id === effect.targetId);
+      if (targetObj == undefined) {
+        console.log("Error: this target is not supported:", effect.targetId);
+        return;
       }
-      this.log(`${this.caster.name} add ${modifierStack} stacks of ${modifier.name} on ${target.name}.`);
+      let targets = this.getTargetsForEffect(targetObj);
+      if (targets == undefined) {
+        console.log("Error: this target type is not supported:", targetObj.id);
+        return;
+      }
+      for (let target of targets) {
+        // check if effect was triggered on server side
+        if (this.effectsTriggered[target.uid].findIndex((id) => id === effect.id) == -1) {
+          console.log("failed to apply modifier");
+          continue;
+        }
+        // Check condition - check again but should be true if the effect was triggered on server side
+        if (!this.checkCondition(condition, target)) {
+          console.log("Condition not met");
+          continue;
+        }
+        // Flux quantity
+        let fluxQuantity = this.ability.isMagical ? this.fluxesUsed : 1;
+        for (let i = 0; i < fluxQuantity; i++) {
+          target.addModifier(modifier, modifierStack, this.caster);
+          this.log(`${this.caster.name} add ${modifierStack} stacks of ${modifier.name} on ${target.name}.`);
+        }
+      }
     });
   }
 
@@ -306,11 +319,11 @@ export class Action {
         console.log("Error: this effect is not supported on ability ", this.ability.name);
         return;
       }
-      // Rule
+      // Check if it is a rule
       if (effect.aftermathType != "RULE") {
-        // console.log("This is not a rule");
         return;
       }
+      // Rule Info
       let rule = this.getAftermath(effect.aftermathId, "RULE") as Rule;
       if (!rule) {
         console.log("Error: rule unknown on ability ", this.ability.name);
@@ -322,36 +335,13 @@ export class Action {
         console.log("Error: order not supported on ability ", this.ability.name);
         return;
       }
+      // Check if the order is the one we want
       if (order.id != orderId)
         return;
-      // ApplyChance
-      // if (getRandomInt(100) >= effect.applyChance) {
-      //   console.log("failed to apply rule");
-      //   return;
-      // }
-      if (this.effectsTriggered.indexOf(effect.id) == -1) {
-        console.log("failed to apply rule");
-        return;
-      }
-      // Target
-      let targetObj = targets.find((target) => target.id === effect!.targetId);
-      if (targetObj == undefined) {
-        console.log("Error: this target is not supported on ability ", this.ability.name);
-        return;
-      }
-      let target = this.getTarget(targetObj);
-      if (target === undefined) {
-        console.log("Error: this target type is not supported: ", targetObj.id);
-        return;
-      }
-      // Condition
+      // Condition data
       let condition = conditions.find((condition) => condition.id === effect!.conditionId);
       if (condition == undefined) {
         console.log("Error: this condition is not supported on ability ", this.ability.name);
-        return;
-      }
-      if (!this.checkCondition(condition, target)) {
-        console.log("Condition not met");
         return;
       }
       // Rule value
@@ -360,14 +350,37 @@ export class Action {
         console.log("Error: rule value is not set on effect on ability ", this.ability.name);
         return;
       }
-      // Flux quantity
-      let fluxQuantity = this.ability.isMagical ? this.fluxesUsed : 1;
-      this.executeRule(rule, ruleValue, target, fluxQuantity);
+      // Target
+      let targetObj = effectTargets.find((target) => target.id === effect!.targetId);
+      if (targetObj == undefined) {
+        console.log("Error: this target is not supported on ability ", this.ability.name);
+        return;
+      }
+      let targets = this.getTargetsForEffect(targetObj);
+      if (targets === undefined) {
+        console.log("Error: this target type is not supported: ", targetObj.id);
+        return;
+      }
+      for (let target of targets) {
+        // check if effect was triggered on server side
+        if (this.effectsTriggered[target.uid].findIndex((id) => id === effect.id) == -1) {
+          console.log("failed to apply rule");
+          continue;
+        }
+        // Check condition - check again but should be true if the effect was triggered on server side
+        if (!this.checkCondition(condition, target)) {
+          console.log("Condition not met");
+          continue;
+        }
+        // Flux quantity
+        let fluxQuantity = this.ability.isMagical ? this.fluxesUsed : 1;
+        this.executeRule(rule, ruleValue, target, fluxQuantity);
+      }
     });
   }
 
   // Execute the rule with the value given on the target
-  executeRule(rule: Rule, ruleValue: number, target: Weapon | Monster | null, fluxQuantity: number) {
+  executeRule(rule: Rule, ruleValue: number, target: Weapon | Monster, fluxQuantity: number) {
     switch (rule.id) {
       // Gain X fluxes
       case 1:
@@ -419,7 +432,7 @@ export class Action {
         break;
       // Add additional damage to final damage
       case 8:
-        this.finalDamage += ruleValue * fluxQuantity;
+        this.finalDamage[target.uid] += ruleValue * fluxQuantity;
         break;
       // Priority on action, handled in getSpeedRule
       case 9:
@@ -429,7 +442,7 @@ export class Action {
       // Multiply final damage
       case 11:
         console.log("before: ", this.finalDamage);
-        this.finalDamage *= ruleValue * fluxQuantity;
+        this.finalDamage[target.uid] *= ruleValue * fluxQuantity;
         console.log("after: ", this.finalDamage);
         break;
       // Cleans the target
@@ -442,7 +455,7 @@ export class Action {
         break;
       // Multiply final damage by the number of negative effect cleansed by this ability
       case 13:
-        this.finalDamage *= this.modifiersCleansed * ruleValue * fluxQuantity;
+        this.finalDamage[target.uid] *= this.modifiersCleansed * ruleValue * fluxQuantity;
         break;
       // Add some stack on all debuff on the target
       case 14:
@@ -462,10 +475,10 @@ export class Action {
         break;
       // Add additional damage for each flux on the target of action
       case 16:
-        this.finalDamage += ruleValue * this.target.fluxes * fluxQuantity;
+        this.finalDamage[target.uid] += ruleValue * target.fluxes * fluxQuantity;
       // Add additional damage for each flux on the caster of action
       case 17:
-        this.finalDamage += ruleValue * this.caster.fluxes * fluxQuantity;
+        this.finalDamage[target.uid] += ruleValue * this.caster.fluxes * fluxQuantity;
       // Remove fluxes on the target and add them to the caster
       case 18:
         if (target == null) {
@@ -504,17 +517,17 @@ export class Action {
   }
 
   // return true or false if the effect condition is valid or not
-  checkCondition(condition: Condition, target: Weapon | Monster | null) {
+  checkCondition(condition: Condition, target: Weapon | Monster) {
     switch (condition.id) {
       // no condition
       case CONDITIONS.NO_CONDITION:
         return true;
       case CONDITIONS.ABILITY_IS_CRIT:
-        return this.abilityWasCrit;
+        return this.abilityWasCrit[target.uid];
       case CONDITIONS.ABILITY_TRIGGERS_COMBO:
         return this.triggeredCombo;
       case CONDITIONS.ABILITY_BLOCKED_BY_TARGET:
-        return this.abilityWasBlocked;
+        return this.abilityWasBlocked[target.uid];
       case CONDITIONS.TARGET_ALREADY_ACTED:
         if (target === null) {
           console.log("Error: try to use condition target already acted with a null target.");
@@ -536,15 +549,15 @@ export class Action {
         }
         return !this.historicSystem.hasAlreadyActed(target, this.currentTurn - 1);
       case CONDITIONS.TARGET_HAS_LESS_HP_THAN_CASTER:
-        return this.target.stats.health < this.caster.stats.health;
+        return target.stats.health < this.caster.stats.health;
       case CONDITIONS.TARGET_HAS_MORE_HP_THAN_CASTER:
-        return this.target.stats.health > this.caster.stats.health;
+        return target.stats.health > this.caster.stats.health;
       case CONDITIONS.TARGET_BEARS_POSITIVE_MODIFIER:
-        return this.target.hasPositiveModifier();
+        return target.hasPositiveModifier();
       case CONDITIONS.TARGET_BEARS_NEGATIVE_MODIFIER:
-        return this.target.hasNegativeModifier();
+        return target.hasNegativeModifier();
       case CONDITIONS.TARGET_DOESNT_BEARS_ANY_MODIFIER:
-        return this.target.modifiers.length == 0;
+        return target.modifiers.length == 0;
       case CONDITIONS.CASTER_ALREADY_USED_THIS_ABILITY_LAST_TURN:
         if (target === null) {
           console.log("Error: try to use CASTER_ALREADY_USED_THIS_ABILITY_LAST_TURN with a null target.");
@@ -570,17 +583,17 @@ export class Action {
   }
 
   // return the entity obj targeted by the target input obj, null if no target selected and undefined if not supported
-  getTarget(target: Target) {
+  getTargetsForEffect(target: EffectTarget): (Weapon | Monster)[] {
     switch (target.id) {
       case TARGET_ABILITY.TARGET_OF_ABILITY:
-        return this.target;
+        return this.targets;
       case TARGET_ABILITY.CASTER_OF_ABILITY:
-        return this.caster;
+        return [this.caster];
       case TARGET_ABILITY.NONE:
-        return null;
+        return [];
       default:
-        console.log("WARNING: maybe the target is not supported yet");
-        return undefined;
+        console.log("WARNING: maybe the effect target is not supported yet");
+        return [];
     }
   }
 

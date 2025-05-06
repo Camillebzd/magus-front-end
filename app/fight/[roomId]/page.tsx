@@ -68,6 +68,23 @@ export default function Page({ params }: { params: { roomId: string } }) {
 
   const [entitiesSelected, setEntitiesSelected] = useState<string[]>([]);
 
+  const getCorrectTargets = (ability: Ability): string[] => {
+    switch (ability.target) {
+      case "SELF":
+        return weapon ? [weapon.uid] : [];
+      case "ENEMY":
+        return monsters ? [monsters[0].uid] : []; // Default to the first monster
+      case "ALLY":
+      case "ALLY_TEAM":
+        return weapon ? [weapon.uid] : [];
+      case "ENEMY_TEAM":
+        return monsters ? monsters.map(monster => monster.uid) : [];
+      case "NONE":
+      default:
+        return [];
+    }
+  };
+
   // First useEffect remains the same - just for socket initialization
   useEffect(() => {
     if (!socket || isSocketInitialized.current) return;
@@ -324,21 +341,27 @@ export default function Page({ params }: { params: { roomId: string } }) {
     //   return;
     if (!socket || !weapon || !monsters)
       return;
-    // handle mono target for the moment
-    // TODO implement multi target
-    let targets: string[] = [];
-    if (entitiesSelected.length > 0) {
-      targets = entitiesSelected;
-    } else {
-      // select the first monster by default
-      targets = [monsters[0].uid];
-      setEntitiesSelected([monsters[0].uid]);
-    }
+    const updateTargets = (ability: Ability) => {
+      const correctTargets = getCorrectTargets(ability);
+      if (entitiesSelected.length === 0) {
+        // No entities selected, use the correct targets
+        setEntitiesSelected(correctTargets);
+        return correctTargets;
+      }
+      // Check if the selected entities are valid
+      if (correctTargets.every(entity => entitiesSelected.includes(entity))) {
+        return entitiesSelected;
+      }
+      // Reset to correct targets if the selection is invalid
+      setEntitiesSelected(correctTargets);
+      return correctTargets;
+    };
+    let targets: string[] = updateTargets(ability);
     // Create the raw data of an action and send it to the server
     const actionData: RawDataAction = {
       uid: UniqueIdGenerator.getInstance().generateSnowflakeId(2),
       caster: weapon.uid,
-      target: targets[0], // TODO multi target
+      targets: targets,
       ability: ability.uid,
       fluxesUsed: fluxesUsed,
       currentTurn: turn,
@@ -349,29 +372,58 @@ export default function Page({ params }: { params: { roomId: string } }) {
   };
 
   const selectTarget = (target: string) => {
-    if (entitiesSelected.includes(target))
-      return;
-
-    setEntitiesSelected([target]);
-
     // if an ability is selected and during choose phase, select the target and emit the action
     if (phase !== GAME_PHASES.PLAYER_CHOOSE_ABILITY || !weapon || !monsters)
       return;
     if (actionsRef.current && actionsRef.current.length > 0) {
       const userAction = actionsRef.current.find(action => action.caster.uid === weapon.uid);
-      if (userAction) {
-        const actionData: RawDataAction = {
-          uid: UniqueIdGenerator.getInstance().generateSnowflakeId(2),
-          caster: weapon.uid,
-          target: target,
-          ability: userAction.ability.uid,
-          fluxesUsed: 0,
-          currentTurn: turn,
-          hasBeenValidated: false,
-        };
-        console.log('new target selected, actionData', actionData);
-        socket.emit('selectAbility', actionData);
+      if (!userAction)
+        return;
+
+      // Skip selection if the target is already selected
+      if (entitiesSelected.includes(target)) {
+        console.log("Target already selected, skipping selection.");
+        return;
       }
+
+      let shoudEmitNewAction = false;
+      // Handle specific target types
+      switch (userAction.ability.target) {
+        case "ENEMY":
+          // Ensure the target is from the monsters array
+          if (monsters.some(monster => monster.uid === target)) {
+            shoudEmitNewAction = true;
+            setEntitiesSelected([target]);
+          } else {
+            console.warn("Invalid target: ENEMY abilities must target a monster.");
+          }
+          break;
+        case "ALLY":
+          // Only allow selecting the weapon
+          if (target === weapon.uid) {
+            shoudEmitNewAction = true;
+            setEntitiesSelected([target]);
+          } else {
+            console.warn("Invalid target: ALLY abilities can only target the weapon.");
+          }
+          break;
+        default:
+          console.warn("Invalid ability target type or unsupported selection.");
+          break;
+      }
+      if (!shoudEmitNewAction)
+        return;
+      const actionData: RawDataAction = {
+        uid: UniqueIdGenerator.getInstance().generateSnowflakeId(2),
+        caster: weapon.uid,
+        targets: [target],
+        ability: userAction.ability.uid,
+        fluxesUsed: 0,
+        currentTurn: turn,
+        hasBeenValidated: false,
+      };
+      console.log('new target selected, actionData', actionData);
+      socket.emit('selectAbility', actionData);
     }
   };
 
@@ -439,7 +491,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
                 {actions.length > 0 ?
                   actions?.map(action => (
                     <Box key={action.uid}>
-                      <Text>{action?.caster.name}: {action?.ability.name} {"->"} {action?.target.name} {action?.hasBeenValidated ? '✓' : 'x'}</Text>
+                      <Text>{action?.caster.name}: {action?.ability.name} {"->"} {action?.targets.map(target => target.name).join(', ')} {action?.hasBeenValidated ? '✓' : 'x'}</Text>
                     </Box>
                   ))
                   : <Text>No actions</Text>
