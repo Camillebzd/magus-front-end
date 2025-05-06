@@ -68,7 +68,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
 
   const [entitiesSelected, setEntitiesSelected] = useState<string[]>([]);
 
-  const getCorrectTargets = (ability: Ability): string[] => {
+  const getDefaultTargets = (ability: Ability): string[] => {
     switch (ability.target) {
       case "SELF":
         return weapon ? [weapon.uid] : [];
@@ -82,6 +82,31 @@ export default function Page({ params }: { params: { roomId: string } }) {
       case "NONE":
       default:
         return [];
+    }
+  };
+  const areEntitiesValid = (ability: Ability, selectedEntities: string[]): boolean => {
+    switch (ability.target) {
+      case "ALLY_TEAM":
+        return weapon?.uid === selectedEntities[0] || false; // only weapon for now
+      case "ENEMY_TEAM":
+        return monsters?.every(monster => selectedEntities.includes(monster.uid)) || false;
+      case "ALL":
+        // For should select all monsters and the weapon
+        const correctEntities = monsters?.map(monster => monster.uid) || [];
+        correctEntities.push(weapon?.uid || "");
+        return correctEntities.every(entity => selectedEntities.includes(entity));
+      case "ENEMY":
+        // For single-target abilities, at least one correct entity must be selected
+        return monsters?.some(monster => selectedEntities.includes(monster.uid)) || false;
+      case "ALLY":
+        // For single-target abilities, at least one correct entity must be selected
+        return weapon?.uid === selectedEntities[0] || false; // only weapon for now
+      case "SELF":
+        return weapon?.uid === selectedEntities[0] || false;
+
+      default:
+        console.warn("Unsupported ability target type:", ability.target);
+        return false;
     }
   };
 
@@ -342,19 +367,19 @@ export default function Page({ params }: { params: { roomId: string } }) {
     if (!socket || !weapon || !monsters)
       return;
     const updateTargets = (ability: Ability) => {
-      const correctTargets = getCorrectTargets(ability);
+      const defaultTargets = getDefaultTargets(ability);
       if (entitiesSelected.length === 0) {
         // No entities selected, use the correct targets
-        setEntitiesSelected(correctTargets);
-        return correctTargets;
+        setEntitiesSelected(defaultTargets);
+        return defaultTargets;
       }
       // Check if the selected entities are valid
-      if (correctTargets.every(entity => entitiesSelected.includes(entity))) {
+      if (areEntitiesValid(ability, entitiesSelected)) {
         return entitiesSelected;
       }
       // Reset to correct targets if the selection is invalid
-      setEntitiesSelected(correctTargets);
-      return correctTargets;
+      setEntitiesSelected(defaultTargets);
+      return defaultTargets;
     };
     let targets: string[] = updateTargets(ability);
     // Create the raw data of an action and send it to the server
@@ -387,29 +412,9 @@ export default function Page({ params }: { params: { roomId: string } }) {
       }
 
       let shoudEmitNewAction = false;
-      // Handle specific target types
-      switch (userAction.ability.target) {
-        case "ENEMY":
-          // Ensure the target is from the monsters array
-          if (monsters.some(monster => monster.uid === target)) {
-            shoudEmitNewAction = true;
-            setEntitiesSelected([target]);
-          } else {
-            console.warn("Invalid target: ENEMY abilities must target a monster.");
-          }
-          break;
-        case "ALLY":
-          // Only allow selecting the weapon
-          if (target === weapon.uid) {
-            shoudEmitNewAction = true;
-            setEntitiesSelected([target]);
-          } else {
-            console.warn("Invalid target: ALLY abilities can only target the weapon.");
-          }
-          break;
-        default:
-          console.warn("Invalid ability target type or unsupported selection.");
-          break;
+      if (areEntitiesValid(userAction.ability, [target])) {
+        shoudEmitNewAction = true;
+        setEntitiesSelected([target]);
       }
       if (!shoudEmitNewAction)
         return;
