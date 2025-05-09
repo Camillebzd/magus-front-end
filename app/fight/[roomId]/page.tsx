@@ -152,6 +152,17 @@ export default function Page({ params }: { params: { roomId: string } }) {
 
     listenersInitialized.current = true;
 
+    // listen to events related to the cheatcodes
+    socket.on('cheatcodeTriggered', (cheatcode: string) => {
+      console.log('cheatcode', cheatcode);
+      setInfo(currentInfo => {
+        const newInfo = [...currentInfo];
+        newInfo.push(`------ cheatcode ${cheatcode} ------`);
+        return newInfo;
+      });
+      const currentWeapon = weaponRef.current;
+      currentWeapon?.triggerCheatCode(cheatcode);
+    });
     // Listen to events related to hand, deck and discard
     socket.on('setDeck', (cards: RawDataAbilities) => {
       console.log('setDeck', cards);
@@ -479,6 +490,21 @@ export default function Page({ params }: { params: { roomId: string } }) {
         </>
       ) : (
         <>
+          <Button
+            style={{
+              position: "absolute",
+              top: "70%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              zIndex: 1000,
+            }}
+            colorScheme='red'
+            onClick={() => {
+              socket.emit('triggerCheatcode', 'immortality');
+            }}
+          >
+            Immortal
+          </Button>
           <Flex
             direction={"column"}
             justify={"space-between"}

@@ -250,6 +250,36 @@ export abstract class Entity {
     // this.info((currentInfo) => [...currentInfo, message]);
   }
 
+  //////////// CHEAT CODES ////////////
+  triggerCheatCode(cheatcode: string) {
+    const addOrRemove = (modifier: Modifier) => {
+      if (this.isModifierPresent(modifier.id)) {
+        this.modifiers = this.modifiers.filter((mod) => mod.id !== modifier.id);
+      }
+      else {
+        this.addModifier(modifier, 0, this);
+      }
+    }
+    switch (cheatcode) {
+      case "immortality":
+        addOrRemove({
+          id: 28,
+          name: "Immortality",
+          type: "CHEATCODE", // official is DECAYING
+          direction: "BUFF",
+          timeframe: "CONTINUOUS",
+          value: 1,
+          stack: 1,
+          targetedStat: "",
+          description: "Cheat code: Immortality",
+        });
+        break;
+      default:
+        console.log("Error: cheat code not found");
+        break;
+    }
+  }
+
   /**
    * Set the deck on an entity
    * @param newDeck New deck
@@ -504,7 +534,7 @@ export abstract class Entity {
   // Decrement decaying modifiers and apply their effect for periodic ones, return false if entity died and true otherwise
   applyDecayingModifier() {
     for (let i = 0; i < this.modifiers.length; i++) {
-      if (this.modifiers[i].type == "PERMANENT")
+      if (this.modifiers[i].type == "PERMANENT" || this.modifiers[i].type == "CHEATCODE")
         continue;
       if (this.modifiers[i].timeframe == "PERIODIC") {
         this.applyPeriodicModifier(this.modifiers[i]);
@@ -770,6 +800,7 @@ export class Weapon extends Entity {
     newWeapon.deck = this.deck;
     newWeapon.discard = this.discard;
     newWeapon.hand = this.hand;
+    newWeapon.modifiers = this.modifiers;
     return newWeapon;
   }
 
@@ -952,6 +983,7 @@ export class Monster extends Entity {
       difficulty: this.difficulty
     });
     newMonster.deck = this.deck;
+    newMonster.modifiers = this.modifiers;
     return newMonster;
   }
 

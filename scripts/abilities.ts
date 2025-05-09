@@ -26,18 +26,6 @@ export type AbilityData = {
 };
 
 export type AbilityFromDB = AbilityData & {_id: string};
-// export type AbilityFromDB = {
-//   _id: string
-//   id: number,
-//   name: string,
-//   damage: number,
-//   initiative: number,
-//   type: AbilityType,
-//   isMagical: boolean,
-//   effects: number[],
-//   effectsValue: EffectValue[],
-//   tier: Tier,
-// }
 
 export class Ability {
   id: number = 0;
@@ -114,7 +102,7 @@ export type Effect = {
   aftermathId: number;
 };
 
-export type ModifierType = "PERMANENT" | "DECAYING";
+export type ModifierType = "PERMANENT" | "DECAYING" | "CHEATCODE";
 
 export type ModifierDirection = "BUFF" | "DEBUFF";
 
