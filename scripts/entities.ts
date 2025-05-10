@@ -274,6 +274,22 @@ export abstract class Entity {
           description: "Cheat code: Immortality",
         });
         break;
+      case "immunity":
+        addOrRemove({
+          id: 27,
+          name: "Immunity",
+          type: "CHEATCODE", // official is DECAYING
+          direction: "BUFF",
+          timeframe: "CONTINUOUS",
+          value: 1,
+          stack: 1,
+          targetedStat: "",
+          description: "Cheat code: Immunity",
+        });
+        break;
+      case "fullLife":
+        this.stats.health = this.stats.healthMax;
+        break;
       default:
         console.log("Error: cheat code not found");
         break;
