@@ -295,6 +295,11 @@ export default function Page({ params }: { params: { roomId: string } }) {
       });
       console.log('monsters after resolve', monstersRef.current);
       console.log('weapon after resolve', weaponRef.current);
+      // emit turn instructions executed
+      socket.emit('turnInstructionsExecuted');
+    });
+
+    socket.on('endOfTurn', () => {
       setActions([]);
       setTurn((currentTurn) => currentTurn + 1);
       setPhase(GAME_PHASES.PLAYER_CHOOSE_ABILITY);
