@@ -245,6 +245,7 @@ export class Action {
 
   // Call at the end of the resolve 
   endOfResolve() {
+    this.caster.applyDecayingModifier();
     this.applyRule(RULE_ORDER.END_RESOLVE_ACTION);
     this.hasBeenDone = true;
   }
