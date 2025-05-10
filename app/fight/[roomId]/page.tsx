@@ -73,31 +73,38 @@ export default function Page({ params }: { params: { roomId: string } }) {
       case "SELF":
         return weapon ? [weapon.uid] : [];
       case "ENEMY":
-        return monsters ? [monsters[0].uid] : []; // Default to the first monster
+        return monsters ? [monsters.filter(monster => !monster.isDead())[0].uid] : []; // Default to the first monster alive
       case "ALLY":
       case "ALLY_TEAM":
         return weapon ? [weapon.uid] : [];
       case "ENEMY_TEAM":
-        return monsters ? monsters.map(monster => monster.uid) : [];
+        return monsters ? monsters.filter(monster => !monster.isDead()).map(monster => monster.uid) : [];
       case "NONE":
       default:
         return [];
     }
   };
   const areEntitiesValid = (ability: Ability, selectedEntities: string[]): boolean => {
+    // check if one of the entities is dead
+    for (const selectedEntity of selectedEntities) {
+      const entity = monsters?.find(monster => monster.uid === selectedEntity) || weapon;
+      if (entity?.isDead())
+        return false;
+    }
+
     switch (ability.target) {
       case "ALLY_TEAM":
         return weapon?.uid === selectedEntities[0] || false; // only weapon for now
       case "ENEMY_TEAM":
-        return monsters?.every(monster => selectedEntities.includes(monster.uid)) || false;
+        return monsters?.filter(monster => !monster.isDead()).every(monster => selectedEntities.includes(monster.uid)) || false;
       case "ALL":
-        // For should select all monsters and the weapon
-        const correctEntities = monsters?.map(monster => monster.uid) || [];
+        // For should select all monsters alive and the weapon
+        const correctEntities = monsters?.filter(monster => !monster.isDead()).map(monster => monster.uid) || [];
         correctEntities.push(weapon?.uid || "");
         return correctEntities.every(entity => selectedEntities.includes(entity));
       case "ENEMY":
         // For single-target abilities, at least one correct entity must be selected
-        return monsters?.some(monster => selectedEntities.includes(monster.uid)) || false;
+        return monsters?.filter(monster => !monster.isDead()).some(monster => selectedEntities.includes(monster.uid)) || false;
       case "ALLY":
         // For single-target abilities, at least one correct entity must be selected
         return weapon?.uid === selectedEntities[0] || false; // only weapon for now
@@ -413,8 +420,10 @@ export default function Page({ params }: { params: { roomId: string } }) {
       return;
     if (actionsRef.current && actionsRef.current.length > 0) {
       const userAction = actionsRef.current.find(action => action.caster.uid === weapon.uid);
-      if (!userAction)
+      if (!userAction) {
+        setEntitiesSelected([target]);
         return;
+      }
 
       // Skip selection if the target is already selected
       if (entitiesSelected.includes(target)) {
@@ -528,7 +537,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
                   : <Text>No actions</Text>
                 }
               </Box>
-              {monsters && <EntityList entities={monsters} isModifiersOnRight={false} selected={entitiesSelected} selectTarget={selectTarget} />}
+              {monsters && <EntityList entities={monsters.filter(monster => !monster.isDead())} isModifiersOnRight={false} selected={entitiesSelected} selectTarget={selectTarget} />}
             </Flex>
             <Flex
               height={"10rem"}
