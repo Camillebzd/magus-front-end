@@ -1,7 +1,7 @@
 import { Box, Flex, Text, Switch, Button } from "@chakra-ui/react";
 import { useSocket } from "@/sockets/socketContext";
 import Draggable from "react-draggable";
-import { SetStateAction, useEffect, useState } from "react";
+import { SetStateAction, useEffect, useState, useRef } from "react";
 import { Weapon } from "@/scripts/entities";
 
 const CheatBox = ({ weapon, setInfo }: { weapon: Weapon; setInfo: (value: SetStateAction<string[]>) => void }) => {
@@ -10,6 +10,9 @@ const CheatBox = ({ weapon, setInfo }: { weapon: Weapon; setInfo: (value: SetSta
     immunity: false,
     immortality: false,
   });
+
+  // Create a ref for the draggable container
+  const nodeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleCheatResponse = (cheatcode: string) => {
@@ -58,8 +61,9 @@ const CheatBox = ({ weapon, setInfo }: { weapon: Weapon; setInfo: (value: SetSta
   );
 
   return (
-    <Draggable handle=".drag-handle">
+    <Draggable nodeRef={nodeRef} handle=".drag-handle">
       <Box
+        ref={nodeRef} // Attach the ref to the draggable container
         border={"1px solid"}
         borderColor="profoundgrey.200"
         position="absolute"
