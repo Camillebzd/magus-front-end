@@ -25,6 +25,7 @@ import { useRouter } from "next/navigation";
 import { Notify } from "notiflix";
 import CreateDeckModal from "./CreateDeckModal";
 import { socketActions } from "@/redux/features/socketSlice";
+import { useContract } from "@/scripts/customHooks";
 
 const WeaponCard = ({ weapon, type }: { weapon: Weapon, type: WeaponGeneralType }) => {
   const room = useAppSelector((state) => state.socketReducer.room);
@@ -35,6 +36,7 @@ const WeaponCard = ({ weapon, type }: { weapon: Weapon, type: WeaponGeneralType 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const dispatch = useAppDispatch();
   const equipedWeaponId = useAppSelector((state) => state.socketReducer.member.equipedWeaponId);
+  const contract = useContract();
 
   useEffect(() => {
     if (isOver && imageWeapon != null)
@@ -44,6 +46,11 @@ const WeaponCard = ({ weapon, type }: { weapon: Weapon, type: WeaponGeneralType 
   }, [isOver]);
 
   const craftStarter = async () => {
+    if (!contract) { 
+      console.log("Contract not found");
+      return;
+    }
+
     let weaponToMint: WeaponMint = {
       name: weapon.name,
       description: weapon.description,
@@ -77,12 +84,12 @@ const WeaponCard = ({ weapon, type }: { weapon: Weapon, type: WeaponGeneralType 
     console.log(weaponToMint);
     if (!address)
       return;
-    const contract = await createContract(address)
     try {
       await contract.requestWeapon(weaponToMint);
       Notify.success("Your weapon was created, wait a minute and you will see it appear!");
       router.push('/armory');
-    } catch {
+    } catch (e) {
+      console.log(e);
       Notify.failure("An error occuquered during the request weapon process.");
     }
   };

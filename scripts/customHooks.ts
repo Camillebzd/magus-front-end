@@ -10,6 +10,43 @@ import { Draft } from "immer";
 import { Notify } from "notiflix";
 import { STARTERS_NAME } from "./systemValues";
 import { readContract } from "thirdweb";
+import { Contract, ethers } from "ethers";
+import { useActiveAccount } from "thirdweb/react";
+import { client, etherlinkTestnet } from '@/app/thirdwebInfo'
+import { ethers5Adapter } from "thirdweb/adapters/ethers5";
+import contractABI from "@/abi/GearFight.json";
+
+const CONTRACT_ADDRESS = (process.env.NEXT_PUBLIC_CONTRACT_ADDRESS)!.toLowerCase();
+
+export function useContract() {
+  const [contract, setContract] = useState<Contract | undefined>(undefined);
+  const account = useActiveAccount();
+
+  useEffect(() => {
+    if (!account) {
+      setContract(undefined);
+      return;
+    }
+    const createContract = async () => {
+      const signer = await ethers5Adapter.signer.toEthers({
+        client,
+        chain: etherlinkTestnet,
+        account,
+      });
+  
+      if (!signer) {
+        throw new Error("Failed to get signer from Thirdweb.");
+      }
+  
+      // Create the contract using Ethers.js
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, contractABI.abi, signer);
+      setContract(contract);
+    }
+    createContract();
+  }, [account]);
+
+  return contract;
+}
 
 function createMonsters(monstersData: MonsterDataSerilizable[], abilities: Ability[]) {
   let monsters: Monster[] = [];
