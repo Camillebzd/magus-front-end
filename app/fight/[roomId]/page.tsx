@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import styles from '@/app/page.module.css';
 
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
@@ -43,12 +43,27 @@ export default function Page({ params }: { params: { roomId: string } }) {
   const isInTheRoom = pathname.split('/')[2] === room.id;
   const allWeapons = useAllWeapons(false);
   const allMonsters = useMonstersWorld(false);
-  const [weapon, setWeapon] = useState<Weapon | undefined>(undefined);
+
+  const [weapons, setWeapons] = useState<Weapon[] | undefined>(undefined); // all the weapons (including the player)
+  const weapon = useMemo(() => {
+    return weapons?.find((w) => w.uid === userId);
+  }, [weapons, userId]); // the player weapon
+  const updateWeaponProperty = (uid: string, property: keyof Weapon, value: any) => {
+    setWeapons((currentWeapons) => {
+      if (!currentWeapons) return currentWeapons;
+      return currentWeapons.map((currentWeapon) => {
+        if (currentWeapon.uid !== uid) return currentWeapon;  
+        const weaponCopied = currentWeapon.clone();
+        (weaponCopied[property] as any) = value;
+        return weaponCopied;
+      });
+    });
+  };
   const [monsters, setMonsters] = useState<Monster[] | undefined>(undefined);
   // Refs used in actions to avoid re-renders and multiple triggring
+  const weaponsRef = useRef<Weapon[] | undefined>(undefined);
   const weaponRef = useRef<Weapon | undefined>(undefined);
   const monstersRef = useRef<Monster[] | undefined>(undefined);
-  // const monster = useMonstersWorld(false).find(monster => monster.id === room.monsters[0]?.id)?.clone(); // only taking the first one atm
   const actionManager = useRef<ActionManager>(new ActionManager());
 
   const historic = useRef<HistoricSystem>(new HistoricSystem([]));
@@ -76,10 +91,20 @@ export default function Page({ params }: { params: { roomId: string } }) {
       case "ENEMY":
         return monsters ? [monsters.filter(monster => !monster.isDead())[0].uid] : []; // Default to the first monster alive
       case "ALLY":
+        return weapons ? [weapons.filter(weapon => !weapon.isDead())[0].uid] : []; // Default to the first weapon alive
       case "ALLY_TEAM":
-        return weapon ? [weapon.uid] : [];
+        return weapons ? weapons.filter(weapon => !weapon.isDead()).map(weapon => weapon.uid) : [];
       case "ENEMY_TEAM":
         return monsters ? monsters.filter(monster => !monster.isDead()).map(monster => monster.uid) : [];
+      case "ALL":
+        let allEntities: string[] = [];
+        if (monsters) {
+          allEntities = monsters.filter(monster => !monster.isDead()).map(monster => monster.uid);
+        }
+        if (weapons) {
+          allEntities.push(...weapons.filter(weapon => !weapon.isDead()).map(weapon => weapon.uid));
+        }
+        return allEntities;
       case "NONE":
       default:
         return [];
@@ -95,23 +120,22 @@ export default function Page({ params }: { params: { roomId: string } }) {
 
     switch (ability.target) {
       case "ALLY_TEAM":
-        return weapon?.uid === selectedEntities[0] || false; // only weapon for now
+        return weapons?.filter(weapon => !weapon.isDead()).every(weapon => selectedEntities.includes(weapon.uid)) || false;
       case "ENEMY_TEAM":
         return monsters?.filter(monster => !monster.isDead()).every(monster => selectedEntities.includes(monster.uid)) || false;
       case "ALL":
-        // For should select all monsters alive and the weapon
+        // For should select all monsters alive and the weapons
         const correctEntities = monsters?.filter(monster => !monster.isDead()).map(monster => monster.uid) || [];
-        correctEntities.push(weapon?.uid || "");
+        correctEntities.push(...weapons?.filter(weapon => !weapon.isDead()).map(weapon => weapon.uid) || []);
         return correctEntities.every(entity => selectedEntities.includes(entity));
       case "ENEMY":
         // For single-target abilities, at least one correct entity must be selected
         return monsters?.filter(monster => !monster.isDead()).some(monster => selectedEntities.includes(monster.uid)) || false;
       case "ALLY":
         // For single-target abilities, at least one correct entity must be selected
-        return weapon?.uid === selectedEntities[0] || false; // only weapon for now
+        return weapons?.filter(weapon => !weapon.isDead()).some(weapon => selectedEntities.includes(weapon.uid)) || false;
       case "SELF":
         return weapon?.uid === selectedEntities[0] || false;
-
       default:
         console.warn("Unsupported ability target type:", ability.target);
         return false;
@@ -146,6 +170,10 @@ export default function Page({ params }: { params: { roomId: string } }) {
   }, [weapon]);
 
   useEffect(() => {
+    weaponsRef.current = weapons;
+  }, [weapons]);
+
+  useEffect(() => {
     monstersRef.current = monsters;
   }, [monsters]);
 
@@ -155,7 +183,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
 
   // Socket init
   useEffect(() => {
-    if (!socket || !weapon || !monsters || !isSocketInitialized.current || listenersInitialized.current)
+    if (!socket || !weapon || !weapons || !monsters || !isSocketInitialized.current || listenersInitialized.current)
       return;
 
     listenersInitialized.current = true;
@@ -163,53 +191,47 @@ export default function Page({ params }: { params: { roomId: string } }) {
     // Listen to events related to hand, deck and discard
     socket.on('setDeck', (cards: RawDataAbilities) => {
       console.log('setDeck', cards);
-      setWeapon((currentWeapon) => {
-        if (!currentWeapon) return currentWeapon;
-        const deckToSet: Ability[] = fromRawAbilitiesToAbilities(cards, currentWeapon.abilities);
-        const weaponCopied = currentWeapon.clone();
-        weaponCopied.deck = deckToSet;
-        return weaponCopied;
-      });
+      const deckToSet: Ability[] = fromRawAbilitiesToAbilities(cards, weapon!.abilities);
+      updateWeaponProperty(userId, 'deck', deckToSet);
     });
+
     socket.on('setHand', (cards: RawDataAbilities) => {
       console.log('setHand', cards);
-      setWeapon((currentWeapon) => {
-        if (!currentWeapon) return currentWeapon;
-        const handToSet: Ability[] = fromRawAbilitiesToAbilities(cards, currentWeapon.abilities);
-        const weaponCopied = currentWeapon.clone();
-        weaponCopied.hand = handToSet;
-        return weaponCopied;
-      });
+      const handToSet: Ability[] = fromRawAbilitiesToAbilities(cards, weapon!.abilities);
+      updateWeaponProperty(userId, 'hand', handToSet);
     });
 
     socket.on('discardRefillAndDraw', (instructions: { discard: RawDataAbilities, shouldRefillDeck: boolean, draw: RawDataAbilities }) => {
       console.log('discard cards', instructions.discard);
       console.log('shouldRefillDeck', instructions.shouldRefillDeck);
       console.log('draw cards', instructions.draw);
-      setWeapon((currentWeapon) => {
-        if (!currentWeapon) return currentWeapon;
-        // first discard
-        const cardsToDiscard: Ability[] = currentWeapon.hand.filter(ability => {
-          // check if current ability is in the cards to discard
-          const uids = instructions.discard[ability.id];
-          if (!uids) return false;
-          return uids.includes(ability.uid);
+      setWeapons((currentWeapons) => {
+        if (!currentWeapons) return currentWeapons;
+        return currentWeapons.map((currentWeapon) => {
+          if (currentWeapon.uid !== userId) return currentWeapon;
+          // first discard
+          const cardsToDiscard: Ability[] = currentWeapon.hand.filter(ability => {
+            // check if current ability is in the cards to discard
+            const uids = instructions.discard[ability.id];
+            if (!uids) return false;
+            return uids.includes(ability.uid);
+          });
+          const weaponCopied = currentWeapon.clone();
+          cardsToDiscard.forEach(cardToDiscard => weaponCopied.discardFromHand(cardToDiscard));
+          // then refill the deck if needed
+          if (instructions.shouldRefillDeck) {
+            weaponCopied.refillDeckFromDiscard();
+          }
+          // then draw the cards
+          const cardsToDraw: Ability[] = currentWeapon.deck.filter(ability => {
+            // check if current ability is in the cards to draw
+            const uids = instructions.draw[ability.id];
+            if (!uids) return false;
+            return uids.includes(ability.uid);
+          });
+          cardsToDraw.forEach(cardToDraw => weaponCopied.drawOneFromDeck(cardToDraw));
+          return weaponCopied;
         });
-        const weaponCopied = currentWeapon.clone();
-        cardsToDiscard.forEach(cardToDiscard => weaponCopied.discardFromHand(cardToDiscard));
-        // then refill the deck if needed
-        if (instructions.shouldRefillDeck) {
-          weaponCopied.refillDeckFromDiscard();
-        }
-        // then draw the cards
-        const cardsToDraw: Ability[] = currentWeapon.deck.filter(ability => {
-          // check if current ability is in the cards to draw
-          const uids = instructions.draw[ability.id];
-          if (!uids) return false;
-          return uids.includes(ability.uid);
-        });
-        cardsToDraw.forEach(cardToDraw => weaponCopied.drawOneFromDeck(cardToDraw));
-        return weaponCopied;
       });
     });
     socket.on('startFight', () => {
@@ -224,13 +246,15 @@ export default function Page({ params }: { params: { roomId: string } }) {
     // tmp create map for weapon and monster as only one supported
     socket.on('actionUpdated', (rawDataActions: RawDataAction[]) => {
       // Get the latest weapon and monster for the maps
-      const currentWeapon = weaponRef.current;
+      const currentWeapons = weaponsRef.current;
       const currentMonsters = monstersRef.current;
 
-      if (!currentWeapon || !currentMonsters) return;
+      if (!currentWeapons || !currentMonsters) return;
 
       const weaponMap = new Map<string, Weapon>();
-      weaponMap.set(currentWeapon.uid, currentWeapon);
+      currentWeapons.forEach(weapon => {
+        weaponMap.set(weapon.uid, weapon);
+      });
 
       const monsterMap = new Map<string, Monster>();
       currentMonsters.forEach(monster => {
@@ -284,7 +308,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
         action.resolve(instruction);
       });
       console.log('monsters after resolve', monstersRef.current);
-      console.log('weapon after resolve', weaponRef.current);
+      console.log('weapons after resolve', weaponsRef.current);
       // emit turn instructions executed
       socket.emit('turnInstructionsExecuted');
     });
@@ -307,18 +331,31 @@ export default function Page({ params }: { params: { roomId: string } }) {
     // Cleanup on unmount
     return () => {
     };
-  }, [weapon, monsters, socket]);
+  }, [weapon, weapons, monsters, socket]);
 
-  // Set the Weapon at begining (only user itself supported for the moment)
+  // Set the Weapons at begining
   useEffect(() => {
-    if (!allWeapons || weapon)
+    if (!allWeapons || allWeapons.length < 1 || !room || !userId || (weapons && weapons.length > 0))
       return;
-    const weaponData = allWeapons.find(weapon => weapon.id === parseInt(room.weapons[userId]))?.clone();
-    if (weaponData) {
-      weaponData.uid = userId;
-      setWeapon(weaponData);
+    const weaponsData = Object.entries(room.weapons).map(([memberId, weaponId]) => {
+      const weaponData = allWeapons.find(weapon => weapon.id === parseInt(weaponId))?.clone();
+      if (!weaponData) {
+        console.error("Weapon not found with id:", weapon);
+        return null;
+      }
+      weaponData.uid = memberId;
+      const deckToSet: Ability[] = fromRawAbilitiesToAbilities(room.decks[memberId], weaponData.abilities);
+      if (deckToSet.length < 1) {
+        console.error("Deck not found for weapon with id:", weaponId);
+        return null;
+      }
+      weaponData.deck = deckToSet;
+      return weaponData;
+    }).filter((weaponData: Weapon | null) => weaponData !== null) as Weapon[];
+    if (weaponsData.length > 0) {
+      setWeapons(weaponsData);
     }
-  }, [allWeapons, weapon]);
+  }, [allWeapons, room, userId]);
 
   // Set monster at begining (only one supported for the moment)
   useEffect(() => {
@@ -376,9 +413,9 @@ export default function Page({ params }: { params: { roomId: string } }) {
   };
 
   const selectAbility = (ability: Ability, fluxesUsed: number = 0) => {
-    // if (phase !== GAME_PHASES.PLAYER_CHOOSE_ABILITY && !weapon?.isEntityAbleToPlay())
-    //   return;
-    if (!socket || !weapon || !monsters)
+    if (phase !== GAME_PHASES.PLAYER_CHOOSE_ABILITY /*&& !weapon?.isEntityAbleToPlay()*/)
+      return;
+    if (!socket || !weapon || !weapons || !monsters)
       return;
     const updateTargets = (ability: Ability) => {
       const defaultTargets = getDefaultTargets(ability);
@@ -412,7 +449,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
 
   const selectTarget = (target: string) => {
     // if an ability is selected and during choose phase, select the target and emit the action
-    if (phase !== GAME_PHASES.PLAYER_CHOOSE_ABILITY || !weapon || !monsters)
+    if (phase !== GAME_PHASES.PLAYER_CHOOSE_ABILITY || !weapon || !weapons || !monsters)
       return;
     if (actionsRef.current && actionsRef.current.length > 0) {
       const userAction = actionsRef.current.find(action => action.caster.uid === weapon.uid);
@@ -508,7 +545,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
               align={"center"}
               grow={1}
             >
-              {weapon && <EntityList entities={[weapon]} isModifiersOnRight={true} selected={entitiesSelected} selectTarget={selectTarget} />}
+              {weapons && <EntityList entities={weapons.filter(weapon => !weapon.isDead())} isModifiersOnRight={true} selected={entitiesSelected} selectTarget={selectTarget} />}
               <Box>
                 {actions.length > 0 ?
                   actions?.map(action => (
