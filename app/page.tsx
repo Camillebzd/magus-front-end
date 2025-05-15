@@ -8,8 +8,8 @@ import CreateRoomModal from '@/components/CreateRoomModal';
 import JoinRoomModal from '@/components/JoinRoomModal';
 import { socketActions } from '@/redux/features/socketSlice';
 import CopyableField from '@/components/CopyableField';
-import EntityList from '@/app/room/components/EntityList';
-import MonsterListInRoom from '@/app/room/components/MonsterListInRoom';
+import EntityListInRoom from '@/app/components/EntityListInRoom';
+import MonsterListInRoom from '@/app/components/MonsterListInRoom';
 
 import styles from './page.module.css'
 import MonsterList from '@/components/MonsterList';
@@ -73,7 +73,7 @@ export default function Home() {
           <CopyableField text={room.password} />
         </Box>
       }
-      <EntityList />
+      <EntityListInRoom />
       <MonsterListInRoom />
       <Flex gap={5}>
         <Button mt={10} colorScheme='red' onClick={leaveRoom}>Leave room</Button>
