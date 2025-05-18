@@ -28,7 +28,6 @@ import { socketActions } from "@/redux/features/socketSlice";
 import { useContract } from "@/scripts/customHooks";
 
 const WeaponCard = ({ weapon, type }: { weapon: Weapon, type: WeaponGeneralType }) => {
-  const room = useAppSelector((state) => state.socketReducer.room);
   const [isOver, setIsOver] = useState(false);
   const imageWeapon: any = useRef(null);
   const address = useAppSelector((state) => state.authReducer.address);
@@ -37,6 +36,7 @@ const WeaponCard = ({ weapon, type }: { weapon: Weapon, type: WeaponGeneralType 
   const dispatch = useAppDispatch();
   const equipedWeaponId = useAppSelector((state) => state.socketReducer.member.equipedWeaponId);
   const contract = useContract();
+  const [isCraftingStarter, setIsCraftingStarter] = useState(false);
 
   useEffect(() => {
     if (isOver && imageWeapon != null)
@@ -85,8 +85,11 @@ const WeaponCard = ({ weapon, type }: { weapon: Weapon, type: WeaponGeneralType 
     if (!address)
       return;
     try {
-      await contract.requestWeapon(weaponToMint);
+      setIsCraftingStarter(true);
+      const tx = await contract.requestWeapon(weaponToMint);
+      await tx.wait();
       Notify.success("Your weapon was created, wait a minute and you will see it appear!");
+      setIsCraftingStarter(false);
       router.push('/armory');
     } catch (e) {
       console.log(e);
@@ -103,7 +106,7 @@ const WeaponCard = ({ weapon, type }: { weapon: Weapon, type: WeaponGeneralType 
   const cardFooter = () => {
     if (type === "starter") {
       return (
-        <Button size='sm' colorScheme='blue' onClick={e => { e.preventDefault(); craftStarter(); }}>
+        <Button size='sm' isLoading={isCraftingStarter} colorScheme='blue' onClick={e => { e.preventDefault(); craftStarter(); }}>
           Choose
         </Button>
       );
