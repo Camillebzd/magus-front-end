@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation'
 import { Box, Image } from '@chakra-ui/react'
 import DifficultyBadge from '@/components/DifficultyBadge';
 import { useMonstersWorld } from '@/scripts/customHooks';
-import FightButton from '@/components/FightButton';
+// import FightButton from '@/components/FightButton';
 import { useAppSelector } from '@/redux/hooks';
 
 export default function Page() {
@@ -46,7 +46,7 @@ export default function Page() {
         <p>Mind: {monster.stats.mind}</p>
         <p>Guard: {monster.stats.guard}</p>
         <p>Handling: {monster.stats.handling}</p>
-        {isConnected && <FightButton monsterId={monster.id}/>}
+        {/* {isConnected && <FightButton monsterId={monster.id}/>} */}
       </div>
     </main>
   );

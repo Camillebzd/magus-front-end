@@ -4,12 +4,11 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import {
-  ClipboardDocumentCheckIcon,
-  UserIcon,
-  GlobeAmericasIcon
+  UserIcon
 } from '@heroicons/react/24/outline';
-import { LuSword } from "react-icons/lu";
+import { LuSword, LuAnvil } from "react-icons/lu";
 import { FaTshirt } from "react-icons/fa";
+import { BiTask } from "react-icons/bi";
 import styles from '../../app/page.module.css'
 import {
   Box,
@@ -20,14 +19,14 @@ import {
 
 const navItems = [
   {
-    path: '/world',
-    label: 'World',
-    icon: <GlobeAmericasIcon style={{ width: '24px', height: '24px' }} />,
+    path: '/forge',
+    label: 'Forge',
+    icon: <LuAnvil style={{ width: '24px', height: '24px' }} />,
   },
   {
-    path: '/tasks',
-    label: 'Tasks',
-    icon: <ClipboardDocumentCheckIcon style={{ width: '24px', height: '24px' }} />,
+    path: '/armory',
+    label: 'Armory',
+    icon: <FaTshirt style={{ width: '24px', height: '24px' }} />,
   },
   {
     path: '/',
@@ -35,9 +34,9 @@ const navItems = [
     icon: <LuSword style={{ width: '24px', height: '24px' }} />,
   },
   {
-    path: '/armory',
-    label: 'Armory',
-    icon: <FaTshirt style={{ width: '24px', height: '24px' }} />,
+    path: '/quests',
+    label: 'Quests',
+    icon: <BiTask style={{ width: '24px', height: '24px' }} />,
   },
   {
     path: '/profile',
