@@ -41,7 +41,7 @@ const CheatBox = ({ weapon, setInfo }: { weapon: Weapon; setInfo: (value: SetSta
     return () => {
       socket.off("cheatcodeTriggered");
     };
-  }, [socket, setInfo, weapon]);
+  }, [socket, setInfo, weapon, cheatStates]);
 
   const cheatToggle = (cheatcode: string, title: string) => (
     <Flex align="center" gap={2}>

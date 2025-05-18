@@ -56,7 +56,7 @@ const MonsterCard = ({ monster }: { monster: Monster }) => {
       console.error("Error: user is not ready");
       return;
     }
-  }, [room.id, quickFightInfo]);
+  }, [room.id, quickFightInfo, member, monster.id]);
 
   // Launch the fight when everything is ready
   useEffect(() => {
@@ -65,7 +65,7 @@ const MonsterCard = ({ monster }: { monster: Monster }) => {
       dispatch(socketActions.setQuickFight({monsterId: -1, state: "none"}));
       dispatch(socketActions.startFight());
     }
-  }, [room.weapons, room.decks, room.monsters, quickFightInfo]);
+  }, [room.weapons, room.decks, room.monsters, quickFightInfo, member, monster.id]);
 
   const addToRoom = () => {
     if (room.id === DEFAULT_ROOM_ID)

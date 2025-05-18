@@ -36,7 +36,7 @@ const DeckEquiped = () => {
           ))
         ) : (
           <Text fontSize='xl' mb={4}>
-            You don't have any equiped deck.
+            You do not have any equiped deck.
           </Text>
         )}
       </Flex>

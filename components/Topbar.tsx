@@ -66,6 +66,7 @@ const Topbar = () => {
       dispatch(disconnect());
       // no need to delete the socket because it is a singleton
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wallet]);
 
   // create user on the server when socket + wallet connected
@@ -77,6 +78,7 @@ const Topbar = () => {
     return () => {
       dispatch(socketActions.deleteMember(walletAddress));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [walletAddress, isWalletConnected, isSocketConnected]);
 
   return (

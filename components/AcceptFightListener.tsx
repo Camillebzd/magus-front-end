@@ -38,7 +38,8 @@ const AcceptFightListener = () => {
       // close modal
       onClose();
     }
-  }, [room.acceptedMembers]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [room.acceptedMembers, isOpen]);
 
   // listen when the server redirect to the fight page
   useEffect(() => {
@@ -52,6 +53,7 @@ const AcceptFightListener = () => {
       // router.push(`fight/${room.goToRoomId}/?roomid=${room.goToRoomId}&weaponid=${room.weapons[member.uid]}&monsterid=${0}`);
       router.push(`fight/${room.goToRoomId}`);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [room.goToRoomId]);
 
 

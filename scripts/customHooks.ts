@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction, use, useEffect, useState } from "react";
-import { Monster, Weapon, WeaponData, Identity } from "./entities";
+import { Monster, Weapon, WeaponData } from "./entities";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { MonsterDataSerilizable, fillMonstersWorldData } from "@/redux/features/monsterSlice";
 import { fillStoreAbilities } from "@/redux/features/abilitySlice";
@@ -109,7 +109,7 @@ export function useMonstersWorld(forceFill: boolean = false) {
   return monsters;
 }
 
-function getGearAttributeInfo(attributes: AttributeOnNFT[], trait_type: string): string | string[] | Identity {
+function getGearAttributeInfo(attributes: AttributeOnNFT[], trait_type: string): string | string[] {
   for (let i = 0; i < attributes.length; i++) {
     if (attributes[i].trait_type === trait_type)
       return attributes[i].value;

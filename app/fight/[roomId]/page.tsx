@@ -52,7 +52,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
     setWeapons((currentWeapons) => {
       if (!currentWeapons) return currentWeapons;
       return currentWeapons.map((currentWeapon) => {
-        if (currentWeapon.uid !== uid) return currentWeapon;  
+        if (currentWeapon.uid !== uid) return currentWeapon;
         const weaponCopied = currentWeapon.clone();
         (weaponCopied[property] as any) = value;
         return weaponCopied;
@@ -331,6 +331,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
     // Cleanup on unmount
     return () => {
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [weapon, weapons, monsters, socket]);
 
   // Set the Weapons at begining
@@ -355,11 +356,11 @@ export default function Page({ params }: { params: { roomId: string } }) {
     if (weaponsData.length > 0) {
       setWeapons(weaponsData);
     }
-  }, [allWeapons, room, userId]);
+  }, [weapon, weapons, allWeapons, room, userId]);
 
-  // Set monster at begining (only one supported for the moment)
+  // Set monster at begining
   useEffect(() => {
-    if (!allMonsters || allMonsters.length === 0 || monsters)
+    if (!allMonsters || allMonsters.length === 0 || monsters || !room || room.monsters.length < 1)
       return;
 
     const monstersData = room.monsters.map(monster => {
@@ -377,7 +378,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
     }).filter(monsterData => monsterData !== null) as Monster[];
     setMonsters(monstersData);
     console.log("monstersData", monstersData);
-  }, [allMonsters]);
+  }, [monsters, allMonsters, room.monsters]);
 
   // End of turn logs
   useEffect(() => {
@@ -532,7 +533,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
         </>
       ) : (
         <>
-          {weaponRef.current && <CheatBox weapon={weaponRef.current} setInfo={setInfo}/>}
+          {weaponRef.current && <CheatBox weapon={weaponRef.current} setInfo={setInfo} />}
           <Flex
             direction={"column"}
             justify={"space-between"}

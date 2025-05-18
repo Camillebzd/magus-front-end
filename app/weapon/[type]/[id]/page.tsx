@@ -68,10 +68,10 @@ export default function Page() {
         <p>Guard: {weapon.stats.guard}</p>
         <p>Handling: {weapon.stats.handling}</p>
         <p>Pierce: {weapon.stats.pierce}</p>
-        <p>XP: {weapon.xp}</p>
+        {/* <p>XP: {weapon.xp}</p> */}
         <p>Level: {weapon.level}</p>
         <p>Stage: {weapon.stage}</p>
-        <p>Identity: {weapon.identity}</p>
+        {/* <p>Identity: {weapon.identity}</p> */}
       </div>
       {route.type === "classic" &&
         <ButtonGroup>

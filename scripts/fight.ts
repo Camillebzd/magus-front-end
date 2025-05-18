@@ -2,31 +2,31 @@ import {
   ATTACKER_SPEED_WEIGHT
 } from "./systemValues";
 import { deepCopy, getRandomInt } from "./utils";
-import { Action, END_OF_TURN } from "./actions";
+import { Action } from "./actions";
 import { HistoricSystem } from "./historic";
 
 // Main loop for resolves actions
 export function resolveActions(actions: Action[], historicSystem: HistoricSystem) {
-  const actualTurn = historicSystem.getTurn(actions[0].currentTurn);
-  if (!actualTurn) {
-    console.log(`Error: actual turn in resolve is invalide for turn ${actions[0].currentTurn}.`);
-    return undefined;
-  }
+  // const actualTurn = historicSystem.getTurn(actions[0].currentTurn);
+  // if (!actualTurn) {
+  //   console.log(`Error: actual turn in resolve is invalide for turn ${actions[0].currentTurn}.`);
+  //   return undefined;
+  // }
 
-  // 2. Calculate the order
-  sortActionOrder(actions);
-  for (let i = 0; i < actions.length; i++) {
-    actualTurn.actions.push(deepCopy(actions[i]));
-    // set historic system after to not deep copie all the historic itself each turn...
-    actions[i].setHistoricSystem(historicSystem);
-    let resultOfAction = actions[i].resolve();
+  // // 2. Calculate the order
+  // sortActionOrder(actions);
+  // for (let i = 0; i < actions.length; i++) {
+  //   actualTurn.actions.push(deepCopy(actions[i]));
+  //   // set historic system after to not deep copie all the historic itself each turn...
+  //   actions[i].setHistoricSystem(historicSystem);
+  //   let resultOfAction = actions[i].resolve();
 
-    if (resultOfAction == END_OF_TURN.TARGET_BLOCKED || resultOfAction == END_OF_TURN.NORMAL)
-      continue;
-    // latter get the id here if there is a combo so handle easily multiple entities
-    return resultOfAction;
-  }
-  return END_OF_TURN.NORMAL;
+  //   if (resultOfAction == END_OF_TURN.TARGET_BLOCKED || resultOfAction == END_OF_TURN.NORMAL)
+  //     continue;
+  //   // latter get the id here if there is a combo so handle easily multiple entities
+  //   return resultOfAction;
+  // }
+  // return END_OF_TURN.NORMAL;
 }
 
 function sortActionOrder(actions: Action[]) {

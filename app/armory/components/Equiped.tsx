@@ -15,7 +15,7 @@ const Equiped = () => {
         </>
         :
         <Text fontSize='xl' mb={4}>
-          You don't have any equiped weapon.
+          You do not have any equiped weapon.
         </Text>
       }
     </Flex>

@@ -1,5 +1,10 @@
 import { MongoClient } from "mongodb";
 
+declare global {
+  // eslint-disable-next-line no-var
+  var _mongoClientPromise: Promise<MongoClient> | undefined;
+}
+
 const DB_USERNAME = process.env.DB_USERNAME || "";
 const DB_PASSWORD = process.env.DB_PASSWORD || "";
 const MONGO_URI = `mongodb+srv://${DB_USERNAME}:${DB_PASSWORD}@gearfight.qux5zo9.mongodb.net/?retryWrites=true&w=majority&appName=GearFight`;

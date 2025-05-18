@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 import contractABI from "@/abi/GearFight.json";
 
 import { Ability, RawDataAbilities } from './abilities';
-import { Identity, WeaponMintStats } from './entities';
+import { WeaponMintStats } from './entities';
 import { getContract } from 'thirdweb';
 import { client, etherlinkTestnet } from '@/app/thirdwebInfo'
 import { ethers5Adapter } from "thirdweb/adapters/ethers5";
@@ -46,7 +46,7 @@ export async function createReadContract() {
   return contract;
 }
 
-export async function getWeaponStatsForLevelUp(identity: Identity) {
+export async function getWeaponStatsForLevelUp(identity: any) {
   // let stats = JSON.parse(JSON.stringify((await import(`@/data/weapons/statsGrowth.json`)).default.find(weapon => weapon.name == identity)));
   const stats = (await fetchFromDB("weapons", "statsGrowth"))?.find((weapon: any) => weapon.name == identity);
   if (!stats) {
@@ -96,7 +96,7 @@ export function multiplyStatsForLevelUp(stats: WeaponMintStats, coef: number) {
 }
 
 // get the list of abilities for a weapon for a specific level, throw an error if an error is encoutered
-export async function getAllAbilitiesIdForWeapon(identity: Identity, levelToSet: number) {
+export async function getAllAbilitiesIdForWeapon(identity: any, levelToSet: number) {
   // let allAbilities = (await import(`@/data/weapons/${identity.toLocaleLowerCase()}/abilities.json`));
   let allAbilities: { [key: string]: number[] | number | string }[] = [];
   allAbilities = await fetchFromDB("weapons", "abilities");
