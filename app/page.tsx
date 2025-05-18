@@ -30,7 +30,7 @@ export default function Home() {
   };
 
   const startFight = () => {
-    dispatch(socketActions.startFigh());
+    dispatch(socketActions.startFight());
   };
 
   // check if memberUID selected a weapon and a deck

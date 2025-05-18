@@ -48,7 +48,7 @@ export enum SocketEventsEmitter {
   AddMonsters = "addMonsters",
   SelectWeaponAndDeck = "selectWeaponAndDeck",
   RemoveMonsters = "removeMonsters",
-  StartFigh = "startFigh",
+  StartFight = "startFight",
   AcceptFight = "acceptFight",
   RejectFight = "rejectFight",
   SelectSkill = "selectSkill",

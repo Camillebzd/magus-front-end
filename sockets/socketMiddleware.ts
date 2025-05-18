@@ -68,8 +68,8 @@ const socketMiddleware: Middleware = (store) => (next) => (action) => {
       case socketActions.selectWeaponAndDeck.type:
         socket.socket.emit(SocketEventsEmitter.SelectWeaponAndDeck, payload);
         break;
-      case socketActions.startFigh.type:
-        socket.socket.emit(SocketEventsEmitter.StartFigh);
+      case socketActions.startFight.type:
+        socket.socket.emit(SocketEventsEmitter.StartFight);
         break;
       case socketActions.acceptFight.type:
         socket.socket.emit(SocketEventsEmitter.AcceptFight);

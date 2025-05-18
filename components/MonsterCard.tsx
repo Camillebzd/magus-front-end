@@ -17,7 +17,7 @@ const MonsterCard = ({ monster }: { monster: Monster }) => {
   const imageMonster: any = useRef(null);
   const room = useAppSelector((state) => state.socketReducer.room);
   const member = useAppSelector((state) => state.socketReducer.member);
-  const [isCreatingFight, setIsCreatingFight] = useState(false);
+  const quickFightInfo = useAppSelector((state) => state.socketReducer.quickFight);
   const dispatch = useAppDispatch();
 
   // check if memberUID selected a weapon and a deck
@@ -37,32 +37,35 @@ const MonsterCard = ({ monster }: { monster: Monster }) => {
     if (room.id === DEFAULT_ROOM_ID &&
       member.equipedWeaponId != DefaultMemberInformation.equipedWeaponId &&
       member.equipedDeck != DefaultMemberInformation.equipedDeck) {
-      setIsCreatingFight(true);
+      dispatch(socketActions.setQuickFight({monsterId: monster.id, state: "creatingRoom"}));
       dispatch(socketActions.createNewRoom("")); // no password
     }
   }
 
   // When the room is created, add the monster and launch the fight
   useEffect(() => {
-    if (room.id === DEFAULT_ROOM_ID || !isCreatingFight) return;
+    if (quickFightInfo.state !== "creatingRoom" || quickFightInfo.monsterId !== monster.id) return;
+    if (room.id === DEFAULT_ROOM_ID) return;
     // no need to push the weapon and deck to the room, already done if equiped
     if (member.equipedWeaponId != DefaultMemberInformation.equipedWeaponId &&
       member.equipedDeck != DefaultMemberInformation.equipedDeck) {
       // push the monster to the room
+      dispatch(socketActions.setQuickFight({monsterId: monster.id, state: "addingMonster"}));
       dispatch(socketActions.addMonsters([monster.id]));
     } else {
       console.error("Error: user is not ready");
       return;
     }
-  }, [room.id, isCreatingFight]);
+  }, [room.id, quickFightInfo]);
 
   // Launch the fight when everything is ready
   useEffect(() => {
-    if (member.uid in room.weapons && member.uid in room.decks && isEveryoneReady() && room.monsters.length > 0 && isCreatingFight) {
-      setIsCreatingFight(false);
-      dispatch(socketActions.startFigh());
+    if (quickFightInfo.state !== "addingMonster" || quickFightInfo.monsterId !== monster.id) return;
+    if (member.uid in room.weapons && member.uid in room.decks && isEveryoneReady() && room.monsters.length > 0) {
+      dispatch(socketActions.setQuickFight({monsterId: -1, state: "none"}));
+      dispatch(socketActions.startFight());
     }
-  }, [room.weapons, room.decks, room.monsters, isCreatingFight]);
+  }, [room.weapons, room.decks, room.monsters, quickFightInfo]);
 
   const addToRoom = () => {
     if (room.id === DEFAULT_ROOM_ID)

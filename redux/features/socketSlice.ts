@@ -73,13 +73,21 @@ export interface SocketState {
   isCreated: boolean; // represent if the user is created on the server (after wallet connection)
   member: MemberInfo; // represent the user info as member from the server
   room: Room;
+  quickFight: {
+    monsterId: number,
+    state: "none" | "creatingRoom" | "addingMonster";
+  }; // represent if the user is creating a fight (quick fight button)
 };
 
 const initialState: SocketState = {
   isConnected: false,
   isCreated: false,
   member: DefaultMemberInformation,
-  room: DefaultRoom
+  room: DefaultRoom,
+  quickFight: {
+    monsterId: -1,
+    state: "none"
+  },
 };
 
 // Now create the slice
@@ -138,7 +146,7 @@ const socketSlice = createSlice({
       // not store for the request, waiting for the server to confirm before adding weapon and deck
       return;
     },
-    startFigh: (state, action: PayloadAction) => {
+    startFight: (state, action: PayloadAction) => {
       // not store for the request, waiting for the server to confirm before moving user
       return;
     },
@@ -294,6 +302,12 @@ const socketSlice = createSlice({
       // state.room.entities = action.payload;
       return;
     },
+
+    // helper to manage quick fight
+    setQuickFight: (state, action: PayloadAction<{monsterId: number, state: "none" | "creatingRoom" | "addingMonster"}>) => {
+      // not in the middleware because it is just to reset the state after the fight is over.
+      state.quickFight = action.payload;
+    }
   },
 });
 
