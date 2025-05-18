@@ -88,7 +88,7 @@ const Topbar = () => {
       zIndex="1"
       bgGradient="linear(to-r, profoundgrey.900, profoundgrey.800, profoundgrey.900)"
       backdropFilter="blur(8px)"
-      borderTop="1px"
+      borderBottom="1px"
       borderColor="profoundgrey.800"
       boxShadow="lg"
       paddingTop="2px"
