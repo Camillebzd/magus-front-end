@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import {
+  Box,
   Flex,
   IconButton,
   Text
@@ -109,11 +110,15 @@ const Topbar = () => {
 
       <Flex alignItems='center' gap='10px'>
         <ConnectionDot />
-        <ConnectButton
-          client={client}
-          wallets={wallets}
-          chain={etherlinkTestnet}
-        />
+        {/* Usage of this box to add style on Connect button */}
+        <Box textColor={"#131418"} bg={wallet?.getAccount()?.address ? "" : "#eeeef0"} borderRadius={"12px"}> 
+          <ConnectButton
+            client={client}
+            wallets={wallets}
+            chain={etherlinkTestnet}
+            connectButton={{ label: "Connect" }}
+          />
+        </Box>
       </Flex>
 
       {/* Mobile */}
