@@ -19,12 +19,12 @@ const ColorAndPreviewBar = ({
   }, []);
 
   return (
-    <Flex justifyContent="center" bg={"red"} direction={"column"} gap={4} height={"100%"}>
+    <Flex justifyContent="center" direction={"column"} gap={4} height={"100%"}>
       {mounted && <SketchPicker
         color={brushColor}
         onChangeComplete={(color) => changeBrushColor(color.hex)}
       />}
-      <Flex justifyContent="center" gap={2} direction={"column"} alignItems={"center"}>
+      <Flex justifyContent="center" bgColor={"profoundgrey.200"} borderRadius={4} gap={2} direction={"column"} alignItems={"center"} padding={2}>
         <Text fontWeight={'bold'}>Preview</Text>
         <MultipleImages
           height={200}

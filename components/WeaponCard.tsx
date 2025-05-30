@@ -19,7 +19,7 @@ import { useEffect, useRef, useState } from "react";
 
 import Link from 'next/link'
 import { WeaponGeneralType } from "@/scripts/WeaponGeneralType";
-import { createContract } from "@/scripts/utils";
+import { createContract, resolveImageUrl } from "@/scripts/utils";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { useRouter } from "next/navigation";
 import { Notify } from "notiflix";
@@ -142,7 +142,7 @@ const WeaponCard = ({ weapon, type }: { weapon: Weapon, type: WeaponGeneralType 
       >
         <CardBody className={styles.cardBody}>
           <Image
-            src={weapon.image}
+            src={resolveImageUrl(weapon.image)}
             alt={`image of weapon named ${weapon.name}`}
             borderRadius='lg'
             className={styles.cardImage}

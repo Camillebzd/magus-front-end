@@ -6,6 +6,8 @@ import { Flex, Select } from '@chakra-ui/react';
 import { CanvasDataChangeParams, CanvasInfoChangeParams, Dotting, DottingRef, PixelModifyItem, useDotting, useHandlers } from 'dotting';
 import ToolBar from './components/ToolBar';
 import ColorAndPreviewBar from './components/ColorAndPreviewBar';
+import MintButton from './components/MintButton';
+import { dottingDataToPng, dataURLtoBlob } from './dottingUtils';
 
 export default function Page() {
   const dottingRef = useRef<DottingRef>(null);
@@ -24,7 +26,7 @@ export default function Page() {
   } = useHandlers(dottingRef);
   const [characterImage, setCharacterImage] = useState<"NONE" | "BACKGROUND" | "FORGROUND">("NONE");
 
-  const [testImage, setTestImage] = useState<string | null>(null);
+  const [createdImage, setCreatedImage] = useState<string | null>(null);
 
   const CreateEmptySquareData = (
     size: number,
@@ -105,8 +107,8 @@ export default function Page() {
   ]);
 
   useEffect(() => {
-    const handleDataChange = ({ isLocalChange, data, layerId, delta }: CanvasDataChangeParams) => {
-      setTestImage(dottingDataToPng(data, 35));
+    const handleDataChange = ({ data }: CanvasDataChangeParams) => {
+      setCreatedImage(dottingDataToPng(data, 35));
     };
 
     addDataChangeListener(handleDataChange);
@@ -127,47 +129,6 @@ export default function Page() {
   //   };
   // }, []);
 
-  const dottingDataToPng = (dottingData: Map<number, Map<number, { color: string }>>, pixelSize = 1): string => {
-    // Get the bounds
-    const rows = Array.from(dottingData.keys());
-    const cols = Array.from(
-      new Set(rows.flatMap(row => Array.from(dottingData.get(row)?.keys() ?? [])))
-    );
-    const minRow = Math.min(...rows);
-    const maxRow = Math.max(...rows);
-    const minCol = Math.min(...cols);
-    const maxCol = Math.max(...cols);
-
-    const width = (maxCol - minCol + 1) * pixelSize;
-    const height = (maxRow - minRow + 1) * pixelSize;
-
-    const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return '';
-
-    for (let row = minRow; row <= maxRow; row++) {
-      const colMap = dottingData.get(row);
-      if (!colMap) continue;
-      for (let col = minCol; col <= maxCol; col++) {
-        const pixel = colMap.get(col);
-        if (pixel && pixel.color && pixel.color !== 'transparent' && pixel.color !== '') {
-          ctx.fillStyle = pixel.color;
-          ctx.fillRect(
-            (col - minCol) * pixelSize,
-            (row - minRow) * pixelSize,
-            pixelSize,
-            pixelSize
-          );
-        }
-      }
-    }
-
-    // Export as PNG data URL
-    return canvas.toDataURL('image/png');
-  }
-
   return (
     <main className={styles.main}>
       <h1 className={styles.pageTitle}>Forge</h1>
@@ -176,14 +137,10 @@ export default function Page() {
         alignItems="center"
         justifyContent="center"
         gap={10}
-        bg={"blue"}
       >
         <ToolBar dottingRef={dottingRef} />
         <Flex
           direction="column"
-          // alignItems="center"
-          // justifyContent="center"
-          bg={"green"}
         >
           <Dotting
             ref={dottingRef}
@@ -201,10 +158,9 @@ export default function Page() {
           <Flex justifyContent="center" marginTop={4} marginBottom={4} alignItems={"center"} gap={2}>
             <Select
               maxWidth={"fit-content"}
-              placeholder='Select character option'
+              placeholder='Select character option view'
               onChange={(e) => setCharacterImage(e.target.value as "NONE" | "BACKGROUND" | "FORGROUND")}
               value={characterImage}
-              defaultValue={"NONE"}
             >
               <option value='NONE'>None</option>
               <option value='BACKGROUND'>Background</option>
@@ -212,8 +168,9 @@ export default function Page() {
             </Select>
           </Flex>
         </Flex>
-        <ColorAndPreviewBar createdImage={testImage} dottingRef={dottingRef} />
+        <ColorAndPreviewBar createdImage={createdImage} dottingRef={dottingRef} />
       </Flex>
+      <MintButton createdImage={dataURLtoBlob(createdImage || '')} />
     </main>
   );
 };

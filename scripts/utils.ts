@@ -197,3 +197,21 @@ export function createFromRawDataAbilityList(abilities: Ability[]): RawDataAbili
   });
   return rawDataAbilities;
 }
+
+/**
+ * Format an image URL to be used in the application.
+ * If the URL starts with "ipfs://", it will be converted to a standard URL
+ * using the IPFS gateway. Otherwise, it will return the URL as is.
+ * @param str String to format as an image URL.
+ * @returns Formatted image URL or an empty string if the input is falsy.
+ */
+export function resolveImageUrl(url: string) {
+  if (!url) return "";
+  if (url.startsWith("ipfs://")) {
+    // Remove the ipfs:// prefix and prepend the gateway
+    return "https://ipfs.io/ipfs/" + url.replace("ipfs://", "");
+    // Or use another gateway if you prefer
+    // return "https://gateway.pinata.cloud/ipfs/" + url.replace("ipfs://", "");
+  }
+  return url;
+}
