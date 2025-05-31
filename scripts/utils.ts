@@ -7,6 +7,7 @@ import { getContract } from 'thirdweb';
 import { client, etherlinkTestnet } from '@/app/thirdwebInfo'
 import { ethers5Adapter } from "thirdweb/adapters/ethers5";
 import { useActiveAccount } from 'thirdweb/react';
+import { download } from 'thirdweb/storage';
 
 const CONTRACT_ADDRESS = (process.env.NEXT_PUBLIC_CONTRACT_ADDRESS)!.toLowerCase();
 const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
@@ -202,16 +203,20 @@ export function createFromRawDataAbilityList(abilities: Ability[]): RawDataAbili
  * Format an image URL to be used in the application.
  * If the URL starts with "ipfs://", it will be converted to a standard URL
  * using the IPFS gateway. Otherwise, it will return the URL as is.
- * @param str String to format as an image URL.
+ * @param uri String to format as an image URL.
  * @returns Formatted image URL or an empty string if the input is falsy.
  */
-export function resolveImageUrl(url: string) {
-  if (!url) return "";
-  if (url.startsWith("ipfs://")) {
+export async function resolveImageUrl(uri: string) {
+  if (!uri) return "";
+  if (uri.startsWith("ipfs://")) {
     // Remove the ipfs:// prefix and prepend the gateway
-    return "https://ipfs.io/ipfs/" + url.replace("ipfs://", "");
+    return (await download({
+            client,
+            uri,
+          })).url;
+    // return "https://ipfs.io/ipfs/" + url.replace("ipfs://", "");
     // Or use another gateway if you prefer
     // return "https://gateway.pinata.cloud/ipfs/" + url.replace("ipfs://", "");
   }
-  return url;
+  return uri;
 }

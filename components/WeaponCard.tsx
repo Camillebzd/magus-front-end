@@ -1,7 +1,7 @@
 'use client'
 
 import { Weapon, WeaponMint } from "@/scripts/entities";
-import { 
+import {
   Card,
   CardBody,
   CardFooter,
@@ -19,7 +19,7 @@ import { useEffect, useRef, useState } from "react";
 
 import Link from 'next/link'
 import { WeaponGeneralType } from "@/scripts/WeaponGeneralType";
-import { createContract, resolveImageUrl } from "@/scripts/utils";
+import { resolveImageUrl } from "@/scripts/utils";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { useRouter } from "next/navigation";
 import { Notify } from "notiflix";
@@ -37,6 +37,18 @@ const WeaponCard = ({ weapon, type }: { weapon: Weapon, type: WeaponGeneralType 
   const equipedWeaponId = useAppSelector((state) => state.socketReducer.member.equipedWeaponId);
   const contract = useContract();
   const [isCraftingStarter, setIsCraftingStarter] = useState(false);
+  const [resolvedImageUrl, setResolvedImageUrl] = useState<string>("");
+
+  // resolve the image URL based on the weapon's image property
+  useEffect(() => {
+    const resolve = async () => {
+      const image = await resolveImageUrl(weapon.image);
+      setResolvedImageUrl(image);
+    }
+    if (weapon.image) {
+      resolve();
+    }
+  }, [weapon.image]);
 
   useEffect(() => {
     if (isOver && imageWeapon != null)
@@ -46,7 +58,7 @@ const WeaponCard = ({ weapon, type }: { weapon: Weapon, type: WeaponGeneralType 
   }, [isOver]);
 
   const craftStarter = async () => {
-    if (!contract) { 
+    if (!contract) {
       console.log("Contract not found");
       return;
     }
@@ -124,7 +136,7 @@ const WeaponCard = ({ weapon, type }: { weapon: Weapon, type: WeaponGeneralType 
       );
     }
     return (
-      <Button size='sm' colorScheme='green' isActive={false} isDisabled={true} onClick={e => { e.preventDefault();}}>
+      <Button size='sm' colorScheme='green' isActive={false} isDisabled={true} onClick={e => { e.preventDefault(); }}>
         Equiped
       </Button>
     );
@@ -132,7 +144,7 @@ const WeaponCard = ({ weapon, type }: { weapon: Weapon, type: WeaponGeneralType 
 
   return (
     <Link href={`/weapon/${type}/${weapon.id}`}>
-      <Card 
+      <Card
         backgroundColor={"profoundgrey.400"}
         borderColor={"profoundgrey.200"}
         borderWidth={"1px"}
@@ -142,7 +154,7 @@ const WeaponCard = ({ weapon, type }: { weapon: Weapon, type: WeaponGeneralType 
       >
         <CardBody className={styles.cardBody}>
           <Image
-            src={resolveImageUrl(weapon.image)}
+            src={resolvedImageUrl}
             alt={`image of weapon named ${weapon.name}`}
             borderRadius='lg'
             className={styles.cardImage}

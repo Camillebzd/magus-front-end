@@ -2,12 +2,13 @@
 
 import { useEffect, useRef, useState } from 'react';
 import styles from '../page.module.css';
-import { Flex, Select } from '@chakra-ui/react';
+import { Flex, Select, Text } from '@chakra-ui/react';
 import { CanvasDataChangeParams, CanvasInfoChangeParams, Dotting, DottingRef, PixelModifyItem, useDotting, useHandlers } from 'dotting';
 import ToolBar from './components/ToolBar';
 import ColorAndPreviewBar from './components/ColorAndPreviewBar';
 import MintButton from './components/MintButton';
 import { dottingDataToPng, dataURLtoBlob } from './dottingUtils';
+import { useAppSelector } from '@/redux/hooks';
 
 export default function Page() {
   const dottingRef = useRef<DottingRef>(null);
@@ -25,8 +26,8 @@ export default function Page() {
     removeCanvasInfoChangeEventListener,
   } = useHandlers(dottingRef);
   const [characterImage, setCharacterImage] = useState<"NONE" | "BACKGROUND" | "FORGROUND">("NONE");
-
   const [createdImage, setCreatedImage] = useState<string | null>(null);
+  const address = useAppSelector((state) => state.authReducer.address);
 
   const CreateEmptySquareData = (
     size: number,
@@ -169,7 +170,9 @@ export default function Page() {
         </Flex>
         <ColorAndPreviewBar createdImage={createdImage} dottingRef={dottingRef} />
       </Flex>
-      <MintButton createdImage={dataURLtoBlob(createdImage || '')} />
+      <Flex alignItems={"center"} justifyContent="center" mt={4}>
+        {address.length < 42 ? <Text>Connect to mint your weapon</Text> : <MintButton createdImage={dataURLtoBlob(createdImage || '')} />}
+      </Flex>
     </main>
   );
 };

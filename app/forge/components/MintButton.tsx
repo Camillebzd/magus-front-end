@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Flex } from "@chakra-ui/react";
+import { Button, Flex, Image, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Text, useDisclosure } from "@chakra-ui/react";
 import { download, upload } from "thirdweb/storage";
 import { client } from "@/app/thirdwebInfo";
 import { useContract, useStarter } from "@/scripts/customHooks";
@@ -16,9 +16,12 @@ const MintButton = ({
 }) => {
   const address = useAppSelector((state) => state.authReducer.address);
   const [isCraftingNFT, setIsCraftingNFT] = useState(false);
+    const { isOpen, onOpen, onClose } = useDisclosure();
   const contract = useContract();
   const weapons = useStarter();
   const weapon = weapons[0]; // Hardcode the first weapon for minting
+  const [weaponName, setWeaponName] = useState('');
+  const [weaponDescription, setWeaponDescription] = useState('');
 
   const mintNFT = async () => {
     setIsCraftingNFT(true);
@@ -33,7 +36,7 @@ const MintButton = ({
       setIsCraftingNFT(false);
       return;
     }
-    if (!address) {
+    if (!address || address.length < 42) {
       console.error("Not connected");
       setIsCraftingNFT(false);
       return;
@@ -44,11 +47,13 @@ const MintButton = ({
       return;
     }
 
-    if (!createdImage) {
-      console.error("No image to mint");
+    if (weaponName.length === 0 || weaponDescription.length === 0) {
+      console.error("No name or description for the weapon");
+      Notify.failure("Please provide a name and description for the weapon.");
       setIsCraftingNFT(false);
       return;
     }
+
     try {
       console.log("Minting NFT with image:", createdImage);
       const uri = await upload({
@@ -77,8 +82,8 @@ const MintButton = ({
 
       // mint the NFT
       let weaponToMint: WeaponMint = {
-        name: weapon.name,
-        description: weapon.description,
+        name: weaponName,
+        description: weaponDescription,
         image: uri,
         level: weapon.level,
         stage: weapon.stage,
@@ -113,6 +118,7 @@ const MintButton = ({
       await tx.wait();
       Notify.success("Your weapon was created, wait a minute and you will see it appear!");
       setIsCraftingNFT(false);
+      onClose();
     } catch (error) {
       console.error("Error minting NFT:", error);
       setIsCraftingNFT(false);
@@ -121,9 +127,32 @@ const MintButton = ({
 
   return (
     <Flex justifyContent="center" gap={4} height={"100%"} m={4}>
-      <Button isLoading={isCraftingNFT} width={"auto"} onClick={mintNFT} colorScheme="blue">
+      <Button width={"auto"} onClick={onOpen} colorScheme="blue">
         Mint NFT
       </Button>
+      <Modal isOpen={isOpen} onClose={onClose} closeOnOverlayClick={false}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Weapon details</ModalHeader>
+          <ModalCloseButton isDisabled={isCraftingNFT} />
+          <ModalBody>
+            <Flex direction="column" gap={4} alignItems={"center"}>
+              <Image src={createdImage ? URL.createObjectURL(createdImage) : ""} alt="Weapon Preview" style={{ width: "250px", height: "auto" }} />
+              <Flex direction="column" width="100%" gap={2}>
+                <Text fontSize="lg" fontWeight="bold">Name</Text>
+                <Input maxLength={40} placeholder="Weapon Name" defaultValue={weaponName} onChange={(event) => setWeaponName(event.target.value)} />
+                <Text mt={2} fontSize="lg" fontWeight="bold">Description</Text>
+                <Input maxLength={40} placeholder="Weapon Description" defaultValue={weaponDescription} onChange={(event) => setWeaponDescription(event.target.value)} />
+              </Flex>
+            </Flex>
+          </ModalBody>
+          <ModalFooter>
+            <Button isLoading={isCraftingNFT} colorScheme='blue' onClick={mintNFT}>
+              Mint
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Flex>
   );
 }
