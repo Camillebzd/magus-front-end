@@ -8,6 +8,7 @@ import { RefObject, useRef } from "react";
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import { HiDownload, HiUpload } from "react-icons/hi";
 import { pngToDottingData } from "../dottingUtils";
+import ExamplesButton from "./ExamplesButton";
 
 const TOOLS: { info: string, brushTool: BrushTool; icon: JSX.Element }[] = [
   {
@@ -105,7 +106,7 @@ const ToolBar = ({
   };
 
   return (
-    <Flex justifyContent="center">
+    <Flex justifyContent="center" direction={"column"} alignItems={"center"}>
       <input
         type="file"
         accept="image/png"
@@ -171,6 +172,7 @@ const ToolBar = ({
           </Button>
         </GridItem>
       </Grid>
+      <ExamplesButton dottingRef={dottingRef}/>
     </Flex>
   );
 }
