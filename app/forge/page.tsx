@@ -84,8 +84,8 @@ export default function Page() {
         imageWorldPosY,
       );
 
-      const imageWidth = gridSquareSize * 35;
-      const imageHeight = gridSquareSize * 35;
+      const imageWidth = gridSquareSize * 36;
+      const imageHeight = gridSquareSize * 36;
 
       img.onload = () => {
         ctx.clearRect(0, 0, width, height);
@@ -108,7 +108,7 @@ export default function Page() {
 
   useEffect(() => {
     const handleDataChange = ({ data }: CanvasDataChangeParams) => {
-      setCreatedImage(dottingDataToPng(data, 35));
+      setCreatedImage(dottingDataToPng(data, 36));
     };
 
     addDataChangeListener(handleDataChange);
@@ -131,7 +131,6 @@ export default function Page() {
 
   return (
     <main className={styles.main}>
-      <h1 className={styles.pageTitle}>Forge</h1>
       <Flex
         direction="row"
         alignItems="center"
@@ -151,7 +150,7 @@ export default function Page() {
             initLayers={[
               {
                 id: "layer1",
-                data: CreateEmptySquareData(35),
+                data: CreateEmptySquareData(36),
               }
             ]}
           />

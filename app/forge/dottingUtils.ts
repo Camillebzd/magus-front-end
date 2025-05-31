@@ -42,6 +42,51 @@ export function dottingDataToPng(
   return canvas.toDataURL('image/png');
 }
 
+export async function pngToDottingData(
+  imageSrc: string, // can be a data URL or a normal URL
+  width: number,
+  height: number
+): Promise<Map<number, Map<number, { color: string }>>> {
+  return new Promise((resolve, reject) => {
+    const img = new window.Image();
+    img.crossOrigin = "Anonymous";
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return reject("No canvas context");
+      ctx.imageSmoothingEnabled = false; // <--- Add this line!
+      ctx.drawImage(img, 0, 0, width, height);
+      const imageData = ctx.getImageData(0, 0, width, height).data;
+
+      const dottingData = new Map<number, Map<number, { color: string }>>();
+      for (let y = 0; y < height; y++) {
+        const row = new Map<number, { color: string }>();
+        for (let x = 0; x < width; x++) {
+          const idx = (y * width + x) * 4;
+          const r = imageData[idx];
+          const g = imageData[idx + 1];
+          const b = imageData[idx + 2];
+          const a = imageData[idx + 3];
+          if (a === 0) {
+            row.set(x, { color: "" });
+          } else {
+            const color = `rgba(${r},${g},${b},${a / 255})`;
+            row.set(x, { color });
+          }
+        }
+        if (row.size > 0) {
+          dottingData.set(y, row);
+        }
+      }
+      resolve(dottingData);
+    };
+    img.onerror = reject;
+    img.src = imageSrc;
+  });
+}
+
 export function dataURLtoBlob(dataurl: string) {
   if (!dataurl || dataurl.length == 0) return new Blob();
   const arr = dataurl.split(',');

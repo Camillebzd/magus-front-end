@@ -1,11 +1,13 @@
 import { Flex, Grid, GridItem, Button } from "@chakra-ui/react";
-import { BrushTool, DottingRef, useBrush, useDotting } from "dotting";
+import { BrushTool, DottingRef, PixelModifyItem, useBrush, useDotting } from "dotting";
 import { FaCircle, FaPen, FaRegCircle } from "react-icons/fa";
 import { BsEraserFill } from "react-icons/bs";
 import { TbLine, TbArrowBackUp, TbArrowForwardUp } from "react-icons/tb";
 import { PiPaintBucketFill, PiRectangle, PiRectangleDashed, PiRectangleFill } from "react-icons/pi";
-import { RefObject } from "react";
+import { RefObject, useRef } from "react";
 import { RiDeleteBin5Fill } from "react-icons/ri";
+import { HiDownload, HiUpload } from "react-icons/hi";
+import { pngToDottingData } from "../dottingUtils";
 
 const TOOLS: { info: string, brushTool: BrushTool; icon: JSX.Element }[] = [
   {
@@ -65,10 +67,52 @@ const ToolBar = ({
     clear,
     undo,
     redo,
+    downloadImage,
+    setData
   } = useDotting(dottingRef);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handlePngFile = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const dataUrl = e.target?.result as string;
+      const data = await pngToDottingData(dataUrl, 36, 36);
+      console.log(data);
+      // Convert Map<Map<{color}>> to PixelModifyItem[][]
+      const arrayData: PixelModifyItem[][] = Array.from(data.values()).map(rowMap =>
+        Array.from(rowMap.entries()).map(([columnIndex, value]) => ({
+          rowIndex: (rowMap as any).rowIndex ?? 0, // fallback if rowIndex is not present
+          columnIndex,
+          color: value.color,
+        }))
+      );
+      setData(arrayData);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const uploadImage = () => {
+    fileInputRef.current?.click();
+  };
+
+  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && file.type === "image/png") {
+      handlePngFile(file);
+    }
+    // Reset input so user can upload the same file again if needed
+    e.target.value = "";
+  };
 
   return (
     <Flex justifyContent="center">
+      <input
+        type="file"
+        accept="image/png"
+        ref={fileInputRef}
+        style={{ display: "none" }}
+        onChange={onFileChange}
+      />
       <Grid templateColumns="repeat(2, 1fr)" gap={1}>
         <GridItem>
           <Button
@@ -84,7 +128,7 @@ const ToolBar = ({
             onClick={redo}
             colorScheme="blue"
             variant="outline"
-          >              
+          >
             <TbArrowForwardUp style={{ width: '24px', height: '24px' }} />
           </Button>
         </GridItem>
@@ -106,6 +150,24 @@ const ToolBar = ({
             variant="outline"
           >
             <RiDeleteBin5Fill style={{ width: '24px', height: '24px' }} />
+          </Button>
+        </GridItem>
+        <GridItem colSpan={1}>
+          <Button
+            onClick={() => downloadImage({ isGridVisible: false, type: 'png' })}
+            colorScheme="green"
+            variant="outline"
+          >
+            <HiDownload style={{ width: '24px', height: '24px' }} />
+          </Button>
+        </GridItem>
+        <GridItem colSpan={1}>
+          <Button
+            onClick={uploadImage}
+            colorScheme="green"
+            variant="outline"
+          >
+            <HiUpload style={{ width: '24px', height: '24px' }} />
           </Button>
         </GridItem>
       </Grid>
