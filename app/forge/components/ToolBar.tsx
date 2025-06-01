@@ -7,6 +7,7 @@ import { PiPaintBucketFill, PiRectangle, PiRectangleDashed, PiRectangleFill } fr
 import { RefObject, useRef } from "react";
 import { RiDeleteBin5Fill } from "react-icons/ri";
 import { HiDownload, HiUpload } from "react-icons/hi";
+import { LuMove } from "react-icons/lu";
 import { pngToDottingData } from "../dottingUtils";
 import ExamplesButton from "./ExamplesButton";
 
@@ -55,6 +56,11 @@ const TOOLS: { info: string, brushTool: BrushTool; icon: JSX.Element }[] = [
     info: 'Select',
     brushTool: BrushTool.SELECT,
     icon: <PiRectangleDashed style={{ width: '24px', height: '24px' }} />,
+  },
+  {
+    info: 'Move',
+    brushTool: BrushTool.NONE,
+    icon: <LuMove style={{ width: '24px', height: '24px' }} />,
   },
 ];
 
@@ -172,7 +178,7 @@ const ToolBar = ({
           </Button>
         </GridItem>
       </Grid>
-      <ExamplesButton dottingRef={dottingRef}/>
+      <ExamplesButton dottingRef={dottingRef} />
     </Flex>
   );
 }
