@@ -9,6 +9,7 @@ import ColorAndPreviewBar from './components/ColorAndPreviewBar';
 import MintButton from './components/MintButton';
 import { dottingDataToPng, dataURLtoBlob } from './dottingUtils';
 import { useAppSelector } from '@/redux/hooks';
+import { useRequestAvailable } from '@/scripts/customHooks';
 
 export default function Page() {
   const dottingRef = useRef<DottingRef>(null);
@@ -28,6 +29,7 @@ export default function Page() {
   const [characterImage, setCharacterImage] = useState<"NONE" | "BACKGROUND" | "FORGROUND">("NONE");
   const [createdImage, setCreatedImage] = useState<string | null>(null);
   const address = useAppSelector((state) => state.authReducer.address);
+  const requestAvailable = useRequestAvailable();
 
   const CreateEmptySquareData = (
     size: number,
@@ -130,6 +132,15 @@ export default function Page() {
   //   };
   // }, []);
 
+  const bottomButton = () => {
+    if (address.length < 42) {
+      return <Text>Connect to mint your weapon</Text>;
+    } else if (requestAvailable < 1) {
+      return <Text>You have no more free requests left.</Text>;
+    }
+    return <MintButton createdImage={dataURLtoBlob(createdImage || '')} />;
+  };
+
   return (
     <main className={styles.main}>
       <Flex
@@ -171,7 +182,7 @@ export default function Page() {
         <ColorAndPreviewBar createdImage={createdImage} dottingRef={dottingRef} />
       </Flex>
       <Flex alignItems={"center"} justifyContent="center" mt={4}>
-        {address.length < 42 ? <Text>Connect to mint your weapon</Text> : <MintButton createdImage={dataURLtoBlob(createdImage || '')} />}
+        {bottomButton()}
       </Flex>
     </main>
   );
