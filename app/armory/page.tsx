@@ -3,43 +3,31 @@
 import styles from '../page.module.css';
 import { useAppSelector } from '@/redux/hooks';
 import WeaponList from '@/components/WeaponList';
-import { useRequestAvailable, useUserWeapons } from '@/scripts/customHooks';
-import { Box, Button, Text } from '@chakra-ui/react';
-import { useRouter } from 'next/navigation';
+import { useUserWeapons } from '@/scripts/customHooks';
+import { Box, Flex, Text } from '@chakra-ui/react';
 import Equiped from './components/Equiped';
+import Stats from './components/Stats';
 
 export default function Page() {
   const isConnected = useAppSelector((state) => state.authReducer.isConnected);
   const userWeapons = useUserWeapons(true);
-  const requestAvailable = useRequestAvailable();
-  const router = useRouter();
 
   return (
     <main className={styles.main}>
-      <h1 className={styles.pageTitle}>Armory</h1>
-      {requestAvailable > 0 && 
-        <div style={{display: "flex", flexDirection: "row", alignItems: "center", marginBottom: "1rem"}}>
-          <p>You can request {requestAvailable} free weapon(s): </p> 
-          <Button onClick={() => router.push('/starter')}>Create weapon</Button>
-        </div>
-      }
       {!isConnected ? 
-        (<p>You have to connect your wallet to interact here.</p>)
+        (<Text>Please connect your wallet to interact here.</Text>)
         :
-        <Box display={"flex"} flexDirection="row" alignItems="center" height="calc(100vh - 170px)">
-          <Box width={"50%"} minHeight="100%" justifyItems={"center"}>
-            <Text fontSize='xl' mb={4}>
-              Equiped:
-            </Text>
+        <Flex direction="row" alignContent="center" maxH="75vh" justifyContent={"stretch"} gap={4} p={4}>
+          <Box width={"50%"} justifyItems={"center"} borderColor={"profoundgrey.200"} borderWidth={2} borderRadius={8}>
+            <Stats />
+          </Box>
+          <Box width={"50%"} justifyItems={"center"} borderColor={"profoundgrey.200"} borderWidth={2} borderRadius={8}>
             <Equiped />
           </Box>
-          <Box width={"50%"} minHeight="100%" overflowY="auto" justifyItems={"center"}>
-            <Text fontSize='xl' mb={4}>
-              Your weapons:
-            </Text>
+          <Box width={"50%"} justifyItems={"center"} borderColor={"profoundgrey.200"} borderWidth={2} borderRadius={8}>
             <WeaponList type={"classic"} weapons={userWeapons} />
           </Box>
-        </Box>
+        </Flex>
       }
     </main>
   );

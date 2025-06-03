@@ -8,10 +8,8 @@ import {
   Heading,
   Stack,
   Button,
-  Image,
   useDisclosure,
-  Flex,
-  Text
+  Flex
 } from '@chakra-ui/react'
 
 import styles from './Card.module.css'
@@ -19,13 +17,13 @@ import { useEffect, useRef, useState } from "react";
 
 import Link from 'next/link'
 import { WeaponGeneralType } from "@/scripts/WeaponGeneralType";
-import { resolveImageUrl } from "@/scripts/utils";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { useRouter } from "next/navigation";
 import { Notify } from "notiflix";
 import CreateDeckModal from "./CreateDeckModal";
 import { socketActions } from "@/redux/features/socketSlice";
 import { useContract } from "@/scripts/customHooks";
+import ResolvedImage from "./ResolvedImage";
 
 const WeaponCard = ({ weapon, type }: { weapon: Weapon, type: WeaponGeneralType }) => {
   const [isOver, setIsOver] = useState(false);
@@ -37,18 +35,6 @@ const WeaponCard = ({ weapon, type }: { weapon: Weapon, type: WeaponGeneralType 
   const equipedWeaponId = useAppSelector((state) => state.socketReducer.member.equipedWeaponId);
   const contract = useContract();
   const [isCraftingStarter, setIsCraftingStarter] = useState(false);
-  const [resolvedImageUrl, setResolvedImageUrl] = useState<string>("");
-
-  // resolve the image URL based on the weapon's image property
-  useEffect(() => {
-    const resolve = async () => {
-      const image = await resolveImageUrl(weapon.image);
-      setResolvedImageUrl(image);
-    }
-    if (weapon.image) {
-      resolve();
-    }
-  }, [weapon.image]);
 
   useEffect(() => {
     if (isOver && imageWeapon != null)
@@ -151,26 +137,36 @@ const WeaponCard = ({ weapon, type }: { weapon: Weapon, type: WeaponGeneralType 
         className={styles.card}
         onMouseEnter={() => setIsOver(true)}
         onMouseLeave={() => setIsOver(false)}
+        width={"200px"}
+        height={"230px"}
       >
-        <CardBody className={styles.cardBody}>
-          <Image
-            src={resolvedImageUrl}
+        <CardBody
+          display='flex'
+          flexDirection='column'
+          alignItems='center'
+          justifyContent='center'
+          height="100%"
+          padding={4}
+        >
+          <ResolvedImage
+            image={weapon.image}
             alt={`image of weapon named ${weapon.name}`}
             borderRadius='lg'
             className={styles.cardImage}
             ref={imageWeapon}
-            height={"200px"}
-            width={"200px"}
+            height={"100px"}
+            width={"100px"}
           />
-          <Stack mt='6' spacing='2'>
-            <Flex direction={"row"} alignItems={"center"} justifyContent={"space-between"}>
-              <Heading size='md'>{weapon.name}</Heading>
-              <Heading size='sm'>LV.{weapon.level}</Heading>
+          <Stack mt='6' spacing='2' width="100%">
+            <Flex direction={"row"} alignItems={"center"} justifyContent={"space-between"} gap={2} width="100%">
+              <Heading size='sm' noOfLines={1} overflow="hidden" textOverflow="ellipsis" maxWidth="80%">
+                {weapon.name}
+              </Heading>
+              <Heading size='sm' flexShrink={0}>LV.{weapon.level}</Heading>
             </Flex>
-            <Text>{weapon.description}</Text>
           </Stack>
         </CardBody>
-        <CardFooter marginBottom={2} padding={0}>
+        <CardFooter marginBottom={2} padding={0} justifyContent="center">
           {cardFooter()}
         </CardFooter>
       </Card>
