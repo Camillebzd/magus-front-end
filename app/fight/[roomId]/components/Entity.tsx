@@ -1,9 +1,10 @@
 import { Monster, Weapon } from "@/scripts/entities";
 import styles from "./Entity.module.css";
 import { Badge, Flex, Image, Text } from "@chakra-ui/react";
+import MultipleImages from "@/components/MultipleImages";
 
 // Flux system is not implemented yet, so we will not use it for now
-const Entity = ({ 
+const Entity = ({
   entity,
   isModifiersOnRight,
   isSelected,
@@ -43,6 +44,34 @@ const Entity = ({
     );
   };
 
+  const displayEntityImage = () => {
+    // check if the entity is a weapon or a monster
+    if ("difficulty" in entity) {
+      // It's a monster
+      return (
+        <Image
+          src={entity.image.slice(0, 5) === "https" ? entity.image : `/img/monsters/${entity.image}`}
+          alt={`Image of monster ${entity.name}`}
+          maxH={150}
+          maxW={150}
+        />
+      );
+    }
+    // It's a weapon
+    return (
+      <MultipleImages
+        images={[
+          entity?.image ?? "",
+          "/img/characters/basic_mage.png"
+        ]}
+        width="150px"
+        height="150px"
+        imageHeight={['150px']}
+        imageWidth={['150px']}
+      />
+    );
+  }
+
   return (
     <Flex cursor={"pointer"} direction={"row"} position={"relative"} onClick={() => selectTarget(entity.uid)}>
       {isSelected && <div className={`${styles.arrow} ${styles.mooveUpDown}`}></div>}
@@ -75,7 +104,7 @@ const Entity = ({
             </div>
           </div> */}
         </Flex>
-        <Image src={entity.image.slice(0, 5) === "https" ? entity.image : `/img/monsters/${entity.image}`} alt="..." maxH={150} maxW={150} />
+        {displayEntityImage()}
       </Flex>
       {isModifiersOnRight && displayModifiers()}
     </Flex>

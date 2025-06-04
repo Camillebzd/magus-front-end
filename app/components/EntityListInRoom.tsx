@@ -2,6 +2,8 @@ import { useAppSelector } from '@/redux/hooks';
 import { Box, Flex, Image, Text } from '@chakra-ui/react';
 import * as Member from '@/sockets/@types/Member';
 import { useAllWeapons } from '@/scripts/customHooks';
+import ResolvedImage from '@/components/ResolvedImage';
+import MultipleImages from '@/components/MultipleImages';
 
 const EntityListInRoom = () => {
   const room = useAppSelector((state) => state.socketReducer.room);
@@ -11,13 +13,16 @@ const EntityListInRoom = () => {
     const weapon = weapons.find((weapon) => weapon.id.toString() === weaponId);
 
     return (
-      <Box style={{ marginBottom: "1em" }}>
-        <Image
-          src={weapon?.image}
-          alt={`image of weapon named ${weapon?.name}`}
-          borderRadius='lg'
-          height={"100px"}
-          width={"100px"}
+      <Box mt={4}>
+        <MultipleImages
+          images={[
+            weapon?.image ?? "",
+            "/img/characters/basic_mage.png"
+          ]}
+          width="100px"
+          height="100px"
+          imageHeight={['100px']}
+          imageWidth={['100px']}
         />
       </Box>
     );
