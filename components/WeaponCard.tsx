@@ -27,7 +27,7 @@ import ResolvedImage from "./ResolvedImage";
 
 const WeaponCard = ({ weapon, type }: { weapon: Weapon, type: WeaponGeneralType }) => {
   const [isOver, setIsOver] = useState(false);
-  const imageWeapon: any = useRef(null);
+  const imageWeapon = useRef<HTMLImageElement>(null);
   const address = useAppSelector((state) => state.authReducer.address);
   const router = useRouter();
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -36,11 +36,10 @@ const WeaponCard = ({ weapon, type }: { weapon: Weapon, type: WeaponGeneralType 
   const contract = useContract();
   const [isCraftingStarter, setIsCraftingStarter] = useState(false);
 
-  useEffect(() => {
-    if (isOver && imageWeapon != null)
-      imageWeapon.current.style.transform = "scale(1.2)";
-    else if (!isOver && imageWeapon != null)
-      imageWeapon.current.style.transform = "scale(1)";
+useEffect(() => {
+    if (imageWeapon.current) {
+      imageWeapon.current.style.transform = isOver ? "scale(1.2)" : "scale(1)";
+    }
   }, [isOver]);
 
   const craftStarter = async () => {
