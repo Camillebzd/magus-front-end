@@ -310,7 +310,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
       console.log('monsters after resolve', monstersRef.current);
       console.log('weapons after resolve', weaponsRef.current);
       // emit turn instructions executed
-      socket.emit('turnInstructionsExecuted');
+      socket.emit(`room:${room.id}:turnInstructionsExecuted`);
     });
 
     socket.on('endOfTurn', () => {
@@ -326,7 +326,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
     });
 
     // Trigger the init Hand and deck
-    socket.emit('initHandAndDeck');
+    socket.emit(`room:${room.id}:initHandAndDeck`);
 
     // Cleanup on unmount
     return () => {
@@ -445,7 +445,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
       hasBeenValidated: false,
     };
     console.log('actionData', actionData);
-    socket.emit('selectAbility', actionData);
+    socket.emit(`room:${room.id}:selectAbility`, actionData);
   };
 
   const selectTarget = (target: string) => {
@@ -585,7 +585,7 @@ export default function Page({ params }: { params: { roomId: string } }) {
               >
                 <Button onClick={() => {
                   if (phase === GAME_PHASES.PLAYER_CHOOSE_ABILITY) {
-                    socket.emit('validateAbility');
+                    socket.emit(`room:${room.id}:validateAbility`);
                   }
                 }}>
                   Validate
